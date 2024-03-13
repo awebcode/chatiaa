@@ -1,4 +1,3 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { fetchUser } from "@/functions/serverActions";
 import { redirect } from "@/navigation";
 import { getServerSession } from "next-auth";
