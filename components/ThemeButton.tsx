@@ -8,7 +8,7 @@ import { BsMoon } from "react-icons/bs";
 const ThemeButton = () => {
   const {  setTheme,theme,resolvedTheme } = useTheme();
 
-
+console.log({theme:theme==="dark"})
   return (
     <button
       aria-label="Toggle Dark Mode"
@@ -17,7 +17,7 @@ const ThemeButton = () => {
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
       {theme === "dark" ? (
-        <SunIcon className="h-5 w-5 text-orange-500" />
+        <SunIcon className="h-5 w-5 text-white" />
       ) : (
         <BsMoon className="h-5 w-5 text-slate-800" />
       )}
