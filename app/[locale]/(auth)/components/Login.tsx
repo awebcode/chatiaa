@@ -6,7 +6,8 @@ import Image from "next/image";
 
 const Login = () => {
   const { data: session } = useSession();
- const [error, setError] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setloading] = useState(false);
   const router = useRouter();
   const handleGoogleLogin = async () => {
     const res = await signIn("google", {
@@ -26,18 +27,24 @@ const Login = () => {
  
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    try {
+     setloading(true)
+     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
+     const formData = new FormData(e.currentTarget);
 
-    const res = await signIn("credentials", {
-      email: formData.get("email"),
-      password: formData.get("password"),
-      redirect: false,
-    });
-    if (res?.error) return setError(res.error);
-
-    if (res?.ok) return router.push("/profile");
+     const res = await signIn("credentials", {
+       email: formData.get("email"),
+       password: formData.get("password"),
+       redirect: false,
+     });
+     if (res?.error) return setError(res.error);
+      setloading(false);
+     if (res?.ok) return router.push("/profile");
+   } catch (error:any) {
+      setError(error);
+       setloading(false);
+   }
   };
   if (session?.user) router.push("/profile");
   return (
@@ -121,6 +128,7 @@ const Login = () => {
               </div>
             </div>
             <button
+              disabled={loading}
               type="submit"
               className="w-full py-3 font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg border-indigo-500 hover:shadow inline-flex space-x-2 items-center justify-center"
             >
@@ -138,7 +146,7 @@ const Login = () => {
                   d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                 />
               </svg>
-              <span>Login</span>
+              <span>{loading ? "signing..." : "Login"}</span>
             </button>
             <p className="text-center">
               Not registered yet?{" "}
