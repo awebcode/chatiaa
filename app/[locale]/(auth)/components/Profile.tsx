@@ -6,9 +6,9 @@ import moment from "moment"
 const Profile = async () => {
   // const data = await getServerSession(authOptions);
   const user = await fetchUser()
-
-  if (!user||!user?._id) {
-    return redirect("/");
+  console.log({user})
+  if (!user?._id) {
+     redirect("/");
   }
   // if (!data?.user) {
      
