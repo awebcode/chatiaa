@@ -17,7 +17,8 @@ console.log({theme:theme==="dark"})
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
       {theme === "dark" ? (
-        <SunIcon className="h-5 w-5 text-white" />
+        // <SunIcon className="h-5 w-5 text-white" />
+        <span>Sun</span>
       ) : (
         <BsMoon className="h-5 w-5 text-slate-800" />
       )}
