@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import { CustomErrorHandler } from "./errorHandler";
-import { User } from "../model/UserModel";
 import { decode } from "next-auth/jwt";
-import { getSession } from "next-auth/react";
 interface AuthenticatedRequest extends Request {
   id: number | string;
 }

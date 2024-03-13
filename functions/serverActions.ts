@@ -17,11 +17,18 @@ export const getChatsServerAction = async ({
     {
       headers: {
         "Content-Type": "application/json",
-        Cookie: `authToken=${cookies().get("next-auth.session-token")?.value};`
+        Cookie: `authToken=${
+          cookies().get(
+            process.env.NODE_ENV === "production"
+              ? "__Secure-next-auth.session-token"
+              : "next-auth.session-token"
+          )?.value
+        };`,
       },
       withCredentials: true,
     }
   );
+  
   return { ...data, prevOffset: pageParam, skip: pageParam };
 };
 
@@ -40,7 +47,13 @@ export const allMessagesServerAction = async ({
     {
       headers: {
         "Content-Type": "application/json",
-        Cookie: `authToken=${cookies().get("next-auth.session-token")?.value};`
+        Cookie: `authToken=${
+          cookies().get(
+            process.env.NODE_ENV === "production"
+              ? "__Secure-next-auth.session-token"
+              : "next-auth.session-token"
+          )?.value
+        };`,
       },
       withCredentials: true,
     }
@@ -53,7 +66,15 @@ export const fetchUser = async () => {
   const res = await fetch(`${BaseUrl}/getUser`, {
     credentials: "include",
     next: { tags: ["user"] },
-    headers: { Cookie: `authToken=${cookies().get("next-auth.session-token")?.value};` },
+    headers: {
+      Cookie: `authToken=${
+        cookies().get(
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.session-token"
+            : "next-auth.session-token"
+        )?.value
+      };`,
+    },
   });
 
   return await res.json();

@@ -6,7 +6,11 @@ export const axiosClient = axios.create({
   withCredentials: true,
 });
 axiosClient.interceptors.request.use((config) => {
-  const authToken = Cookie.get("next-auth.session-token");
+  const authToken = Cookie.get(
+    process.env.NODE_ENV === "production"
+      ? "__Secure-next-auth.session-token"
+      : "next-auth.session-token"
+  );
   if (authToken) {
     config.headers.Authorization = `Bearer ${authToken}`;
   }
