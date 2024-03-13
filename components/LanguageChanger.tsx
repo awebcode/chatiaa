@@ -54,7 +54,7 @@ export default function LanguageChanger() {
           />{" "}
           <span className="text-xs md:text-sm  text-gray-400">{locale}</span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="z-50 absolute p-2 min-w-40 top-0 -right-32 dark:border dark:border-gray-700  shadow-md rounded-md overflow-hidden ">
+        <DropdownMenuContent className="z-50 bg-white dark:bg-black absolute p-2 min-w-40 top-0 -right-32 dark:border dark:border-gray-700  shadow-md rounded-md overflow-hidden ">
           {locales.map((item, i) => (
             <div
               key={item.name}
