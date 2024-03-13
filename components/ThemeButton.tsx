@@ -1,13 +1,13 @@
 "use client";
 
+import { SunIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
-import { BsMoon, BsSun } from "react-icons/bs";
+import { BsMoon } from "react-icons/bs";
 
 
 const ThemeButton = () => {
   const {  setTheme,theme,resolvedTheme } = useTheme();
 
- console.log({ theme, resolvedTheme });
 
   return (
     <button
@@ -17,7 +17,7 @@ const ThemeButton = () => {
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
       {theme === "dark" ? (
-        <BsSun className="h-5 w-5 text-orange-500" />
+        <SunIcon className="h-5 w-5 text-orange-500" />
       ) : (
         <BsMoon className="h-5 w-5 text-slate-800" />
       )}
