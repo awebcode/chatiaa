@@ -1,6 +1,12 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "@/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
 import { useLocale } from "next-intl";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -12,8 +18,7 @@ export default function LanguageChanger() {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const locale = useLocale();
-  const handleChange = (e: any) => {
-    const lang = e.target.value;
+  const handleChange = (lang: string) => {
     startTransition(() => {
       router.replace(pathname, {
         locale: lang,
@@ -22,8 +27,8 @@ export default function LanguageChanger() {
   };
 
   const locales = [
-    { name: "english", flag: "/flags/bn.png" },
-    { name: "bangla", flag: "/flags/usa.png" },
+    { name: "english", flag: "/flags/usa.png" },
+    { name: "bangla", flag: "/flags/bn.png" },
     { name: "canada", flag: "/flags/canada.png" },
     { name: "china", flag: "/flags/china.png" },
     { name: "france", flag: "/flags/france.png" },
@@ -34,31 +39,47 @@ export default function LanguageChanger() {
   ];
 
   return (
-    <select
-      value={locale}
-      onChange={handleChange}
-      className={`text-[10px] md:text-sm px-1 md:px-8 py-1 md:py-2 capitalize   md:ring-2 ring-violet-500  bg-transparent rounded-md border-none outline-none focus:border-none`}
-    >
-      {locales.map((item, i) => (
-        <option
-          key={item.name}
-          className={`${
-            theme === "dark" ? "bg-white text-black" :locale===item.name?"bg-blue-500": "bg-black text-white "
-          } m-2   capitalize text-[10px] md:text-sm flex gap-2 p-3 md:p-4 `}
-          value={item.name}
+    <div className="relative inline-block">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={`   px-1 md:px-8 py-1 md:py-2 capitalize  bg-transparent rounded-md border-none outline-none focus:border-none cursor-pointer`}
         >
           <Image
-            className="inline-block ml-2 h-5 w-5"
-            src={item.flag}
-            alt={`${item.name} flag`}
-            height={20}
-            width={20}
-            // loading="lazy"
-          />
-
-          {item.name}
-        </option>
-      ))}
-    </select>
+            className="inline-block ml-2 h-5 w-7"
+            src={locales.find((current) => current.name === locale)?.flag as any}
+            alt={locales.find((current) => current.name === locale)?.name as any}
+            loading="lazy"
+            height={16}
+            width={16}
+          />{" "}
+          <span className="text-xs md:text-sm  text-gray-400">{locale}</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="z-50 absolute p-2 min-w-40 top-0 -right-32 dark:border dark:border-gray-700  shadow-md rounded-md overflow-hidden ">
+          {locales.map((item, i) => (
+            <div
+              key={item.name}
+              onClick={() => handleChange(item.name)}
+              className={cn(
+                `z-50 dark:bg-black dark:text-whitecapitalize text-[10px] md:text-sm flex gap-2 p-3 md:p-4 cursor-pointer
+`,
+                {
+                  "bg-purple-500 rounded dark:bg-purple-500 ": locale === item.name,
+                }
+              )}
+            >
+              <Image
+                className="inline-block ml-2 h-5 w-7"
+                src={item.flag}
+                alt={`${item.name} flag`}
+                loading="lazy"
+                height={16}
+                width={16}
+              />
+              {item.name}
+            </div>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

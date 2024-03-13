@@ -1,8 +1,13 @@
+import dynamic from "next/dynamic";
 
-export default async function Home() {
+const Home = dynamic(() => import("./components/Home"));
+
+export default async function MainPage() {
   return (
-    <div className="container mx-auto">
-      <h1 className="text-3xl md:text-6xl  wrapper">Hello</h1>
+    <div className="">
+      
+      <Home />
+      {/* <Footer/> */}
     </div>
   );
 }

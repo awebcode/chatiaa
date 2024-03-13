@@ -17,7 +17,7 @@ export const getChatsServerAction = async ({
     {
       headers: {
         "Content-Type": "application/json",
-        Cookie: `authToken=${cookies().get("authToken")?.value};`,
+        Cookie: `authToken=${cookies().get("next-auth.session-token")?.value};`
       },
       withCredentials: true,
     }
@@ -40,7 +40,7 @@ export const allMessagesServerAction = async ({
     {
       headers: {
         "Content-Type": "application/json",
-        Cookie: `authToken=${cookies().get("authToken")?.value};`,
+        Cookie: `authToken=${cookies().get("next-auth.session-token")?.value};`
       },
       withCredentials: true,
     }
@@ -53,7 +53,7 @@ export const fetchUser = async () => {
   const res = await fetch(`${BaseUrl}/getUser`, {
     credentials: "include",
     next: { tags: ["user"] },
-    headers: { Cookie: `authToken=${cookies().get("authToken")?.value};` },
+    headers: { Cookie: `authToken=${cookies().get("next-auth.session-token")?.value};` },
   });
 
   return await res.json();

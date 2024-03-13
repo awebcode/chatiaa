@@ -8,7 +8,6 @@ import clientPromise from "@/lib/clientPromise";
 import connectDb from "@/lib/connectDb";
 import { User } from "@/lib/models/UserModel";
 import AccountModel from "@/lib/models/AccountModel";
-import { redirect } from "next/navigation";
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
   providers: [
@@ -56,7 +55,7 @@ export const authOptions: AuthOptions = {
         }).select("+password");
 
         if (!userFound) {
-           throw new Error("User doesn't exists! try using another user.");
+          throw new Error("User doesn't exists! try using another user.");
         }
 
         const passwordMatch = await bcrypt.compare(
@@ -94,7 +93,7 @@ export const authOptions: AuthOptions = {
 
       //   const existingUser = await getUserById(user.id);
       if (!existingUser) {
-         throw new Error("User doesn't exists! try using another user.");
+        throw new Error("User doesn't exists! try using another user.");
       }
 
       return true;
@@ -127,6 +126,7 @@ export const authOptions: AuthOptions = {
   },
   jwt: {
     maxAge: 60 * 60 * 24 * 7,
+    
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {

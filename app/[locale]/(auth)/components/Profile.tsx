@@ -1,16 +1,22 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { fetchUser } from "@/functions/serverActions";
 import { redirect } from "@/navigation";
 import { getServerSession } from "next-auth";
 import Image from "next/image";
-
+import moment from "moment"
 const Profile = async () => {
-  const data = await getServerSession(authOptions);
-  if (!data?.user) {
+  // const data = await getServerSession(authOptions);
+  const user = await fetchUser()
+
+  if (!user||!user?._id) {
+    return redirect("/");
+  }
+  // if (!data?.user) {
      
-    // If there is no authenticated session, you can redirect the user to the login page.
-     return redirect("/");
-    }
-    const { user } = data;
+  //   // If there is no authenticated session, you can redirect the user to the login page.
+  //    return redirect("/");
+  //   }
+  //   const { user } = data;
 
   return (
     <div className="container mx-auto flex items-center justify-center h-[60vh]">
@@ -35,9 +41,10 @@ const Profile = async () => {
             />
           )}
           <div>
-            <p className="text-lg font-semibold">{(user as any)?.id}</p>
+            <p className="text-lg font-semibold">Id:- {(user as any)?._id}</p>
             <p className="text-lg font-semibold">{user?.name}</p>
-            <p className="text-gray-600">{user?.email}</p>
+            <p className="text-gray-500">{user?.email}</p>
+            <p className="text-gray-700">Joined:-{moment(user?.createdAt).format("llll")}</p>
           </div>
         </div>
       </div>
