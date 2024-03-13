@@ -16,7 +16,7 @@ console.log({theme:theme==="dark"})
       className="flex items-center justify-center rounded-lg p-2 transition-colors dark:!bg-gray-700 dark:!text-orange-500 "
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
-      {theme === "dark" ? (
+      {theme == "dark" ? (
         <SunIcon style={{ color: "#eab308" }} className="h-5 w-5  !text-orange-600" />
       ) : (
         <BsMoon className="h-5 w-5 text-slate-800" />
