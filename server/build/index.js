@@ -26,9 +26,10 @@ const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const messageRoutes_1 = __importDefault(require("./routes/messageRoutes"));
 const UserModel_1 = require("./model/UserModel");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const uploadMiddleware_1 = __importDefault(require("./middlewares/uploadMiddleware"));
 const app = (0, express_1.default)();
-app.use(express_1.default.json());
-app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.json({ limit: "100mb" }));
+app.use(express_1.default.urlencoded({ extended: true, limit: "100mb" }));
 (0, dotenv_1.config)();
 const server = (0, http_1.createServer)(app);
 const io = new socket_io_1.Server(server, {
@@ -44,6 +45,7 @@ const corsOptions = {
 };
 app.use((0, cors_1.default)(corsOptions));
 app.use((0, cookie_parser_1.default)());
+app.use(uploadMiddleware_1.default.array("images"));
 (0, cloudinaryConfig_1.default)();
 app.use("/api/v1", authRoutes_1.default);
 app.use("/api/v1", chatRoutes_1.default);

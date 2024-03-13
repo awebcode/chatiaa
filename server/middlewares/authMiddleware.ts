@@ -20,6 +20,9 @@ const authMiddleware: any = async (
   }
 
   try {
+    console.log({ token })
+    console.log({ secret: process.env.NEXTAUTH_SECRET! });
+    
     // // Verify the token
     // const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
     // console.log({decoded})
@@ -29,7 +32,7 @@ const authMiddleware: any = async (
       secret: process.env.NEXTAUTH_SECRET!,
     });
     (req as any).id = decoded?.id;
-
+console.log({decoded})
     next();
   } catch (error) {
     console.log({ authMiddleware: error });
