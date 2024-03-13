@@ -8,6 +8,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/navigation";
+import { AvatarIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
+import { CiLogout } from "react-icons/ci";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
@@ -38,7 +40,9 @@ const Navbar = () => {
           alt="Logo"
           className="w-6 h-6 md:w-8 md:h-8"
         />
-        <span className="hidden md:block text-sm md:text-xl font-semibold">{t("logo")}</span>
+        <span className="hidden md:block text-sm md:text-xl font-semibold">
+          {t("logo")}
+        </span>
       </div>
 
       {/* Right Side - Sign In/Profile */}
@@ -77,12 +81,21 @@ const Navbar = () => {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href={"/profile"}>Profile</Link>
+                <Link href={"/profile"} className="flex gap-2">
+                  <AvatarIcon className="h-4 w-4" />
+                  Profile
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link href={"/chat"}>chat</Link>
+                <Link href={"/chat"} className="flex gap-2">
+                  <ChatBubbleIcon className="h-4 w-4" />
+                  chat
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={logoutHandler}>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={logoutHandler} className="flex gap-2 text-red-500">
+                <CiLogout className="h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
