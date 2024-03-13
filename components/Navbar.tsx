@@ -14,7 +14,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import ThemeButton from "./ThemeButton"
+const ThemeButton = dynamic(() => import("./ThemeButton"));
 const LanguageChanger = dynamic(() => import("./LanguageChanger"));
 const Navbar = () => {
   const t = useTranslations();
