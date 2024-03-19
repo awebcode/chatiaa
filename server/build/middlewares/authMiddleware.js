@@ -13,23 +13,19 @@ const errorHandler_1 = require("./errorHandler");
 const jwt_1 = require("next-auth/jwt");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const token = ((_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.split(" ")[1]) || req.cookies.authToken;
+    const token = ((_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.split(" ")[1]) ||
+        req.cookies.authToken ||
+        req.cookies["next-auth.session-token"] ||
+        req.cookies["__Secure-next-auth.session-token"];
     if (!token) {
         return next(new errorHandler_1.CustomErrorHandler("Unauthorized - No token provided", 401));
     }
     try {
-        console.log({ token });
-        console.log({ secret: process.env.NEXTAUTH_SECRET });
-        // // Verify the token
-        // const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
-        // console.log({decoded})
-        // Attach the decoded data to the request for further use
         const decoded = yield (0, jwt_1.decode)({
             token: token,
             secret: process.env.NEXTAUTH_SECRET,
         });
         req.id = decoded === null || decoded === void 0 ? void 0 : decoded.id;
-        console.log({ decoded });
         next();
     }
     catch (error) {

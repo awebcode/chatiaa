@@ -16,7 +16,6 @@ export const getChats = async ({
   pageParam: any;
   queryKey: any;
   }) => {
-  console.log({queryKey})
   const { data } = await axios.get(
     `${BaseUrl}/fetchChats?search=${
       queryKey[1]

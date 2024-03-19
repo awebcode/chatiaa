@@ -18,21 +18,12 @@ const storage = multer_1.default.diskStorage({
 // Define the file filter function
 const fileFilter = (req, file, cb) => {
     // Check file types, for example, allow only images
-    if (file.mimetype === "image/jpeg" ||
-        file.mimetype === "image/png" ||
-        file.mimetype === "image/jpg" ||
-        file.mimetype === "image/x-icon") {
-        cb(null, true); // Accept the file
-    }
-    else {
-        console.log("Only images (jpeg, jpg, png,x-icon|ico) are allowed!", file);
-        cb(new Error("Only images (jpeg, jpg, png,x-icon|ico) are allowed!"), false); // Reject the file
-    }
+    cb(null, true); // Accept the file
 };
 // Set up multer with the storage configuration and file filter
 const uploadMiddleware = (0, multer_1.default)({
     storage: storage,
     fileFilter: fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Specify fileSize as an object
+    limits: { fileSize: 1000 * 1024 * 1024 }, // Specify fileSize as an object
 });
 exports.default = uploadMiddleware;

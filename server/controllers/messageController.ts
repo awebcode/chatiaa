@@ -8,8 +8,10 @@ import { Chat } from "../model/ChatModel";
 import { CustomErrorHandler } from "../middlewares/errorHandler";
 import { Reaction } from "../model/reactModal";
 import { v2 } from "cloudinary";
-import jwt from "jsonwebtoken"
 import fs from "fs";
+import mongoose from "mongoose";
+import { io } from "../index";
+import { getFileType } from "./functions";
 //@access          Protected
 export const allMessages = async (
   req: Request | any,
@@ -17,44 +19,66 @@ export const allMessages = async (
   next: NextFunction
 ) => {
   try {
-   
-   
     const limit = parseInt(req.query.limit) || 10;
-    const skip = parseInt(req.query.skip) || 0;
-
-    let messages = await Message.find({ chat: req.params.chatId })
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+    let messages: any = await Message.find({ chat: req.params.chatId })
       .populate({
         path: "isReply.messageId",
         select: "content image",
-        populate: { path: "sender", select: "username pic email" },
+        populate: { path: "sender", select: "name image email" },
       })
-      .populate("sender removedBy", "username pic email")
+      .populate("sender removedBy", "name image email")
       .populate("chat")
-      .sort({ _id: -1 }) // Use _id for sorting in descending order
+      .sort({ _id: -1 })
       .limit(limit)
       .skip(skip);
 
+    // .sort({ _id: -1 }) // Use _id for sorting in descending order
+
+    messages = await User.populate(messages, {
+      path: "sender chat.users",
+      select: "name image email lastActive",
+    });
     // Populate reactions for each message
     messages = await Promise.all(
-      messages.map(async (message) => {
+      messages.map(async (message: any) => {
+        const reactionsGroup = await countReactionsForMessage(message._id);
+        console.log({ reactionsGroup });
         const reactions = await Reaction.find({ messageId: message._id })
           .populate({
             path: "reactBy",
-            select: "username pic email",
+            select: "name image email",
           })
           .sort({ updatedAt: -1 })
           .exec();
 
-        return { ...message.toObject(), reactions };
+        return { ...message.toObject(), reactions, reactionsGroup };
       })
     );
     //find reactions here and pass with every message
     //@
-    const total = await Message.countDocuments({ chat: req.params.chatId })
-    res.json({ messages, total, limit });
+    const total = await Message.countDocuments({ chat: req.params.chatId });
+
+    res.json({ messages, total, limit, page, skip });
   } catch (error: any) {
     console.log({ error });
     next(error);
+  }
+};
+// Count the number of reactions for a specific message
+const countReactionsForMessage = async (messageId: any) => {
+  try {
+    const aggregate = await Reaction.aggregate([
+      { $match: { messageId: new mongoose.Types.ObjectId(messageId) } }, // Match reactions for the given message ID
+      { $group: { _id: "$emoji", count: { $sum: 1 } } }, // Group reactions by emoji and count
+      { $sort: { count: -1 } }, // Sort by count in descending order
+      // { $limit: 4 }, // Limit to top 4 groups
+    ]);
+    return aggregate;
+  } catch (error) {
+    console.error("Error counting reactions:", error);
+    throw error; // Forward error to the caller
   }
 };
 
@@ -66,58 +90,105 @@ export const sendMessage = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { content, chatId, type, createdAt } = req.body;
+  const { content, chatId, type, receiverId } = req.body;
 
   if (!chatId) {
     return next(new CustomErrorHandler("Chat Id cannot be empty!", 400));
   }
 
-  var newMessage = {
-    sender: req.id,
-    content: content,
-    chat: chatId,
-    createdAt,
-  };
-
   try {
-    var message: any;
-    if (type === "image") {
-      const url = await v2.uploader.upload(req.file.path);
-      const localFilePath = req.file.path;
-      fs.unlink(localFilePath, (err) => {
-        if (err) {
-          console.error(`Error deleting local file: ${err.message}`);
+    if (type === "file") {
+      const fileUploadPromises = req.files.map(async (file: Express.Multer.File) => {
+        const fileType = await getFileType(file);
+
+        const url = await v2.uploader.upload(file.path, {
+          resource_type: "raw",
+          folder: "messengaria_2024",
+          format: file.mimetype === "image/svg+xml" ? "png" : "",
+        });
+
+        const localFilePath = file.path;
+        fs.unlink(localFilePath, (err) => {
+          if (err) {
+            console.error(`Error deleting local file: ${err.message}`);
+          } else {
+            //  console.log(`Local file deleted: ${localFilePath}`);
+          }
+        });
+        const newFileMessage = {
+          sender: req.id,
+          file: { public_Id: url.public_id, url: url.url },
+          chat: chatId,
+          type:
+            file.mimetype === "audio/mp3"
+              ? "audio"
+              : file.mimetype === "image/svg+xml"
+              ? "image"
+              : fileType,
+        };
+
+        // Create and populate message
+        let message: any = await Message.create(newFileMessage);
+        message = await message.populate("sender chat", "name email image");
+        message = await User.populate(message, {
+          path: "sender chat.users",
+          select: "name image email",
+        });
+
+        // Update latest message for the chat
+        const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+
+        // Send message to client
+        if (chat?.isGroupChat) {
+          io.to(chat?._id.toString()).emit("receiveMessage", message);
         } else {
-          console.log(`Local file deleted: ${localFilePath}`);
+          io.to(chat?._id.toString() as any)
+            .to(receiverId)
+            .emit("receiveMessage", message);
         }
+        return message;
       });
-      var newImageMessage = {
+
+      // Wait for all file uploads to complete
+      await Promise.all(fileUploadPromises);
+      res.status(200).json({ message: "File send sucessfully" });
+    } else {
+      const newMessage = {
         sender: req.id,
-        image: { public_Id: url.public_id, url: url.url },
+        content: content,
         chat: chatId,
       };
-      message = await Message.create(newImageMessage);
-      console.log({ message });
-    } else {
-      message = await Message.create(newMessage);
+
+      // Create and populate message
+      let message: any = await Message.create(newMessage);
+      message = await message.populate("sender chat", "name image email");
+      message = await message.populate("chat");
+      message = await User.populate(message, {
+        path: "chat.users",
+        select: "name image email",
+      });
+
+      // Update latest message for the chat
+      const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+      if (chat?.isGroupChat) {
+        io.to(chat?._id.toString()).emit("receiveMessage", message);
+      } else {
+        io.to(chat?._id.toString() as any)
+          .to(receiverId)
+          .emit("receiveMessage", message);
+      }
+
+      res.status(200).json({ message: "File send sucessfully" });
+      // Send message to client
     }
 
-    message = await message.populate("sender chat", "username pic");
-    // message = await message.populate("chat")
-    message = await User.populate(message, {
-      path: "chat.users",
-      select: "username pic email",
-    });
-
-    await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
-
-    res.json(message);
+    // res.json(message);
   } catch (error: any) {
     next(error);
   }
 };
-//update message status
 
+//update status
 export const updateChatMessageController = async (
   req: Request | any,
   res: Response,
@@ -145,9 +216,9 @@ export const updateChatMessageController = async (
     })
       .populate({
         path: "latestMessage",
-        populate: { path: "sender", select: "username pic" },
+        populate: { path: "sender", select: "name image" },
       })
-      .populate("users", "username pic");
+      .populate("users", "name image");
 
     res.status(200).json({ success: true, chat: updateChat });
   } catch (error) {
@@ -199,7 +270,7 @@ export const updateChatMessageAsDeliveredController = async (
 ) => {
   try {
     const { userId } = req.params;
-    if (!userId||userId==="undefined") {
+    if (!userId || userId === "undefined") {
       // return next(new CustomErrorHandler("User Id cannot be empty!", 400));
       return res.json({});
     }
@@ -210,7 +281,7 @@ export const updateChatMessageAsDeliveredController = async (
     if (!chats || chats.length === 0) {
       // console.log("hi")
       //  return next(new CustomErrorHandler("No chats found for the user", 404));
-       return res.json({})
+      return res.json({});
     }
 
     // Update all messages in each chat
@@ -242,7 +313,7 @@ export const updateChatMessageAsDeliveredController = async (
             // sender: { $ne: req.id }
           }
         ).updateMany({
-          status: "delivered"
+          status: "delivered",
         });
       }
     });
@@ -307,8 +378,7 @@ export const updateMessageStatusAsUnsent = async (
   next: NextFunction
 ) => {
   try {
-    const { messageId, status,chatId } = req.body;
-     
+    const { messageId, status, chatId } = req.body;
 
     if (!status || !messageId)
       return next(new CustomErrorHandler("Message Id or status  cannot be empty!", 400));
@@ -397,11 +467,11 @@ export const replyMessage = async (
       });
     }
 
-    message = await message.populate("sender chat", "username pic");
+    message = await message.populate("sender chat", "name image");
     // message = await message.populate("chat")
     message = await User.populate(message, {
       path: "chat.users",
-      select: "username pic email",
+      select: "name image email",
     });
 
     await Chat.findByIdAndUpdate(chatId, { latestMessage: message });

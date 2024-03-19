@@ -22,10 +22,10 @@ const Navbar = () => {
   const router = useRouter();
   const logoutHandler = async () => {
     await signOut();
-
+    localStorage.removeItem("currentUser");
     router.push("/");
   };
- 
+
   return (
     <nav className="sticky flex items-center justify-between p-3 md:p-4 px-4 md:px-10  shadow-sm">
       {/* Left Side - Logo */}
@@ -56,23 +56,14 @@ const Navbar = () => {
           <DropdownMenu>
             <DropdownMenuTrigger className="border-none outline-none">
               <div className="flex flex-col items-center space-x-2 cursor-pointer">
-                {session?.user.image?.includes("accessoriesType") ? (
-                  <img
-                    height={32}
-                    width={32}
-                    src={session?.user?.image || "/logo.svg"}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    height={32}
-                    width={32}
-                    src={session?.user?.image || "/logo.svg"}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                )}
+                <Image
+                  height={32}
+                  width={32}
+                  src={session?.user?.image || "/logo.svg"}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+
                 <span className="text-gray-400 text-xs">{session?.user?.name}</span>
               </div>
             </DropdownMenuTrigger>
@@ -92,7 +83,10 @@ const Navbar = () => {
                   chat
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={logoutHandler} className="flex gap-2 text-red-500">
+              <DropdownMenuItem
+                onClick={logoutHandler}
+                className="flex gap-2 text-red-500"
+              >
                 <CiLogout className="h-4 w-4" />
                 Logout
               </DropdownMenuItem>

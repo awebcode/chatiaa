@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.io = void 0;
 // server.ts
 const express_1 = __importDefault(require("express"));
 const http_1 = require("http");
@@ -26,13 +27,14 @@ const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const messageRoutes_1 = __importDefault(require("./routes/messageRoutes"));
 const UserModel_1 = require("./model/UserModel");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const uploadMiddleware_1 = __importDefault(require("./middlewares/uploadMiddleware"));
+(0, dotenv_1.config)();
+const functions_1 = require("./controllers/functions");
 const app = (0, express_1.default)();
+// app.use(uploadMiddleware.array("files"));
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "100mb" }));
-(0, dotenv_1.config)();
 const server = (0, http_1.createServer)(app);
-const io = new socket_io_1.Server(server, {
+exports.io = new socket_io_1.Server(server, {
     cors: {
         origin: "*",
     },
@@ -45,7 +47,6 @@ const corsOptions = {
 };
 app.use((0, cors_1.default)(corsOptions));
 app.use((0, cookie_parser_1.default)());
-app.use(uploadMiddleware_1.default.array("images"));
 (0, cloudinaryConfig_1.default)();
 app.use("/api/v1", authRoutes_1.default);
 app.use("/api/v1", chatRoutes_1.default);
@@ -74,37 +75,41 @@ const getUser = (id) => {
     return users.find((user) => user.id === id);
 };
 // WebSocket server logic
-io.on("connection", (socket) => {
+exports.io.on("connection", (socket) => {
     socket.on("setup", (userData) => {
         socket.join(userData.id);
         checkOnlineUsers(userData.id, socket.id);
-        io.emit("setup", users);
+        exports.io.emit("setup", users);
         console.log("Client connected");
     });
     socket.on("join", (data) => {
         socket.join(data.chatId);
-        io.emit("join", data.chatId);
+        exports.io.emit("join", data.chatId);
     });
     // Handle incoming messages from clients
-    socket.on("sentMessage", (message) => {
+    socket.on("sentMessage", (message) => __awaiter(void 0, void 0, void 0, function* () {
         // Broadcast the message to all connected clients
+        const data = yield (0, functions_1.sentSocketTextMessage)({
+            chat: message.chatId,
+            sender: message.senderId,
+            content: message.content,
+        });
         if (message.isGroupChat) {
-            io.to(message.groupChatId).emit("receiveMessage", message);
+            exports.io.to(message.groupChatId).emit("receiveMessage", data);
             //  socket.emit("receiveMessage", message);
         }
         else {
             //all connected clients in room
-            socket.to(message.receiverId).emit("receiveMessage", message);
-            socket.emit("receiveMessage", message);
+            exports.io.to(message.chatId).to(message.receiverId).emit("receiveMessage", data);
         }
-    });
+    }));
     //deliveredMessage
     socket.on("deliveredMessage", (message) => {
         socket.broadcast.to(message.receiverId).emit("receiveDeliveredMessage", message);
     });
     //deliveredAllMessageAfterReconnect -To all users
     socket.on("deliveredAllMessageAfterReconnect", (message) => {
-        io.emit("receiveDeliveredAllMessageAfterReconnect", message);
+        exports.io.emit("receiveDeliveredAllMessageAfterReconnect", message);
     });
     // Handle typing
     socket.on("startTyping", (data) => {
@@ -126,22 +131,22 @@ io.on("connection", (socket) => {
     });
     //@@@@@@ calling system start
     socket.on("user:call", ({ to, offer, user, chatId }) => {
-        io.to(to).emit("incomming:call", { from: user._id, offer, user, chatId }); //from=socket.id prev
+        exports.io.to(to).emit("incomming:call", { from: user._id, offer, user, chatId }); //from=socket.id prev
     });
     socket.on("call:rejected", ({ to, user }) => {
-        io.to(to).emit("call:rejected", { from: user._id, user });
+        exports.io.to(to).emit("call:rejected", { from: user._id, user });
     });
     socket.on("call:accepted", ({ to, ans, user }) => {
         // console.log({ to, ans, user });
-        io.to(to).emit("call:accepted", { from: user._id, ans });
+        exports.io.to(to).emit("call:accepted", { from: user._id, ans });
     });
     socket.on("peer:nego:needed", ({ to, offer, user }) => {
         console.log("peer:nego:needed", offer);
-        io.to(to).emit("peer:nego:needed", { from: user._id, offer, user });
+        exports.io.to(to).emit("peer:nego:needed", { from: user._id, offer, user });
     });
     socket.on("peer:nego:done", ({ to, ans, user }) => {
         console.log("peer:nego:done", ans);
-        io.to(to).emit("peer:nego:final", { from: user._id, ans });
+        exports.io.to(to).emit("peer:nego:final", { from: user._id, ans });
     });
     //groupCreatedNotify
     socket.on("groupCreatedNotify", (data) => {
@@ -165,7 +170,7 @@ io.on("connection", (socket) => {
     socket.on("disconnect", (data) => __awaiter(void 0, void 0, void 0, function* () {
         yield removeUser(socket.id);
         // Emit the updated users array after a user disconnects
-        io.emit("setup", users);
+        exports.io.emit("setup", users);
         console.log("Client disconnected");
     }));
 });

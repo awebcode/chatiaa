@@ -49,6 +49,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         await connectDb();
+
         // console.log('authorize', { credentials });
         const userFound = await User.findOne({
           email: credentials?.email,
@@ -73,31 +74,35 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, credentials, profile, email }) {
-      await connectDb();
-      const existingUser = await User.findOne({
-        email: user?.email,
-      });
+      if (account?.provider === "credentials") {
+        await connectDb();
+        const existingUser = await User.findOne({
+          email: user?.email,
+        });
+        const existingAccount = await AccountModel.findOne({
+          $and: [
+            { userId: existingUser?._id },
+            { provider: { $ne: account?.provider } }, // Exclude the current provider
+          ],
+        });
+
+        if (existingAccount) {
+          // User with the same email but different provider found
+          throw new Error("Provider misMatch. Try another provider!");
+        }
+
+        //   const existingUser = await getUserById(user.id);
+        if (!existingUser) {
+          throw new Error("User doesn't exists! try using another user.");
+        }
+        return true;
+      } else {
+        return true;
+      }
 
       //same account with different provider
-      const existingAccount = await AccountModel.findOne({
-        $and: [
-          { userId: existingUser?._id },
-          { provider: { $ne: account?.provider } }, // Exclude the current provider
-        ],
-      });
-
-      if (existingAccount) {
-        // User with the same email but different provider found
-        throw new Error("Provider misMatch. Try another provider!");
-      }
-
-      //   const existingUser = await getUserById(user.id);
-      if (!existingUser) {
-        throw new Error("User doesn't exists! try using another user.");
-      }
-
-      return true;
     },
+
     async jwt({ token, user }: any) {
       // Persist the OAuth access_token and or the user id to the token right after signin
       if (user) {
@@ -112,7 +117,7 @@ export const authOptions: AuthOptions = {
       //   if (!existingUser) return token;
 
       //   token.image = existingUser.imageUrl;
-      //   token.name = existingUser.username;
+      //   token.name = existingUser.name;
       // Send properties to the client, like an access_token and user id from a provider.
       session.accessToken = token.accessToken;
       session.user.id = token.id;
@@ -125,7 +130,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   jwt: {
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60  * 24, //expires at 24 hour
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {

@@ -11,7 +11,7 @@ const messageRoute = express_1.default.Router();
 messageRoute.route("/allmessages/:chatId").get(authMiddleware_1.default, messageController_1.allMessages);
 messageRoute
     .route("/sentmessage")
-    .post(authMiddleware_1.default, uploadMiddleware_1.default.single("image"), messageController_1.sendMessage);
+    .post(authMiddleware_1.default, uploadMiddleware_1.default.array("files"), messageController_1.sendMessage);
 messageRoute
     .route("/updateMessageStatus")
     .patch(authMiddleware_1.default, messageController_1.updateChatMessageController);

@@ -28,7 +28,7 @@ export const getChatsServerAction = async ({
       withCredentials: true,
     }
   );
-  
+
   return { ...data, prevOffset: pageParam, skip: pageParam };
 };
 
@@ -80,8 +80,18 @@ export const fetchUser = async () => {
   return await res.json();
 };
 
+//deleteUser
+
+export const deleteUser = async () => {
+  const response = await fetch(`${BaseUrl}/deleteUser`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  const data = await response.json();
+  return data;
+};
 
 //use revalidate tag
-export default async function RevalidateTag(tag:string) {
+export default async function RevalidateTag(tag: string) {
   revalidateTag(tag);
 }

@@ -20,7 +20,7 @@ const messageRoute = express.Router();
 messageRoute.route("/allmessages/:chatId").get(authMiddleware, allMessages);
 messageRoute
   .route("/sentmessage")
-  .post(authMiddleware, uploadMiddleware.single("image"), sendMessage);
+  .post(authMiddleware, uploadMiddleware.array("files"), sendMessage);
 messageRoute
   .route("/updateMessageStatus")
   .patch(authMiddleware, updateChatMessageController);

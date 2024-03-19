@@ -1,6 +1,6 @@
 import { useImagePreviewStore } from "@/store/usePreview";
 import { useClickAway } from "@uidotdev/usehooks";
-import { randomUUID } from "crypto";
+
 import Image from "next/image";
 import React, { useState } from "react";
 

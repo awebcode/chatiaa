@@ -13,14 +13,16 @@ import chatRoute from "./routes/chatRoutes";
 import messageRoute from "./routes/messageRoutes";
 import { User } from "./model/UserModel";
 import cookieParser from "cookie-parser";
-import uploadMiddleware from "./middlewares/uploadMiddleware";
-const app = express();
-app.use(express.json({limit:"100mb"}));
-app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 config();
+import { sentSocketTextMessage } from "./controllers/functions";
+const app = express();
+// app.use(uploadMiddleware.array("files"));
+
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
 const server = createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: "*",
   },
@@ -33,15 +35,15 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
-
 app.use(cors(corsOptions));
 app.use(cookieParser());
-app.use(uploadMiddleware.array("images"));
 cloudinaryConfig();
 
 app.use("/api/v1", authRoute);
 app.use("/api/v1", chatRoute);
+
 app.use("/api/v1", messageRoute);
+
 type TUser = {
   id: string;
   socketId: string;
@@ -90,20 +92,25 @@ io.on("connection", (socket: Socket) => {
   });
 
   // Handle incoming messages from clients
-  socket.on("sentMessage", (message: any) => {
+  socket.on("sentMessage", async (message: any) => {
     // Broadcast the message to all connected clients
+      const data = await sentSocketTextMessage({
+        chat: message.chatId,
+        sender: message.senderId,
+        content: message.content,
+      });
     if (message.isGroupChat) {
-      io.to(message.groupChatId).emit("receiveMessage", message);
+    
+      io.to(message.groupChatId).emit("receiveMessage", data);
       //  socket.emit("receiveMessage", message);
     } else {
       //all connected clients in room
-      socket.to(message.receiverId).emit("receiveMessage", message);
-      socket.emit("receiveMessage", message);
+      io.to(message.chatId).to(message.receiverId).emit("receiveMessage", data);
     }
   });
   //deliveredMessage
   socket.on("deliveredMessage", (message: any) => {
-     socket.broadcast.to(message.receiverId).emit("receiveDeliveredMessage", message);
+    socket.broadcast.to(message.receiverId).emit("receiveDeliveredMessage", message);
   });
 
   //deliveredAllMessageAfterReconnect -To all users

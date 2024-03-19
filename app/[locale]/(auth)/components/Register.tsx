@@ -38,9 +38,10 @@ const Register = () => {
     }
     const data = await registerUser(registerData);
     if (data && !data.user) {
-       setloading(false);
-       return setError(data?.response?.data?.message);
-      }
+      setloading(false);
+      console.log({ data });
+      return setError(data?.response?.data?.message);
+    }
     if (data.user) {
       const res = await signIn("credentials", {
         email: data.user.email,
@@ -50,6 +51,7 @@ const Register = () => {
       setloading(false);
       if (res?.error) {
         setloading(false);
+        console.log(res);
         return setError(res.error);
       }
       if (res?.ok) return router.push("/profile");
@@ -100,13 +102,13 @@ const Register = () => {
           {error && <div className="bg-red-700 text-white p2 mb-2">{error}</div>}
           <div className="flex flex-col space-y-5">
             <label htmlFor="name">
-              <p className="font-medium  pb-2">username</p>
+              <p className="font-medium  pb-2">name</p>
               <input
                 id="name"
                 name="name"
                 type="name"
                 className="w-full dark:bg-gray-200 dark:text-black py-3 border border-slate-200 rounded-lg px-3 focus:outline-none focus:border-slate-500 hover:shadow"
-                placeholder="Enter username"
+                placeholder="Enter name"
               />
             </label>
             <label htmlFor="email">
@@ -157,11 +159,11 @@ const Register = () => {
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                stroke-width="2"
+                strokeWidth="2"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                 />
               </svg>
@@ -187,11 +189,11 @@ const Register = () => {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    stroke-width="2"
+                    strokeWidth="2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                     />
                   </svg>

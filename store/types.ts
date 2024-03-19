@@ -1,8 +1,8 @@
 export type Tuser = {
     _id:string,
-    username: string;
+    name: string;
     email: string;
-    pic: string;
-    createdAt: Date,
-    lastActive:Date
+    image: string;
+    createdAt: string,
+    lastActive:string
 }

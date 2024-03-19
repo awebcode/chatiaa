@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema(
     image: {
       type: "String",
     },
+    provider: {
+      type: "String",
+    },
     isAdmin: {
       type: Boolean,
       default: false,

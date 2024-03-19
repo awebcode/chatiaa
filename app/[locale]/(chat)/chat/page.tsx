@@ -1,9 +1,13 @@
-import React from 'react'
+import dynamic from "next/dynamic";
+import React from "react";
+const Chat = dynamic(() => import("./Chat"));
 
 const page = () => {
   return (
-    <div>page</div>
-  )
-}
+    <>
+      <Chat />
+    </>
+  );
+};
 
-export default page
+export default page;

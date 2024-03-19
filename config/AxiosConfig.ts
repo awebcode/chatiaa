@@ -4,6 +4,7 @@ import { BaseUrl } from "./BaseUrl";
 export const axiosClient = axios.create({
   baseURL: BaseUrl,
   withCredentials: true,
+  
 });
 axiosClient.interceptors.request.use((config) => {
   const authToken = Cookie.get(

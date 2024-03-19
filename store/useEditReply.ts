@@ -4,8 +4,8 @@ type TMessage = {
   _id: string;
   sender: {
     _id: string;
-    username: string;
-    pic: string;
+    name: string;
+    image: string;
     email: string;
   };
   content: string;
@@ -13,15 +13,15 @@ type TMessage = {
 
 type TUser = {
   _id: string;
-  username: string;
-  pic: string;
+  name: string;
+  image: string;
   email: string;
 };
 
 type TEditStore = {
   isEdit: TMessage | null;
   isReply: TMessage | null;
-  isSentImageModalOpen:  boolean;
+  isSentImageModalOpen: boolean;
   onEdit: (message: TMessage) => void;
   onReply: (message: TMessage) => void;
   cancelReply: () => void;

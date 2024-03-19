@@ -1,17 +1,15 @@
 import { axiosClient } from "@/config/AxiosConfig";
-import { BaseUrl } from "@/config/BaseUrl";
-
 
 export const registerUser = async (formdata: any) => {
   try {
     const { data } = await axiosClient.post("/register", formdata, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": "application/json" },
       withCredentials: true,
     });
 
     return data;
-  } catch (error:any) {
-    return error
+  } catch (error: any) {
+    return error;
   }
 };
 
@@ -32,7 +30,7 @@ export const getAllUsers = async ({
 }) => {
   const { data } = await axiosClient.get(
     `/getUsers?search=${queryKey[1]}&skip=${pageParam}&limit=${10}&onGroupSearch=${
-      queryKey[2]?true:false
+      queryKey[2] ? true : false
     }`,
     {
       headers: { "Content-Type": "application/json" },
@@ -42,12 +40,19 @@ export const getAllUsers = async ({
   return { ...data, prevOffset: pageParam, skip: pageParam };
 };
 
-
 //logout user
 export const logoutUser = async () => {
   const res = await axiosClient.post(`/logout`, {
-    withCredentials:true,
+    withCredentials: true,
     headers: { "Content-Type": "application/json" },
   });
   return res.data;
+};
+
+//fetchClientUser
+
+export const fetchClientUser = async () => {
+  const { data } = await axiosClient.get(`/getUser`);
+
+  return data;
 };

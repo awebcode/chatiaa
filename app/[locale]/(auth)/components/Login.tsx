@@ -11,40 +11,38 @@ const Login = () => {
   const router = useRouter();
   const handleGoogleLogin = async () => {
     const res = await signIn("google", {
-      callbackUrl:"/"
+      callbackUrl: "/",
     });
-    
-     if (res?.error) return setError(res.error);
-  };
 
-  const handleGithubLogin = async () => {
-     const res = await signIn("github", {
-       callbackUrl: "/",
-     });
     if (res?.error) return setError(res.error);
   };
 
- 
+  const handleGithubLogin = async () => {
+    const res = await signIn("github", {
+      callbackUrl: "/",
+    });
+    if (res?.error) return setError(res.error);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     try {
-     setloading(true)
-     e.preventDefault();
+      setloading(true);
+      e.preventDefault();
 
-     const formData = new FormData(e.currentTarget);
+      const formData = new FormData(e.currentTarget);
 
-     const res = await signIn("credentials", {
-       email: formData.get("email"),
-       password: formData.get("password"),
-       redirect: false,
-     });
-     if (res?.error) return setError(res.error);
+      const res = await signIn("credentials", {
+        email: formData.get("email"),
+        password: formData.get("password"),
+        redirect: false,
+      });
+      if (res?.error) return setError(res.error);
       setloading(false);
-     if (res?.ok) return router.push("/profile");
-   } catch (error:any) {
+      if (res?.ok) return router.push("/profile");
+    } catch (error: any) {
       setError(error);
-       setloading(false);
-   }
+      setloading(false);
+    }
   };
   if (session?.user) router.push("/profile");
   return (
@@ -138,11 +136,11 @@ const Login = () => {
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                stroke-width="2"
+                strokeWidth="2"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                 />
               </svg>
@@ -162,11 +160,11 @@ const Login = () => {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    stroke-width="2"
+                    strokeWidth="2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                     />
                   </svg>

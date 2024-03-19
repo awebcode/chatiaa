@@ -17,7 +17,7 @@ export const accessChat = async (
   const { userId } = req.params;
 
   if (!userId) {
-    return next(new CustomErrorHandler("Chat Id or content cannot be empty!", 400))
+    return next(new CustomErrorHandler("Chat Id or content cannot be empty!", 400));
   }
 
   var isChat: any = await Chat.find({
@@ -32,7 +32,7 @@ export const accessChat = async (
 
   isChat = await User.populate(isChat, {
     path: "latestMessage.sender",
-    select: "name pic email lastActive",
+    select: "name image email lastActive",
   });
 
   if (isChat.length > 0) {
@@ -48,7 +48,7 @@ export const accessChat = async (
       const createdChat = await Chat.create(chatData);
       const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
         "users",
-        "username email pic lastActive"
+        "name email image lastActive"
       );
       res.status(200).json(FullChat);
     } catch (error: any) {
@@ -68,7 +68,7 @@ export const fetchChats = async (
     const keyword: any = req.query.search
       ? {
           $or: [
-            { username: { $regex: req.query.search, $options: "i" } },
+            { name: { $regex: req.query.search, $options: "i" } },
             { email: { $regex: req.query.search, $options: "i" } },
           ],
         }
@@ -88,18 +88,15 @@ export const fetchChats = async (
       .populate("latestMessage")
       .populate({
         path: "chatStatus.updatedBy",
-        select: "username pic email lastActive",
+        select: "name image email lastActive",
       })
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit);
-    
-   
 
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
-      select: "username pic email lastActive ",
-      
+      select: "name image email lastActive ",
     });
     // Filter the populatedChats array based on the keyword
     let filteredChats: any = [];
@@ -107,7 +104,7 @@ export const fetchChats = async (
       filteredChats = populatedChats.filter((chat: any) =>
         chat.users.some(
           (user: any) =>
-            user.username.match(new RegExp(keyword.$or[0].username.$regex, "i")) ||
+            user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
             user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))
         )
       );
@@ -219,7 +216,7 @@ export const createGroupChat = async (
     const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
       .populate("users", "-password")
       .populate("groupAdmin", "-password");
-   
+
     res.status(200).json(fullGroupChat);
   } catch (error: any) {
     console.log({ error });
@@ -300,49 +297,49 @@ export const removeFromGroup = async (
     // Check if the removed user is in the groupAdmin array
     const isAdminLeave = removedUser.groupAdmin.some((adminId) => adminId.equals(userId));
 
-   if (isAdminLeave) {
-     console.log("An admin leaves the group");
+    if (isAdminLeave) {
+      console.log("An admin leaves the group");
 
-     // If the removed user was in the groupAdmin array, update the groupAdmin array
-     const newGroupAdmins = removedUser.groupAdmin.filter(
-       (adminId) => !adminId.equals(userId)
-     );
+      // If the removed user was in the groupAdmin array, update the groupAdmin array
+      const newGroupAdmins = removedUser.groupAdmin.filter(
+        (adminId) => !adminId.equals(userId)
+      );
 
-     if (newGroupAdmins.length === 0) {
-       // If no admins are left, select a random user as the new admin
-       const randomUser =
-         removedUser.users[Math.floor(Math.random() * removedUser.users.length)];
+      if (newGroupAdmins.length === 0) {
+        // If no admins are left, select a random user as the new admin
+        const randomUser =
+          removedUser.users[Math.floor(Math.random() * removedUser.users.length)];
 
-       if (randomUser) {
-         newGroupAdmins.push(randomUser._id);
-       } else {
-         // If no random user is found, make the first user in the list the admin
-         newGroupAdmins.push(removedUser.users[0]?._id);
-       }
-     }
+        if (randomUser) {
+          newGroupAdmins.push(randomUser._id);
+        } else {
+          // If no random user is found, make the first user in the list the admin
+          newGroupAdmins.push(removedUser.users[0]?._id);
+        }
+      }
 
-     // Update the groupAdmin field with the new admins
-     await Chat.findByIdAndUpdate(
-       chatId,
-       {
-         groupAdmin: newGroupAdmins,
-       },
-       {
-         new: true,
-       }
-     );
+      // Update the groupAdmin field with the new admins
+      await Chat.findByIdAndUpdate(
+        chatId,
+        {
+          groupAdmin: newGroupAdmins,
+        },
+        {
+          new: true,
+        }
+      );
 
-     // Send response to the user when admin leaves
+      // Send response to the user when admin leaves
 
-     // Check if all users have left the chat after admin leaves
-     if (removedUser.users.length === 0) {
-       await Chat.findByIdAndDelete(chatId).exec(); // Ensure the delete operation is awaited
-       console.log("Chat Deleted!");
-     }
-     res.json({ isAdminLeave: true, data: removedUser });
+      // Check if all users have left the chat after admin leaves
+      if (removedUser.users.length === 0) {
+        await Chat.findByIdAndDelete(chatId).exec(); // Ensure the delete operation is awaited
+        console.log("Chat Deleted!");
+      }
+      res.json({ isAdminLeave: true, data: removedUser });
 
-     return; // Return to prevent the execution of the rest of the code
-   }
+      return; // Return to prevent the execution of the rest of the code
+    }
 
     // Check if all users have left the chat, and if so, delete the chat
     if (removedUser.users.length === 0) {
@@ -355,7 +352,6 @@ export const removeFromGroup = async (
     next(error);
   }
 };
-
 
 // @desc    Add user to Group / Leave
 // @route   PUT /api/chat/groupadd
@@ -402,7 +398,7 @@ export const deleteSingleChat = async (
     const chat = await Chat.findById(req.params.chatId);
     await Message.deleteMany({ chat: req.params.chatId });
     await Chat.findByIdAndDelete(req.params.chatId);
-    res.json({ success: true,users:chat?.users });
+    res.json({ success: true, users: chat?.users });
   } catch (error) {
     next(error);
   }
@@ -432,7 +428,7 @@ export const makeAdmin = async (
     const isAlreadyAdmin = chat.groupAdmin.some((adminId) => adminId.equals(userId));
 
     if (isAlreadyAdmin) {
-      return res.json({ message: "User is already an admin.",data:chat });
+      return res.json({ message: "User is already an admin.", data: chat });
     }
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
@@ -456,7 +452,7 @@ export const makeAdmin = async (
   }
 };
 
-//removeFromAdmin 
+//removeFromAdmin
 export const removeFromAdmin = async (
   req: Request | any,
   res: Response,
@@ -480,7 +476,7 @@ export const removeFromAdmin = async (
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
-        $pull: {  groupAdmin: userId },
+        $pull: { groupAdmin: userId },
       },
       {
         new: true,
@@ -493,7 +489,7 @@ export const removeFromAdmin = async (
       return next(new CustomErrorHandler("Chat not found!", 404));
     }
 
-     res.json({ data: updatedChat });
+    res.json({ data: updatedChat });
   } catch (error) {
     next(error);
   }

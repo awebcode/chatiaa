@@ -22,37 +22,48 @@ const errorHandler_1 = require("../middlewares/errorHandler");
 const reactModal_1 = require("../model/reactModal");
 const cloudinary_1 = require("cloudinary");
 const fs_1 = __importDefault(require("fs"));
+const mongoose_1 = __importDefault(require("mongoose"));
+const index_1 = require("../index");
+const functions_1 = require("./functions");
 //@access          Protected
 const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const limit = parseInt(req.query.limit) || 10;
-        const skip = parseInt(req.query.skip) || 0;
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit;
         let messages = yield MessageModel_1.Message.find({ chat: req.params.chatId })
             .populate({
             path: "isReply.messageId",
             select: "content image",
-            populate: { path: "sender", select: "username pic email" },
+            populate: { path: "sender", select: "name image email" },
         })
-            .populate("sender removedBy", "username pic email")
+            .populate("sender removedBy", "name image email")
             .populate("chat")
-            .sort({ _id: -1 }) // Use _id for sorting in descending order
+            .sort({ _id: -1 })
             .limit(limit)
             .skip(skip);
+        // .sort({ _id: -1 }) // Use _id for sorting in descending order
+        messages = yield UserModel_1.User.populate(messages, {
+            path: "sender chat.users",
+            select: "name image email lastActive",
+        });
         // Populate reactions for each message
         messages = yield Promise.all(messages.map((message) => __awaiter(void 0, void 0, void 0, function* () {
+            const reactionsGroup = yield countReactionsForMessage(message._id);
+            console.log({ reactionsGroup });
             const reactions = yield reactModal_1.Reaction.find({ messageId: message._id })
                 .populate({
                 path: "reactBy",
-                select: "username pic email",
+                select: "name image email",
             })
                 .sort({ updatedAt: -1 })
                 .exec();
-            return Object.assign(Object.assign({}, message.toObject()), { reactions });
+            return Object.assign(Object.assign({}, message.toObject()), { reactions, reactionsGroup });
         })));
         //find reactions here and pass with every message
         //@
         const total = yield MessageModel_1.Message.countDocuments({ chat: req.params.chatId });
-        res.json({ messages, total, limit });
+        res.json({ messages, total, limit, page, skip });
     }
     catch (error) {
         console.log({ error });
@@ -60,59 +71,117 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.allMessages = allMessages;
+// Count the number of reactions for a specific message
+const countReactionsForMessage = (messageId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const aggregate = yield reactModal_1.Reaction.aggregate([
+            { $match: { messageId: new mongoose_1.default.Types.ObjectId(messageId) } }, // Match reactions for the given message ID
+            { $group: { _id: "$emoji", count: { $sum: 1 } } }, // Group reactions by emoji and count
+            { $sort: { count: -1 } }, // Sort by count in descending order
+            // { $limit: 4 }, // Limit to top 4 groups
+        ]);
+        return aggregate;
+    }
+    catch (error) {
+        console.error("Error counting reactions:", error);
+        throw error; // Forward error to the caller
+    }
+});
 //@description     Create New Message
 //@route           POST /api/Message/
 //@access          Protected
 const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { content, chatId, type, createdAt } = req.body;
+    const { content, chatId, type, receiverId } = req.body;
     if (!chatId) {
         return next(new errorHandler_1.CustomErrorHandler("Chat Id cannot be empty!", 400));
     }
-    var newMessage = {
-        sender: req.id,
-        content: content,
-        chat: chatId,
-        createdAt,
-    };
     try {
-        var message;
-        if (type === "image") {
-            const url = yield cloudinary_1.v2.uploader.upload(req.file.path);
-            const localFilePath = req.file.path;
-            fs_1.default.unlink(localFilePath, (err) => {
-                if (err) {
-                    console.error(`Error deleting local file: ${err.message}`);
+        if (type === "file") {
+            const fileUploadPromises = req.files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+                const fileType = yield (0, functions_1.getFileType)(file);
+                const url = yield cloudinary_1.v2.uploader.upload(file.path, {
+                    resource_type: "raw",
+                    folder: "messengaria_2024",
+                    format: file.mimetype === "image/svg+xml" ? "png" : "",
+                });
+                const localFilePath = file.path;
+                fs_1.default.unlink(localFilePath, (err) => {
+                    if (err) {
+                        console.error(`Error deleting local file: ${err.message}`);
+                    }
+                    else {
+                        //  console.log(`Local file deleted: ${localFilePath}`);
+                    }
+                });
+                const newFileMessage = {
+                    sender: req.id,
+                    file: { public_Id: url.public_id, url: url.url },
+                    chat: chatId,
+                    type: file.mimetype === "audio/mp3"
+                        ? "audio"
+                        : file.mimetype === "image/svg+xml"
+                            ? "image"
+                            : fileType,
+                };
+                // Create and populate message
+                let message = yield MessageModel_1.Message.create(newFileMessage);
+                message = yield message.populate("sender chat", "name email image");
+                message = yield UserModel_1.User.populate(message, {
+                    path: "sender chat.users",
+                    select: "name image email",
+                });
+                // Update latest message for the chat
+                const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+                // Send message to client
+                if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("receiveMessage", message);
                 }
                 else {
-                    console.log(`Local file deleted: ${localFilePath}`);
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                        .to(receiverId)
+                        .emit("receiveMessage", message);
                 }
-            });
-            var newImageMessage = {
-                sender: req.id,
-                image: { public_Id: url.public_id, url: url.url },
-                chat: chatId,
-            };
-            message = yield MessageModel_1.Message.create(newImageMessage);
-            console.log({ message });
+                return message;
+            }));
+            // Wait for all file uploads to complete
+            yield Promise.all(fileUploadPromises);
+            res.status(200).json({ message: "File send sucessfully" });
         }
         else {
-            message = yield MessageModel_1.Message.create(newMessage);
+            const newMessage = {
+                sender: req.id,
+                content: content,
+                chat: chatId,
+            };
+            // Create and populate message
+            let message = yield MessageModel_1.Message.create(newMessage);
+            message = yield message.populate("sender chat", "name image email");
+            message = yield message.populate("chat");
+            message = yield UserModel_1.User.populate(message, {
+                path: "chat.users",
+                select: "name image email",
+            });
+            // Update latest message for the chat
+            const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+            if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+                index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("receiveMessage", message);
+            }
+            else {
+                index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                    .to(receiverId)
+                    .emit("receiveMessage", message);
+            }
+            res.status(200).json({ message: "File send sucessfully" });
+            // Send message to client
         }
-        message = yield message.populate("sender chat", "username pic");
-        // message = await message.populate("chat")
-        message = yield UserModel_1.User.populate(message, {
-            path: "chat.users",
-            select: "username pic email",
-        });
-        yield ChatModel_1.Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
-        res.json(message);
+        // res.json(message);
     }
     catch (error) {
         next(error);
     }
 });
 exports.sendMessage = sendMessage;
-//update message status
+//update status
 const updateChatMessageController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -129,9 +198,9 @@ const updateChatMessageController = (req, res, next) => __awaiter(void 0, void 0
         })
             .populate({
             path: "latestMessage",
-            populate: { path: "sender", select: "username pic" },
+            populate: { path: "sender", select: "name image" },
         })
-            .populate("users", "username pic");
+            .populate("users", "name image");
         res.status(200).json({ success: true, chat: updateChat });
     }
     catch (error) {
@@ -199,7 +268,7 @@ const updateChatMessageAsDeliveredController = (req, res, next) => __awaiter(voi
                     status: { $in: ["unseen", "unsent"] },
                     // sender: { $ne: req.id }
                 }).updateMany({
-                    status: "delivered"
+                    status: "delivered",
                 });
             }
         }));
@@ -318,11 +387,11 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 chat: chatId,
             });
         }
-        message = yield message.populate("sender chat", "username pic");
+        message = yield message.populate("sender chat", "name image");
         // message = await message.populate("chat")
         message = yield UserModel_1.User.populate(message, {
             path: "chat.users",
-            select: "username pic email",
+            select: "name image email",
         });
         yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
         res.status(200).json({ success: true, message });

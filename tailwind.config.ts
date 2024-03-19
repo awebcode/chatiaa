@@ -3,11 +3,11 @@ import type { Config } from "tailwindcss"
 const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -52,6 +52,24 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "teal-light": "#7ae3c3",
+        "photopicker-overlay-background": "rgba(30,42,49,0.8)",
+        "dropdown-background": "#233138",
+        "dropdown-background-hover": "#182229",
+        "input-background": " #2a3942",
+        "primary-strong": "#e9edef",
+        "panel-header-background": "#202c33",
+        "panel-header-icon": "#aebac1",
+        "icon-lighter": "#8696a0",
+        "icon-green": "#00a884",
+        "search-input-container-background": "#111b21",
+        "conversation-border": "rgba(134,150,160,0.15)",
+        "conversation-panel-background": "#0b141a",
+        "background-default-hover": "#202c33",
+        "incoming-background": "#202c33",
+        "outgoing-background": "#005c4b",
+        "bubble-meta": "hsla(0,0%,100%,0.6)",
+        "icon-ack": "#53bdeb",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -75,6 +93,6 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+} satisfies Config;
 
 export default config

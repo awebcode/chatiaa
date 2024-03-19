@@ -4,21 +4,20 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { CustomErrorHandler } from "../middlewares/errorHandler";
 import { User } from "../model/UserModel";
-import fs from "fs";
 import { Chat } from "../model/ChatModel";
 import { AvatarGenerator } from "random-avatar-generator";
 const register = async (req: Request | any, res: Response, next: NextFunction) => {
   const { name, password, email } = req.body;
 
   try {
-    // Check if the username or email is already taken
+    // Check if the name or email is already taken
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return next(new CustomErrorHandler("Username or email already exists", 400));
+      return next(new CustomErrorHandler("name or email already exists", 400));
     }
-      if (password.length<6) {
-        return next(new CustomErrorHandler("Password must be at least 6 charecters!", 400));
-      }
+    if (password.length < 6) {
+      return next(new CustomErrorHandler("Password must be at least 6 charecters!", 400));
+    }
     // const url = await v2.uploader.upload(req.file.path);
     // const localFilePath = req.file.path;
     // fs.unlink(localFilePath, (err) => {
@@ -31,17 +30,24 @@ const register = async (req: Request | any, res: Response, next: NextFunction) =
     // Hash the password
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    // Fetch avatar URL and upload it to Cloudinary
     const generator = new AvatarGenerator();
-
-    // Simply get a random avatar
     const randomAvatarUrl = generator.generateRandomAvatar("avatar");
+    const cloudinaryResponse = await v2.uploader.upload(randomAvatarUrl, {
+      folder: "messengaria",
+      format: "png", // Specify the format as PNG
+    });
+
+    // Get the secure URL of the uploaded image from Cloudinary
+    const avatarUrl = cloudinaryResponse.secure_url;
     // Save the user to the database using Mongoose model
     const newUser = new User({
       name,
       password: hashedPassword,
       email,
-      image: randomAvatarUrl,
-    }); //, pic: url.url
+      image: avatarUrl,
+      provider:"credentials"
+    }); //, image: url.url
     const user = await newUser.save();
 
     res.status(201).json({ message: "User registered successfully", user: user });
@@ -51,15 +57,15 @@ const register = async (req: Request | any, res: Response, next: NextFunction) =
 };
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
-  const { username, password } = req.body;
+  const { name, password } = req.body;
 
   try {
-    // Find the user by username
-    const user = await User.findOne({ username });
+    // Find the user by name
+    const user = await User.findOne({ name });
 
     // Check if the user exists
     if (!user) {
-      return next(new CustomErrorHandler("Invalid username or password", 401));
+      return next(new CustomErrorHandler("Invalid name or password", 401));
     }
 
     // Compare the hashed password
@@ -106,43 +112,16 @@ const getUser: any = async (req: CustomRequest, res: Response, next: NextFunctio
   }
 };
 
-// const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunction) => {
-//   const limit = parseInt(req.query.limit) || 4;
-//   const skip = parseInt(req.query.skip) || 0;
 
-//   // Assuming you have a MongoDB model named 'User'
-//   try {
-//     const keyword = req.query.search
-//       ? {
-//           $or: [
-//             { username: { $regex: req.query.search, $options: "i" } },
-//             { email: { $regex: req.query.search, $options: "i" } },
-//           ],
-//         }
-//       : {};
-
-//     const users = await User.find(keyword)
-//       .find({ _id: { $ne: req.id } })
-//       .limit(limit)
-//       .skip(skip);
-//     const total = await User.countDocuments(keyword);
-
-//     res.send({ users, total, limit });
-//   } catch (error) {
-
-//     res.status(500).send("Internal Server Error");
-//   }
-// };
 const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunction) => {
   const limit = parseInt(req.query.limit) || 4;
   const skip = parseInt(req.query.skip) || 0;
-
   // Assuming you have a MongoDB model named 'User'
   try {
     const keyword = req.query.search
       ? {
           $or: [
-            { username: { $regex: req.query.search, $options: "i" } },
+            { name: { $regex: req.query.search, $options: "i" } },
             { email: { $regex: req.query.search, $options: "i" } },
           ],
         }
@@ -167,9 +146,10 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
               { ...keyword }, // Include the keyword fields here
             ],
           };
-
     const users = await User.find(usersQuery).limit(limit).skip(skip);
+    console.log(req.query);
     const total = await User.countDocuments(usersQuery);
+    console.log({ total });
     res.send({ users, total, limit });
   } catch (error) {
     next(error);
@@ -188,4 +168,37 @@ export const logout = (req: CustomRequest | any, res: Response, next: NextFuncti
   // Respond with a success message or any other relevant information
   res.status(200).json({ message: "Logout successful" });
 };
+
+export const deleteUser = async (
+  req: CustomRequest | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id: userId } = req;
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(new CustomErrorHandler("No user found", 401));
+    }
+
+    // Check if the user has an associated image
+    if (user.image&&user.provider==="credentials") {
+      // Extract the public_id from the image URL
+      const publicId = (user as any).image.split("/").pop().split(".")[0]
+
+      // Delete the image from Cloudinary using the public_id
+       await v2.uploader.destroy(publicId);
+    }
+
+    // Delete the user from the database
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({message:"User and associated image deleted successfully"})
+  } catch (error) {
+    next(error)
+  }
+};
+
 export { register, login, getUser, allUsers };

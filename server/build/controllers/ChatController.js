@@ -37,7 +37,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         .populate("latestMessage");
     isChat = yield UserModel_1.User.populate(isChat, {
         path: "latestMessage.sender",
-        select: "name pic email lastActive",
+        select: "name image email lastActive",
     });
     if (isChat.length > 0) {
         res.send(isChat[0]);
@@ -50,7 +50,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         };
         try {
             const createdChat = yield ChatModel_1.Chat.create(chatData);
-            const FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "username email pic lastActive");
+            const FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive");
             res.status(200).json(FullChat);
         }
         catch (error) {
@@ -66,7 +66,7 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         const keyword = req.query.search
             ? {
                 $or: [
-                    { username: { $regex: req.query.search, $options: "i" } },
+                    { name: { $regex: req.query.search, $options: "i" } },
                     { email: { $regex: req.query.search, $options: "i" } },
                 ],
             }
@@ -85,19 +85,19 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             .populate("latestMessage")
             .populate({
             path: "chatStatus.updatedBy",
-            select: "username pic email lastActive",
+            select: "name image email lastActive",
         })
             .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit);
         const populatedChats = yield UserModel_1.User.populate(chats, {
             path: "latestMessage.sender",
-            select: "username pic email lastActive ",
+            select: "name image email lastActive ",
         });
         // Filter the populatedChats array based on the keyword
         let filteredChats = [];
         if (req.query.search && keyword) {
-            filteredChats = populatedChats.filter((chat) => chat.users.some((user) => user.username.match(new RegExp(keyword.$or[0].username.$regex, "i")) ||
+            filteredChats = populatedChats.filter((chat) => chat.users.some((user) => user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
                 user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))));
         }
         res.status(200).send({
@@ -375,7 +375,7 @@ const makeAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.makeAdmin = makeAdmin;
-//removeFromAdmin 
+//removeFromAdmin
 const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { chatId, userId } = req.body;

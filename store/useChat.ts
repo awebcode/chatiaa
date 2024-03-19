@@ -7,10 +7,10 @@ interface ChatData {
   chatId?: string;
   lastMessage?: string;
   createdAt?: Date;
-  username?: string;
+  name?: string;
   email?: string;
   userId?: string;
-  pic?: string;
+  image?: string;
   isGroupChat: boolean;
   groupChatName: string;
   userInfo: Tuser;
@@ -21,7 +21,7 @@ interface ChatData {
 }
 
 interface UserStore {
-  myChats: ChatData[]|null;
+  myChats: ChatData[] | null;
   selectedChat: ChatData | null;
   setSelectedChat: (user: ChatData) => void;
   clearselectedChat: () => void;
@@ -29,7 +29,7 @@ interface UserStore {
 
 export const useChatStore = create<UserStore>((set) => ({
   selectedChat: null,
-  myChats:null,
+  myChats: null,
   setSelectedChat: (user) => set({ selectedChat: user }),
   clearselectedChat: () => set({ selectedChat: null }),
 }));
