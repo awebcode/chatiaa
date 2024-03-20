@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/carousel";
 import { TabsContent } from "@/components/ui/tabs";
 import { useMessageState } from "@/context/MessageContext";
-import { sentMessage } from "@/functions/messageActions";
+import { editMessage, replyMessage, sentMessage } from "@/functions/messageActions";
+import useEditReplyStore from "@/store/useEditReply";
 import { CameraIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import React, { useState } from "react";
@@ -25,42 +26,113 @@ const ImageFiles = ({
   clearCapturedPhoto,
 }: {
   webcamRef: any;
-  capturedImage: any;
+  capturedImage: any[];
   removeImageFile: any;
   handleDownloadImage: any;
   capturePhoto:any;
   clearCapturedPhoto: any;
   }) => {
   const { user: currentUser, messages, selectedChat } = useMessageState();
-   const [loading, setloading] = useState<boolean>(false);
-   const sentFileMessage = async () => {
-     try {
-       if (capturedImage.length <= 0) return;
+  const [loading, setloading] = useState<boolean>(false);
+  const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
+  const sentFileMessage = async () => {
+    if (!isEdit || !isReply) {
+      try {
+        if (capturedImage.length <= 0) return;
 
-       setloading(true);
-       const formData = new FormData();
-       capturedImage.forEach((file:any) => {
-         formData.append("files", file);
-       });
-       formData.append("content", "");
-       formData.append("type", "file");
-       formData.append("chatId", selectedChat?.chatId as any);
-       formData.append("receiverId", selectedChat?.userInfo?._id as any);
-       const res = await sentMessage(formData);
-       if (res.status === 200) {
-         document.getElementById("closeFileDialog")?.click();
+        setloading(true);
+        const formData = new FormData();
+        capturedImage.forEach((file: any) => {
+          formData.append("files", file);
+        });
+        formData.append("content", "");
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await sentMessage(formData);
+        if (res.status === 200) {
+          document.getElementById("closeFileDialog")?.click();
           document.getElementById("cameraDialog")?.click();
-         clearCapturedPhoto()
-         setloading(false);
-       }
-     } catch (error) {
-       setloading(false);
-     } finally {
-       setloading(false);
-       document.getElementById("closeFileDialog")?.click();
+          clearCapturedPhoto();
+          setloading(false);
+        }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
         document.getElementById("cameraDialog")?.click();
         clearCapturedPhoto();
-     }
+      }
+    } else if (isEdit) {
+      try {
+        if (!selectedChat?.chatId && !isEdit) {
+          return;
+        }
+        if (capturedImage.length <= 0) return;
+
+        setloading(true);
+        const formData = new FormData();
+
+        capturedImage.forEach((file) => {
+          formData.append("files", file);
+        });
+        formData.append("messageId", isEdit?._id);
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await editMessage(formData);
+       if (res.success) {
+         setloading(false);
+         document.getElementById("closeFileDialog")?.click();
+         document.getElementById("cameraDialog")?.click();
+         clearCapturedPhoto();
+         cancelEdit();
+       }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        clearCapturedPhoto()
+        document.getElementById("cameraDialog")?.click();
+        cancelEdit();
+      }
+    } else if (isReply) {
+      try {
+        if (!selectedChat?.chatId && !isReply) {
+          return;
+        }
+        if (capturedImage.length <= 0) return;
+
+        setloading(true);
+        const formData = new FormData();
+
+        capturedImage.forEach((file) => {
+          formData.append("files", file);
+        });
+        formData.append("messageId", isReply?._id);
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await replyMessage(formData);
+        if (res.success) {
+          setloading(false);
+          document.getElementById("closeFileDialog")?.click();
+          document.getElementById("cameraDialog")?.click();
+          clearCapturedPhoto();
+          cancelReply();
+        }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        document.getElementById("cameraDialog")?.click();
+        clearCapturedPhoto();
+        cancelReply();
+      }
+    }
      // socket.emit("sentMessage", socketData);
    };
   return (
@@ -76,6 +148,7 @@ const ImageFiles = ({
         <div className="flex gap-3">
           {" "}
           <Button
+            disabled={(isEdit as any) && capturedImage.length > 0}
             size="lg"
             className="bg-blue-600 hover:bg-blue-600"
             onClick={capturePhoto}
@@ -101,8 +174,12 @@ const ImageFiles = ({
               <div className="flex justify-center items-center">
                 <div className="w-6 h-6 border-l-transparent border-t-2 border-yellow-500 rounded-full animate-spin"></div>
               </div>
+            ) : isReply ? (
+              "Sent reply images"
+            ) : isEdit ? (
+              "Sent edit image"
             ) : (
-              "Sent Files"
+              "Sent images"
             )}
           </Button>
         </div>

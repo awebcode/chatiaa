@@ -10,19 +10,27 @@ import { FiLink } from "react-icons/fi";
 import dynamic from "next/dynamic";
 import { useMessageState } from "@/context/MessageContext";
 import { Button } from "@/components/ui/button";
-import { sentMessage } from "@/functions/messageActions";
+import { editMessage, replyMessage, sentMessage } from "@/functions/messageActions";
+import useEditReplyStore from "@/store/useEditReply";
 
 const ImageList = dynamic(() => import("./ListImage"));
 const ActiveFile = dynamic(() => import("./ActiveFile"));
 const InputList = dynamic(() => import("./InputList"));
 const ImageCapture: React.FC = () => {
   const { user: currentUser, messages, selectedChat } = useMessageState();
+
   const [files, setFiles] = useState<File[]>([]);
   const [activeFile, setActiveFile] = useState<File | null>();
   const [loading, setloading] = useState<boolean>(false);
+  const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    setFiles([...files, ...selectedFiles]);
+    if (isEdit && e.target.files) {
+      const selectedFiles = e?.target?.files[0] ||[]
+      setFiles([selectedFiles]);
+    } else {
+      const selectedFiles = Array.from(e.target.files || []);
+      setFiles([...files, ...selectedFiles]);
+    }
   };
 
   const removeFile = (fileToRemove: File) => {
@@ -31,39 +39,103 @@ const ImageCapture: React.FC = () => {
 
   const setActive = (file: File) => {
     setActiveFile(file);
-    console.log({ file });
   };
   useEffect(() => {
     setActiveFile(files[0]);
   }, [files]);
 
   const sentFileMessage = async () => {
-    try {
-      if (files.length <= 0) return;
+    if (!isEdit && !isReply) {
+      try {
+        if (files.length <= 0) return;
 
-      setloading(true);
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-      formData.append("content", "");
-      formData.append("type", "file");
-      formData.append("chatId", selectedChat?.chatId as any);
-      formData.append("receiverId", selectedChat?.userInfo?._id as any);
-      const res = await sentMessage(formData);
-      if (res.status === 200) {
+        setloading(true);
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append("files", file);
+        });
+        formData.append("content", "");
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await sentMessage(formData);
+        if (res.status === 200) {
+          document.getElementById("closeFileDialog")?.click();
+          setFiles([]);
+          setloading(false);
+        }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        setFiles([]);
+      }
+    } else if (isEdit) {
+      try {
+        if (!selectedChat?.chatId && !isEdit) {
+          return;
+        }
+        if (files.length <= 0) return;
+
+        setloading(true);
+        const formData = new FormData();
+
+        files.forEach((file) => {
+          formData.append("files", file);
+        });
+        formData.append("messageId", isEdit?._id);
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await editMessage(formData);
+       if (res.success) {
+          document.getElementById("closeFileDialog")?.click();
+          setFiles([]);
+          setloading(false);
+          cancelEdit();
+        }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        setFiles([]);
+      }
+    } else if (isReply) {
+      try {
+        if (!selectedChat?.chatId && !isReply) {
+          return;
+        }
+        if (files.length <= 0) return;
+
+        setloading(true);
+        const formData = new FormData();
+
+        files.forEach((file) => {
+          formData.append("files", file);
+        });
+        formData.append("messageId", isReply?._id);
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await replyMessage(formData);
+       if (res.success) {
          document.getElementById("closeFileDialog")?.click();
          setFiles([]);
          setloading(false);
-       
+         cancelReply();
+       }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        setFiles([]);
+        cancelReply();
       }
-    } catch (error) {
-      setloading(false);
-    } finally {
-      setloading(false);
-       document.getElementById("closeFileDialog")?.click();
-       setFiles([]);
     }
+
     // socket.emit("sentMessage", socketData);
   };
 
@@ -98,8 +170,12 @@ const ImageCapture: React.FC = () => {
                 <div className="flex justify-center items-center">
                   <div className="w-6 h-6 border-l-transparent border-t-2 border-yellow-500 rounded-full animate-spin"></div>
                 </div>
+              ) : isReply ? (
+                "Sent reply files"
+              ) : isEdit ? (
+                "Sent edit file"
               ) : (
-                "Sent Files"
+                "Sent files"
               )}
             </Button>
           </div>
@@ -114,7 +190,7 @@ const ImageCapture: React.FC = () => {
         />
 
         {/* input lists */}
-        <InputList handleFileChange={handleFileChange} />
+        <InputList handleFileChange={handleFileChange} files={files} />
         <DialogClose id="closeFileDialog" className="hidden"></DialogClose>
       </DialogContent>
     </Dialog>

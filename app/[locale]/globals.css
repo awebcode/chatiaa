@@ -94,7 +94,7 @@
 }
 @media (max-width: 768px) {
   .emojiReactModal {
-    transform: translate(-80%, -50%) !important;
+    transform: translate(-75%, -50%) !important;
   }
 }
 /* pdf view canvas */

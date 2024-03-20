@@ -1,4 +1,4 @@
-import { Tuser } from "@/store/types";
+import { Reaction, ReactionGroup, Tuser } from "@/store/types";
 
 export interface IMessage {
   _id: string;
@@ -9,7 +9,12 @@ export interface IMessage {
     public_id: string;
   };
   createdAt: string;
-  reactions: Tuser & { emoji: string };
+  isReply: {
+    messageId: IMessage;
+    repliedBy:Tuser
+  }
+  reactions: Reaction[];
+  reactionsGroup: ReactionGroup[];
   sender: Tuser;
   type: string;
   status: string;
@@ -18,21 +23,28 @@ export interface IMessage {
 
 export interface IChat {
   chatId?: string;
-  lastMessage?: string;
+  latestMessage?: IMessage;
   isGroupChat: boolean;
   groupChatName: string;
   userInfo: Tuser;
   groupAdmin?: Tuser[];
   users: Tuser[];
-  status?: string;
-  chatUpdatedBy: Tuser;
+  chatStatus: {
+    status: [string];
+    blockedBy: [Tuser];
+    mutedBy: [Tuser];
+    deleteBy: [Tuser];
+    archiveBy: [Tuser];
+    leaveBy: [Tuser];
+    markAsUnreadBy: [Tuser];
+  };
 }
 
 export interface State {
   user: Tuser | null;
   selectedChat: IChat | null;
   messages: IMessage[];
-  totalMessagesCount:number
+  totalMessagesCount: number;
 }
 
 export interface Action {

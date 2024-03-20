@@ -103,6 +103,18 @@ exports.io.on("connection", (socket) => {
             exports.io.to(message.chatId).to(message.receiverId).emit("receiveMessage", data);
         }
     }));
+    //ReplyMessage
+    socket.on("replyMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
+    //EditMessage
+    socket.on("editMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
+    //addReactionOnMessage
+    socket.on("addReactionOnMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
+    //removeMessage
+    socket.on("removeMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
+    //removeFromAll
+    socket.on("removeFromAll", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
+    //unsentMessage
+    socket.on("unsentMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
     //deliveredMessage
     socket.on("deliveredMessage", (message) => {
         socket.broadcast.to(message.receiverId).emit("receiveDeliveredMessage", message);

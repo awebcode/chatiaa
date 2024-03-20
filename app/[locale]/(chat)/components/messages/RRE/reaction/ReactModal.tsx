@@ -5,21 +5,40 @@ const EmojiModal = dynamic(() => import("./EmojiModal"));
 import { MdAdd } from "react-icons/md";
 import { useClickAway } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
+import { useMessageState } from "@/context/MessageContext";
+import { addRemoveEmojiReactions } from "@/functions/messageActions";
+import { toast } from "react-toastify";
 
 const ReactModal = ({
   message,
-
+  setIsOpenReactModal,
   isOpenReactModal,
 }: {
   isOpenReactModal: boolean;
+  setIsOpenReactModal: any;
   message: IMessage;
 }) => {
   //emoji
+  const { selectedChat } = useMessageState();
   const [isOpenEmojiModal, setIsOpenEmojiModal] = useState(false);
   const clickOutsideEmojiModal: any = useClickAway(() => {
     setIsOpenEmojiModal(false);
   });
-  const onEmojiClick = (e: { emoji: string; unified: string }, messageId: string) => {};
+  const onEmojiClick = async (
+    e: { emoji: string; unified: string },
+    messageId: string
+  ) => {
+    const data = {
+      emoji: e.emoji,
+      messageId,
+      chatId: selectedChat?.chatId,
+      receiverId: selectedChat?.userInfo?._id,
+      type: "add",
+    };
+    const res = await addRemoveEmojiReactions(data);
+    if (res.success) {
+    }
+  };
 
   return (
     <div
@@ -40,7 +59,7 @@ const ReactModal = ({
                 // setOpenReactModal(false);
                 // setOpenEmojiModal(false);
               }}
-              className={`text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer transition-all duration-500 hover:scale-105`}
+              className={`  text-gray-300 h-6 w-6 mr-1 cursor-pointer transition-all duration-500 hover:scale-105`}
             >
               {" "}
               {/* {v} */}
@@ -62,7 +81,13 @@ const ReactModal = ({
           onClick={() => setIsOpenEmojiModal((prev: boolean) => !prev)}
           className={`text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer `}
         />
-        <EmojiModal onEmojiClick={onEmojiClick} openEmoji={isOpenEmojiModal} />
+        <EmojiModal
+          onEmojiClick={onEmojiClick}
+          openEmoji={isOpenEmojiModal}
+          setIsOpenEmojiModal={setIsOpenEmojiModal}
+          setIsOpenReactModal={setIsOpenReactModal}
+          message={message}
+        />
       </span>
     </div>
   );

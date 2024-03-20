@@ -32,12 +32,27 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * limit;
         let messages = yield MessageModel_1.Message.find({ chat: req.params.chatId })
-            .populate({
-            path: "isReply.messageId",
-            select: "content image",
-            populate: { path: "sender", select: "name image email" },
-        })
-            .populate("sender removedBy", "name image email")
+            .populate([
+            {
+                path: "isReply.messageId",
+                select: "content file type",
+                populate: { path: "sender", select: "name image email" },
+            },
+            {
+                path: "isReply.repliedBy",
+                select: "name image email",
+            },
+            {
+                path: "isEdit.messageId",
+                select: "content file type",
+                populate: { path: "sender", select: "name image email" },
+            },
+            {
+                path: "isEdit.editedBy",
+                select: "name image email",
+            },
+        ])
+            .populate("sender removedBy unsentBy", "name image email")
             .populate("chat")
             .sort({ _id: -1 })
             .limit(limit)
@@ -50,7 +65,6 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         // Populate reactions for each message
         messages = yield Promise.all(messages.map((message) => __awaiter(void 0, void 0, void 0, function* () {
             const reactionsGroup = yield countReactionsForMessage(message._id);
-            console.log({ reactionsGroup });
             const reactions = yield reactModal_1.Reaction.find({ messageId: message._id })
                 .populate({
                 path: "reactBy",
@@ -353,47 +367,111 @@ exports.updateChatStatusAsBlockOrUnblock = updateChatStatusAsBlockOrUnblock;
 //reply Message
 const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { chatId, messageId, content, type } = req.body;
+        const { chatId, messageId, content, type, receiverId } = req.body;
         if (!chatId || !messageId) {
             return next(new errorHandler_1.CustomErrorHandler("messageId  or chatId cannot be empty!", 400));
         }
         let message;
-        if (type === "image") {
-            if (!req.file.path) {
-                return next(new errorHandler_1.CustomErrorHandler("Image  cannot be empty!", 400));
-            }
-            const url = yield cloudinary_1.v2.uploader.upload(req.file.path);
-            const localFilePath = req.file.path;
-            fs_1.default.unlink(localFilePath, (err) => {
-                if (err) {
-                    console.error(`Error deleting local file: ${err.message}`);
+        if (type === "file") {
+            const fileUploadPromises = req.files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+                const fileType = yield (0, functions_1.getFileType)(file);
+                const url = yield cloudinary_1.v2.uploader.upload(file.path, {
+                    resource_type: "raw",
+                    folder: "messengaria_2024",
+                    format: file.mimetype === "image/svg+xml" ? "png" : "",
+                });
+                const localFilePath = file.path;
+                fs_1.default.unlink(localFilePath, (err) => {
+                    if (err) {
+                        console.error(`Error deleting local file: ${err.message}`);
+                    }
+                    else {
+                        //  console.log(`Local file deleted: ${localFilePath}`);
+                    }
+                });
+                // Create and populate message
+                message = yield MessageModel_1.Message.create({
+                    sender: req.id,
+                    isReply: { repliedBy: req.id, messageId },
+                    image: { public_Id: url.public_id, url: url.url },
+                    file: { public_Id: url.public_id, url: url.url },
+                    chat: chatId,
+                    type: file.mimetype === "audio/mp3"
+                        ? "audio"
+                        : file.mimetype === "image/svg+xml"
+                            ? "image"
+                            : fileType,
+                });
+                message = yield message
+                    .populate([
+                    {
+                        path: "isReply.messageId",
+                        select: "content file type",
+                        populate: { path: "sender", select: "name image email" },
+                    },
+                    {
+                        path: "isReply.repliedBy",
+                        select: "name image email",
+                    },
+                ])
+                    .populate("chat");
+                message = yield UserModel_1.User.populate(message, {
+                    path: "chat.users",
+                    select: "name image email",
+                });
+                // Update latest message for the chat
+                const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+                // Send message to client
+                if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("replyMessage", message);
                 }
                 else {
-                    console.log(`Local file deleted: ${localFilePath}`);
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                        .to(receiverId)
+                        .emit("replyMessage", message);
                 }
-            });
-            message = yield MessageModel_1.Message.create({
-                sender: req.id,
-                isReply: { repliedBy: req.id, messageId },
-                image: { public_Id: url.public_id, url: url.url },
-                chat: chatId,
-            });
+                return message;
+            }));
+            // Wait for all file uploads to complete
+            yield Promise.all(fileUploadPromises);
+            res.status(200).json({ message: "Reply Message sucessfully" });
         }
         else {
             message = yield MessageModel_1.Message.create({
                 sender: req.id,
                 isReply: { repliedBy: req.id, messageId },
                 content,
+                type: "text",
                 chat: chatId,
             });
         }
-        message = yield message.populate("sender chat", "name image");
-        // message = await message.populate("chat")
+        message = yield MessageModel_1.Message.findOne(message._id)
+            .populate("sender chat", "name image email")
+            .populate([
+            {
+                path: "isReply.messageId",
+                select: "content file type",
+                populate: { path: "sender", select: "name image email" },
+            },
+            {
+                path: "isReply.repliedBy",
+                select: "name image email",
+            },
+        ])
+            .populate("chat");
         message = yield UserModel_1.User.populate(message, {
             path: "chat.users",
             select: "name image email",
         });
-        yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+        const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+        if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("replyMessage", message);
+        }
+        else {
+            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                .to(receiverId)
+                .emit("replyMessage", message);
+        }
         res.status(200).json({ success: true, message });
     }
     catch (error) {
@@ -403,43 +481,95 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
 exports.replyMessage = replyMessage;
 //edit message
 const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _m, _o;
+    var _m, _o, _p;
     try {
-        const { messageId, content, type } = req.body;
+        const { messageId, chatId, content, type, receiverId } = req.body;
         if (!messageId)
             return next(new errorHandler_1.CustomErrorHandler("messageId  cannot be empty!", 400));
         const prevMessage = yield MessageModel_1.Message.findById(messageId);
         //delete Previous Image
-        if ((_m = prevMessage.image) === null || _m === void 0 ? void 0 : _m.public_Id) {
-            yield cloudinary_1.v2.uploader.destroy((_o = prevMessage.image) === null || _o === void 0 ? void 0 : _o.public_Id);
+        if ((_m = prevMessage.file) === null || _m === void 0 ? void 0 : _m.public_Id) {
+            yield cloudinary_1.v2.uploader.destroy((_o = prevMessage.file) === null || _o === void 0 ? void 0 : _o.public_Id);
         }
         let editedChat;
-        if (type === "image") {
-            if (!messageId || !req.file.path) {
-                return next(new errorHandler_1.CustomErrorHandler("messageId or file cannot be empty!", 400));
-            }
-            const url = yield cloudinary_1.v2.uploader.upload(req.file.path);
-            const localFilePath = req.file.path;
-            fs_1.default.unlink(localFilePath, (err) => {
-                if (err) {
-                    console.error(`Error deleting local file: ${err.message}`);
+        if (type === "file") {
+            const fileUploadPromises = req.files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+                const fileType = yield (0, functions_1.getFileType)(file);
+                const url = yield cloudinary_1.v2.uploader.upload(file.path, {
+                    resource_type: "raw",
+                    folder: "messengaria_2024",
+                    format: file.mimetype === "image/svg+xml" ? "png" : "",
+                });
+                const localFilePath = file.path;
+                fs_1.default.unlink(localFilePath, (err) => {
+                    if (err) {
+                        console.error(`Error deleting local file: ${err.message}`);
+                    }
+                    else {
+                        //  console.log(`Local file deleted: ${localFilePath}`);
+                    }
+                });
+                editedChat = yield MessageModel_1.Message.findByIdAndUpdate(messageId, {
+                    content: "",
+                    isEdit: { editedBy: req.id },
+                    file: { public_Id: url.public_id, url: url.url },
+                    type: file.mimetype === "audio/mp3"
+                        ? "audio"
+                        : file.mimetype === "image/svg+xml"
+                            ? "image"
+                            : fileType,
+                }, { new: true })
+                    .populate("sender isEdit.editedBy", "name email image")
+                    .populate("chat");
+                editedChat = yield UserModel_1.User.populate(editedChat, {
+                    path: "chat.users",
+                    select: "name image email",
+                });
+                const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
+                // Send message to client
+                if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("editMessage", editedChat);
                 }
                 else {
-                    console.log(`Local file deleted: ${localFilePath}`);
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                        .to(receiverId)
+                        .emit("editMessage", editedChat);
                 }
-            });
-            editedChat = yield MessageModel_1.Message.findByIdAndUpdate(messageId, {
-                isEdit: { editedBy: req.id },
-                image: { public_Id: url.public_id, url: url.url },
-            }, { new: true });
+                return editedChat;
+            }));
+            // Wait for all file uploads to complete
+            yield Promise.all(fileUploadPromises);
+            res.status(200).json({ message: "Edit Message sucessfully" });
         }
         else {
             if (!messageId || !content)
                 return next(new errorHandler_1.CustomErrorHandler("messageId or content  cannot be empty!", 400));
+            const message = yield MessageModel_1.Message.findOne(messageId);
+            if ((_p = message === null || message === void 0 ? void 0 : message.file) === null || _p === void 0 ? void 0 : _p.public_Id) {
+                yield cloudinary_1.v2.uploader.destroy(message.file.public_Id);
+            }
             editedChat = yield MessageModel_1.Message.findByIdAndUpdate(messageId, {
                 isEdit: { editedBy: req.id },
                 content,
-            }, { new: true });
+                type: "text",
+                file: null,
+            }, { new: true })
+                .populate("sender isEdit.editedBy", "name email image")
+                .populate("chat");
+            editedChat = yield UserModel_1.User.populate(editedChat, {
+                path: "chat.users",
+                select: "name image email",
+            });
+        }
+        const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
+        // Send message to client
+        if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("editMessage", editedChat);
+        }
+        else {
+            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                .to(receiverId)
+                .emit("editMessage", editedChat);
         }
         res.status(200).json({ success: true, editedChat });
     }
@@ -451,7 +581,8 @@ exports.editMessage = editMessage;
 //addRemoveEmojiReaction
 const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { messageId, emoji, type, reactionId } = req.body;
+        const { messageId, emoji, type, reactionId, receiverId, chatId } = req.body;
+        const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
         switch (type) {
             case "add": {
                 if (!messageId || !emoji) {
@@ -463,16 +594,41 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                 });
                 if (existingReaction) {
                     // Emoji update logic
-                    const reaction = yield reactModal_1.Reaction.findOneAndUpdate({ messageId, reactBy: req.id }, { $set: { emoji } }, { new: true, upsert: true });
+                    const reaction = yield reactModal_1.Reaction.findOneAndUpdate({ messageId, reactBy: req.id }, { $set: { emoji } }, { new: true, upsert: true }).populate("reactBy", "name email image");
+                    // Send message to client
+                    if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("addReactionOnMessage", {
+                            reaction,
+                            type: "update",
+                        });
+                    }
+                    else {
+                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                            .to(receiverId)
+                            .emit("addReactionOnMessage", { reaction, type: "update" });
+                    }
                     res.status(200).json({ success: true, reaction });
                 }
                 else {
                     // Create a new reaction
-                    const reaction = yield reactModal_1.Reaction.create({
+                    let react = yield reactModal_1.Reaction.create({
                         messageId,
                         emoji,
                         reactBy: req.id,
                     });
+                    const reaction = yield react.populate("reactBy", "name email image");
+                    // Send message to client
+                    if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("addReactionOnMessage", {
+                            reaction,
+                            type: "add",
+                        });
+                    }
+                    else {
+                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                            .to(receiverId)
+                            .emit("addReactionOnMessage", { reaction, type: "add" });
+                    }
                     res.status(200).json({ success: true, reaction });
                 }
                 break;
@@ -481,6 +637,20 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                 if (!reactionId)
                     return next(new errorHandler_1.CustomErrorHandler("reactionId cannot be empty!", 400));
                 const reaction = yield reactModal_1.Reaction.findByIdAndDelete(reactionId);
+                if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("addReactionOnMessage", {
+                        reaction,
+                        type: "remove",
+                    });
+                }
+                else {
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                        .to(receiverId)
+                        .emit("addReactionOnMessage", {
+                        reaction,
+                        type: "remove",
+                    });
+                }
                 res.status(200).json({ success: true, reaction });
                 break;
             }

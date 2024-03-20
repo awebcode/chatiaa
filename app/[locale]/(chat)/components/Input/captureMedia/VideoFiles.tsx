@@ -13,7 +13,8 @@ import { formatTime } from '@/functions/formatTime';
 import { IoMdCloseCircleOutline } from 'react-icons/io';
 import { VideoIcon } from '@radix-ui/react-icons';
 import { useMessageState } from '@/context/MessageContext';
-import { sentMessage } from '@/functions/messageActions';
+import { editMessage, replyMessage, sentMessage } from '@/functions/messageActions';
+import useEditReplyStore from '@/store/useEditReply';
 const VideoFiles = ({
   webcamRef,
   recordedChunks,
@@ -27,7 +28,7 @@ const VideoFiles = ({
   removeVideoFile,
 }: {
   webcamRef: any;
-  recordedChunks: any;
+  recordedChunks: any[];
   startVideoRecording: any;
   isRecording: any;
   recordingTime: any;
@@ -39,33 +40,104 @@ const VideoFiles = ({
   }) => {
   const { user: currentUser, messages, selectedChat } = useMessageState();
   const [loading, setloading] = useState<boolean>(false);
+  const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
   const sentFileMessage = async () => {
-    try {
-      if (recordedChunks.length <= 0) return;
+    if (!isEdit || !isReply) {
+      try {
+        if (recordedChunks.length <= 0) return;
 
-      setloading(true);
-      const formData = new FormData();
-      recordedChunks.forEach((file: any) => {
-        formData.append("files", file);
-      });
-      formData.append("content", "");
-      formData.append("type", "file");
-      formData.append("chatId", selectedChat?.chatId as any);
-      formData.append("receiverId", selectedChat?.userInfo?._id as any);
-      const res = await sentMessage(formData);
-      if (res.status === 200) {
-        document.getElementById("closeFileDialog")?.click();
-         document.getElementById("cameraDialog")?.click();
-        clearCapturedVideo();
+        setloading(true);
+        const formData = new FormData();
+        recordedChunks.forEach((file: any) => {
+          formData.append("files", file);
+        });
+        formData.append("content", "");
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await sentMessage(formData);
+        if (res.status === 200) {
+          document.getElementById("closeFileDialog")?.click();
+          document.getElementById("cameraDialog")?.click();
+          clearCapturedVideo();
+          setloading(false);
+        }
+      } catch (error) {
         setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        document.getElementById("cameraDialog")?.click();
+        clearCapturedVideo();
       }
-    } catch (error) {
-      setloading(false);
-    } finally {
-      setloading(false);
-      document.getElementById("closeFileDialog")?.click();
-       document.getElementById("cameraDialog")?.click();
-      clearCapturedVideo();
+    } else if (isEdit) {
+      try {
+        if (!selectedChat?.chatId && !isEdit) {
+          return;
+        }
+        if (recordedChunks.length <= 0) return;
+
+        setloading(true);
+        const formData = new FormData();
+
+        recordedChunks.forEach((file) => {
+          formData.append("files", file);
+        });
+        formData.append("messageId", isEdit?._id);
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await editMessage(formData);
+        if (res.status === 200) {
+          setloading(false);
+          document.getElementById("closeFileDialog")?.click();
+          document.getElementById("cameraDialog")?.click();
+          clearCapturedVideo();
+          cancelEdit();
+        }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        clearCapturedVideo();
+        document.getElementById("cameraDialog")?.click();
+        cancelEdit();
+      }
+    } else if (isReply) {
+      try {
+        if (!selectedChat?.chatId && !isReply) {
+          return;
+        }
+        if (recordedChunks.length <= 0) return;
+
+        setloading(true);
+        const formData = new FormData();
+
+        recordedChunks.forEach((file) => {
+          formData.append("files", file);
+        });
+        formData.append("messageId", isReply?._id);
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        const res = await replyMessage(formData);
+        if (res.status === 200) {
+          setloading(false);
+          document.getElementById("closeFileDialog")?.click();
+          document.getElementById("cameraDialog")?.click();
+          clearCapturedVideo();
+          cancelReply();
+        }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        document.getElementById("closeFileDialog")?.click();
+        document.getElementById("cameraDialog")?.click();
+        clearCapturedVideo();
+        cancelReply();
+      }
     }
     // socket.emit("sentMessage", socketData);
   };
@@ -76,6 +148,7 @@ const VideoFiles = ({
         <Webcam audio={true} ref={webcamRef} className="w-full h-auto object-cover" />
         <div className="flex flex-wrap gap-3">
           <Button
+            disabled={(isEdit as any) && recordedChunks.length > 0}
             size="lg"
             className="bg-orange-500 hover:bg-orange-600"
             onClick={startVideoRecording}
@@ -115,6 +188,10 @@ const VideoFiles = ({
               <div className="flex justify-center items-center">
                 <div className="w-6 h-6 border-l-transparent border-t-2 border-yellow-500 rounded-full animate-spin"></div>
               </div>
+            ) : isReply ? (
+              "Sent reply Videos"
+            ) : isEdit ? (
+              "Sent edit video"
             ) : (
               "Sent Videos"
             )}

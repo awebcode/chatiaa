@@ -94,13 +94,12 @@ io.on("connection", (socket: Socket) => {
   // Handle incoming messages from clients
   socket.on("sentMessage", async (message: any) => {
     // Broadcast the message to all connected clients
-      const data = await sentSocketTextMessage({
-        chat: message.chatId,
-        sender: message.senderId,
-        content: message.content,
-      });
+    const data = await sentSocketTextMessage({
+      chat: message.chatId,
+      sender: message.senderId,
+      content: message.content,
+    });
     if (message.isGroupChat) {
-    
       io.to(message.groupChatId).emit("receiveMessage", data);
       //  socket.emit("receiveMessage", message);
     } else {
@@ -108,6 +107,25 @@ io.on("connection", (socket: Socket) => {
       io.to(message.chatId).to(message.receiverId).emit("receiveMessage", data);
     }
   });
+
+  //ReplyMessage
+
+  socket.on("replyMessage", async (message: any) => {});
+  //EditMessage
+
+  socket.on("editMessage", async (message: any) => {});
+  //addReactionOnMessage
+
+  socket.on("addReactionOnMessage", async (message: any) => {});
+  //removeMessage
+
+  socket.on("removeMessage", async (message: any) => {});
+  //removeFromAll
+
+  socket.on("removeFromAll", async (message: any) => {});
+  //unsentMessage
+
+  socket.on("unsentMessage", async (message: any) => {});
   //deliveredMessage
   socket.on("deliveredMessage", (message: any) => {
     socket.broadcast.to(message.receiverId).emit("receiveDeliveredMessage", message);

@@ -21,8 +21,10 @@ const EditUnModal = ({
     <div>
       {" "}
       <div
-        className={`absolute ${
-          !isCurrentUserMessage ? "left-[0px] -top-24" : "-left-[150px] -top-36"
+        className={`absolute z-50 ${
+          !isCurrentUserMessage
+            ? "left-[0px] -top-24"
+            : "left-0 -top-[148px] md:-left-[150px] md:-top-36"
         }   w-[140px]  bg-gray-200 dark:bg-gray-800  p-3 rounded-lg duration-300 transition-transform ${
           openEdRemoveDialog
             ? "translate-y-1 scale-100 opacity-100"

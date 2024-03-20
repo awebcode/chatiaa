@@ -13,7 +13,6 @@ const messageSchema = new mongoose_1.default.Schema({
     chat: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "Chat" },
     removedBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
     unsentBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
-    blockedBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
     isReply: {
         repliedBy: {
             type: mongoose_1.default.Schema.Types.ObjectId,

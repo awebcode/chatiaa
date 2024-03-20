@@ -81,12 +81,12 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             users: { $elemMatch: { $eq: req.id } },
         })
             .populate("users", "-password")
-            .populate("groupAdmin", "-password")
+            // .populate("groupAdmin", "-password")
             .populate("latestMessage")
-            .populate({
-            path: "chatStatus.updatedBy",
-            select: "name image email lastActive",
-        })
+            // .populate({
+            //   path: "chatStatus.updatedBy",
+            //   select: "name image email lastActive",
+            // })
             .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit);

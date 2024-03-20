@@ -3,13 +3,21 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import dynamic from "next/dynamic";
-import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
+import {
+  ADD_EDITED_MESSAGE,
+  ADD_REACTION_ON_MESSAGE,
+  ADD_REPLY_MESSAGE,
+  SET_MESSAGES,
+  SET_TOTAL_MESSAGES_COUNT,
+} from "@/context/reducers/actions";
 import { IChat } from "@/context/reducers/interfaces";
 import { Tuser } from "@/store/types";
 import { Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/navigation";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
+import { useTypingStore } from "@/store/useTyping";
+import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 
 const LeftSide = dynamic(() => import("../components/LeftSide"));
 const Main = dynamic(() => import("../components/Main"));
@@ -25,14 +33,13 @@ const Chat = () => {
   } = useMessageState();
   const dispatch = useMessageDispatch();
   const router = useRouter();
-
+  const { startTyping, stopTyping } = useTypingStore();
+  const { addOnlineUser } = useOnlineUsersStore();
   const totalMessagesCountRef = useRef<number>(0); // Provide type annotation for number
   const selectedChatRef = useRef<IChat | null>(null); // Provide type annotation for IChat or null
   const currentUserRef = useRef<Tuser | null>(null); // Provide type annotation for Tuser or null
   const socketRef = useRef<Socket | null>(null); // Provide type annotation for socket, you can replace `any` with the specific type if available
 
- 
-  
   useEffect(() => {
     totalMessagesCountRef.current = totalMessagesCount;
     selectedChatRef.current = selectedChat;
@@ -48,32 +55,68 @@ const Chat = () => {
           type: SET_TOTAL_MESSAGES_COUNT,
           payload: totalMessagesCountRef.current + 1,
         });
-        queryClient.invalidateQueries({queryKey:["users"]})
+        queryClient.invalidateQueries({ queryKey: ["users"] });
       }
-       useIncomingMessageStore.setState({
-         isIncomingMessage:true
-       });
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
       console.log({ socketMessage: data });
       // Implementation goes here
     },
 
     []
   );
+  // Reply Message Handler
+  const handleReplyMessage = useCallback((message: any) => {
+    // Implementation for handling replyMessage event
+    dispatch({ type: ADD_REPLY_MESSAGE, payload: message });
+  }, []);
 
+  // Edit Message Handler
+  const handleEditMessage = useCallback((message: any) => {
+    // Implementation for handling editMessage event
+    dispatch({ type: ADD_EDITED_MESSAGE, payload: message });
+  }, []);
+
+  // Add Reaction on Message Handler
+  const handleAddReactionOnMessage = useCallback((message: any) => {
+    // Implementation for handling addReactionOnMessage event
+    dispatch({ type: ADD_REACTION_ON_MESSAGE, payload: message });
+  }, []);
+
+  // Remove Message Handler
+  const handleRemoveMessage = useCallback((message: any) => {
+    // Implementation for handling removeMessage event
+  }, []);
+
+  // Remove From All Handler
+  const handleRemoveFromAll = useCallback((message: any) => {
+    // Implementation for handling removeFromAll event
+  }, []);
+
+  // Unsent Message Handler
+  const handleUnsentMessage = useCallback((message: any) => {
+    // Implementation for handling unsentMessage event
+  }, []);
   const handleDeliverMessage = useCallback((data: any) => {
     // Implementation goes here
   }, []);
 
   const handleTyping = useCallback((data: any) => {
-    // Implementation goes here
+    // if (data.receiverId === currentUser?._id) {
+    startTyping(data.senderId, data.receiverId, data.chatId, data.content);
+    // }
   }, []);
-
   const handleStopTyping = useCallback((data: any) => {
-    // Implementation goes here
+    // if (data.receiverId === currentUser?._id) {
+    stopTyping();
+    // }
   }, []);
 
-  const handleOnlineUsers = useCallback((data: any) => {
-    // Implementation goes here
+  const handleOnlineUsers = useCallback((users: any) => {
+    if (users) {
+      addOnlineUser(users);
+    }
   }, []);
 
   const groupCreatedNotifyHandler = useCallback((data: any) => {
@@ -101,7 +144,13 @@ const Chat = () => {
     socket.on("groupCreatedNotifyReceived", groupCreatedNotifyHandler);
     socket.on("chatCreatedNotifyReceived", chatCreatedNotifyHandler);
     socket.on("chatDeletedNotifyReceived", chatDeletedNotifyReceivedHandler);
-
+    // Socket event listeners
+    socket.on("replyMessage", handleReplyMessage);
+    socket.on("editMessage", handleEditMessage);
+    socket.on("addReactionOnMessage", handleAddReactionOnMessage);
+    socket.on("removeMessage", handleRemoveMessage);
+    socket.on("removeFromAll", handleRemoveFromAll);
+    socket.on("unsentMessage", handleUnsentMessage);
     socket.on(
       "receiveDeliveredAllMessageAfterReconnect",
       handleAllDeliveredAfterReconnect
@@ -122,6 +171,14 @@ const Chat = () => {
         "receiveDeliveredAllMessageAfterReconnect",
         handleAllDeliveredAfterReconnect
       );
+
+      // Socket event listeners
+      socket.off("replyMessage", handleReplyMessage);
+      socket.off("editMessage", handleEditMessage);
+      socket.off("addReactionOnMessage", handleAddReactionOnMessage);
+      socket.off("removeMessage", handleRemoveMessage);
+      socket.off("removeFromAll", handleRemoveFromAll);
+      socket.off("unsentMessage", handleUnsentMessage);
     };
   }, []); //
   useEffect(() => {
@@ -133,14 +190,14 @@ const Chat = () => {
       socket.emit("setup", setupData);
     }
   }, [currentUser, socket]);
-//  useEffect(() => {
-//    const timeoutId = setTimeout(() => {
-//      if (!currentUser) {
-//        router.push("/login");
-//      }
-//    }, 2000);
-//    return () => clearTimeout(timeoutId);
-//  }, [router, currentUser]);
+  //  useEffect(() => {
+  //    const timeoutId = setTimeout(() => {
+  //      if (!currentUser) {
+  //        router.push("/login");
+  //      }
+  //    }, 2000);
+  //    return () => clearTimeout(timeoutId);
+  //  }, [router, currentUser]);
   return (
     <div className="">
       <div className="  flexBetween gap-2 overflow-hidden">

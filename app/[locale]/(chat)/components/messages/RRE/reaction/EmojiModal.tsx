@@ -6,6 +6,7 @@ const EmojiPicker = dynamic(
   },
   { ssr: false }
 );
+import { IMessage } from "@/context/reducers/interfaces";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { Theme, EmojiStyle, SuggestionMode, Emoji } from "emoji-picker-react";
 import dynamic from "next/dynamic";
@@ -13,9 +14,15 @@ import dynamic from "next/dynamic";
 const EmojiModal = ({
   onEmojiClick,
   openEmoji,
+  setIsOpenReactModal,
+  setIsOpenEmojiModal,
+  message,
 }: {
   onEmojiClick: any;
   openEmoji: any;
+  setIsOpenReactModal: any;
+  setIsOpenEmojiModal: any;
+  message: IMessage;
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   return (
@@ -27,18 +34,22 @@ const EmojiModal = ({
         style={{
           position: "absolute",
           top: "50%",
-          left:isSmallDevice?"10%": "50%",
-         
+          left: isSmallDevice ? "10%" : "40%",
+
           // bottom:"0px",
           // top: isSmallDevice ? "-320px" : "-350px", // Adjust this value based on your design
           // right: "-100px",
           zIndex: 1000,
-          height: isSmallDevice ? "290px" : "310px",
-          width: isSmallDevice ? "290px" : "310px",
+          height: isSmallDevice ? "288px" : "310px",
+          width: isSmallDevice ? "250px" : "310px",
           fontSize: "10px",
           overflow: "auto",
         }}
-        onEmojiClick={onEmojiClick}
+        onEmojiClick={(e) => {
+          onEmojiClick(e, message._id);
+          setIsOpenReactModal(false);
+          setIsOpenEmojiModal(false);
+        }}
         autoFocusSearch
         theme={Theme.DARK}
         lazyLoadEmojis

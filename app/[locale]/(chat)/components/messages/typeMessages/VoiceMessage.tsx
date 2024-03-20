@@ -7,7 +7,11 @@ import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import dynamic from "next/dynamic";
 const RREsystem = dynamic(() => import("../RRE/RREsystem"));
+const Status = dynamic(() => import("./Status"));
+const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
 
+// Import RepliedMessage dynamically
+const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"));
 // styles
 
 const formWaveSurferOptions = (ref: any) => ({
@@ -23,8 +27,18 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
-export default function VoiceMessage({ message }: { message: IMessage }) {
-  const { user: userInfo, selectedChat: currentChatUser } = useMessageState();
+export default function  ({
+  message,
+  isLastSeenMessage,
+  isUserOnline,
+  isCurrentUserMessage,
+}: {
+  message: IMessage;
+  isLastSeenMessage: boolean;
+  isUserOnline: boolean;
+  isCurrentUserMessage:boolean
+})  {
+  const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -70,11 +84,11 @@ export default function VoiceMessage({ message }: { message: IMessage }) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 ">
       {/* Remove/Replay/Emoji */}
       <RREsystem message={message} />
       <div
-        className={`flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
+        className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
       >
         <div>
           <Image
@@ -93,7 +107,7 @@ export default function VoiceMessage({ message }: { message: IMessage }) {
             <FaStop onClick={handlePauseAudio} />
           )}
         </div>
-        <div className={"relative"}>
+        <div className={"relative "}>
           <div className={"w-60"} ref={waveformRef}></div>
           <div
             className={
@@ -103,6 +117,22 @@ export default function VoiceMessage({ message }: { message: IMessage }) {
             <span className="text-sm font-medium">
               {playing ? currentTime : totalTime}
             </span>
+            {/* Reply */}
+            <RepliedMessage message={message} currentUser={currentUser as any} />
+            {/* REACTIONS */}
+            {message.reactions?.length > 0 && (
+              <DisplayReaction
+                reactions={message.reactions}
+                isCurrentUserMessage={isCurrentUserMessage}
+                reactionsGroup={message.reactionsGroup}
+              />
+            )}
+            {/* message status */}
+            <Status
+              message={message}
+              isLastSeenMessage={isLastSeenMessage}
+              isUserOnline={isUserOnline}
+            />
             <span className={"flex gap-1 text-sm font-medium "}>
               <span>{calculateTime(message.createdAt)}</span>
               {/* {message.senderId === userInfo.id && (

@@ -69,15 +69,14 @@ const FriendsCard: React.FC<{
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
       chatId: chat?._id,
-      lastMessage: chat?.latestMessage?.content,
+      latestMessage: chat?.latestMessage,
       createdAt: chat?.latestMessage?.createdAt,
       chatCreatedAt: chat?.createdAt,
 
       groupChatName: chat?.chatName,
       isGroupChat: chat?.isGroupChat,
       groupAdmin: chat?.groupAdmin,
-      status: chat?.chatStatus?.status,
-      chatUpdatedBy: chat?.chatStatus?.updatedBy,
+      chatStatus: chat?.chatStatus,
       users: chat.isGroupChat ? chat.users : null,
       userInfo: {
         name: !chat?.isGroupChat ? isFriend?.name : chat.chatName,
@@ -182,7 +181,7 @@ const FriendsCard: React.FC<{
               {isTyping && typingContent && typingChatId === chat?._id ? (
                 <TypingIndicator />
               ) : (
-                <MessagePreview chat={chat} currentUser={currentUser} />
+                <MessagePreview chat={chat} currentUser={currentUser as any} />
               )}
             </span>
             <span className="text-[10px] font-bold inline mx-2">

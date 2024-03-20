@@ -37,11 +37,11 @@ messageRoute
 //editMessage
 messageRoute
     .route("/editMessage")
-    .put(authMiddleware_1.default, uploadMiddleware_1.default.single("image"), messageController_1.editMessage);
+    .put(authMiddleware_1.default, uploadMiddleware_1.default.array("files"), messageController_1.editMessage);
 //replyMessage
 messageRoute
     .route("/replyMessage")
-    .post(authMiddleware_1.default, uploadMiddleware_1.default.single("image"), messageController_1.replyMessage);
+    .post(authMiddleware_1.default, uploadMiddleware_1.default.array("files"), messageController_1.replyMessage);
 //addRemoveEmojiReactions
 messageRoute.post("/addRemoveEmojiReactions", authMiddleware_1.default, messageController_1.addRemoveEmojiReactions);
 exports.default = messageRoute;

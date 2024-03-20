@@ -1,29 +1,14 @@
+import { IMessage } from "@/context/reducers/interfaces";
 import { create } from "zustand";
 
-type TMessage = {
-  _id: string;
-  sender: {
-    _id: string;
-    name: string;
-    image: string;
-    email: string;
-  };
-  content: string;
-};
 
-type TUser = {
-  _id: string;
-  name: string;
-  image: string;
-  email: string;
-};
 
 type TEditStore = {
-  isEdit: TMessage | null;
-  isReply: TMessage | null;
+  isEdit: IMessage | null;
+  isReply: IMessage | null;
   isSentImageModalOpen: boolean;
-  onEdit: (message: TMessage) => void;
-  onReply: (message: TMessage) => void;
+  onEdit: (message: IMessage) => void;
+  onReply: (message: IMessage) => void;
   cancelReply: () => void;
   cancelEdit: () => void;
 };
@@ -32,8 +17,8 @@ const useEditReplyStore = create<TEditStore>((set) => ({
   isEdit: null,
   isReply: null,
   isSentImageModalOpen: false, // Corrected initialization
-  onEdit: (message: TMessage) => set({ isEdit: message, isReply: null }),
-  onReply: (message: TMessage) => set({ isReply: message, isEdit: null }),
+  onEdit: (message: IMessage) => set({ isEdit: message, isReply: null }),
+  onReply: (message: IMessage) => set({ isReply: message, isEdit: null }),
   cancelEdit: () => set({ isEdit: null }),
   cancelReply: () => set({ isReply: null }),
 }));

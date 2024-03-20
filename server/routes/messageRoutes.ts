@@ -53,11 +53,11 @@ messageRoute
 
 messageRoute
   .route("/editMessage")
-  .put(authMiddleware, uploadMiddleware.single("image"), editMessage);
+  .put(authMiddleware, uploadMiddleware.array("files"), editMessage);
 //replyMessage
 messageRoute
   .route("/replyMessage")
-  .post(authMiddleware, uploadMiddleware.single("image"), replyMessage);
+  .post(authMiddleware, uploadMiddleware.array("files"), replyMessage);
 
 //addRemoveEmojiReactions
 

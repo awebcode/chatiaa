@@ -20,33 +20,25 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
       const isFriend = getSenderFull(currentUser, chat.users);
       const chatData = {
         chatId: chat?._id,
-        lastMessage: chat?.latestMessage?.content,
-        createdAt: chat?.latestMessage?.createdAt,
+        latestMessage: chat?.latestMessage,
         chatCreatedAt: chat?.createdAt,
 
         groupChatName: chat?.chatName,
         isGroupChat: chat?.isGroupChat,
         groupAdmin: chat?.groupAdmin,
-        status: chat?.chatStatus?.status,
-        chatUpdatedBy: chat?.chatStatus?.updatedBy,
+        // status: chat?.chatStatus?.status,
+        // chatUpdatedBy: chat?.chatStatus?.updatedBy,
+        chatStatus: chat?.chatStatus,
         users: chat.isGroupChat ? chat.users : null,
         userInfo: {
-          name: !chat?.isGroupChat
-            ? isFriend?.name
-            : chat.chatName,
+          name: !chat?.isGroupChat ? isFriend?.name : chat.chatName,
           email: !chat?.isGroupChat ? isFriend?.email : "",
-          _id: !chat?.isGroupChat
-            ? isFriend?._id
-            : chat?._id,
-          image: !chat.isGroupChat
-            ? isFriend?.image
-            : "/vercel.svg",
+          _id: !chat?.isGroupChat ? isFriend?._id : chat?._id,
+          image: !chat.isGroupChat ? isFriend?.image : "/vercel.svg",
           lastActive: !chat.isGroupChat
             ? getSenderFull(currentUser, chat.isGroupChat.users)?.lastActive
             : "",
-          createdAt: !chat.isGroupChat
-            ? isFriend?.createdAt
-            : "",
+          createdAt: !chat.isGroupChat ? isFriend?.createdAt : "",
         } as any,
       };
       // setSelectedChat(chatData as any);

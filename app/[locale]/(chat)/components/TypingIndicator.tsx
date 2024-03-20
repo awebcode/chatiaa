@@ -1,9 +1,9 @@
 import React from "react";
 import Image from "next/image";
 
-const TypingIndicator = ({ user }: any) => {
+const TypingIndicator = ({ user,isTyping }: any) => {
   return (
-    <div className=" flex  items-center">
+    <div className={`${isTyping?" flex  items-center":"hidden"}`} >
       {user && (
         <div className="ml-3 relative h-8 w-8 md:h-9 md:w-9  ring-3 ring-blue-700 rounded-full">
           {" "}

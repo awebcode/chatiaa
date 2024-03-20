@@ -40,7 +40,11 @@ const RREsystem = ({ message }: { message: IMessage }) => {
             onClick={() => setIsOpenReactModal(!isOpenReactModal)}
             className="text-lg cursor-pointer relative"
           />
-          <ReactModal message={message} isOpenReactModal={isOpenReactModal} />
+          <ReactModal
+            message={message}
+            isOpenReactModal={isOpenReactModal}
+            setIsOpenReactModal={setIsOpenReactModal}
+          />
         </div>
         {/* Reply */}
         <div className={`relative`}>

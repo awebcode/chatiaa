@@ -9,7 +9,6 @@ const messageSchema = new mongoose.Schema(
     chat: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
     removedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     unsentBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    blockedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
     isReply: {
       repliedBy: {

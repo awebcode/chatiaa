@@ -2,5 +2,19 @@ export const SET_USER = "SET_USER";
 
 export const SET_MESSAGES = "SET_MESSAGES";
 export const SET_TOTAL_MESSAGES_COUNT = "SET_TOTAL_MESSAGES_COUNT";
+//reply
+export const ADD_REPLY_MESSAGE = "ADD_REPLY_MESSAGE";
+//EDIT
+export const ADD_EDITED_MESSAGE = "ADD_EDITED_MESSAGE";
+//add reaction onmessage
+export const ADD_REACTION_ON_MESSAGE = "ADD_REACTION_ON_MESSAGE";
+//remove
+export const REMOVE_MESSAGE = "REMOVE_MESSAGE";
+//remove FROM ALL
+export const REMOVE_FROM_ALL = "REMOVE_FROM_ALL";
+//UNSENT MESSAGE
+export const UNSENT_MESSAGE = "UNSENT_MESSAGE";
+
+
 export const CLEAR_MESSAGES = "CLEAR_MESSAGES";
 export const SET_SELECTED_CHAT = "SET_SELECTED_CHAT";

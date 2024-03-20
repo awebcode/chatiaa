@@ -13,11 +13,14 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { axiosClient } from "@/config/AxiosConfig";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
+import TypingIndicator from "../TypingIndicator";
+import { useTypingStore } from "@/store/useTyping";
+import { BaseUrl } from "@/config/BaseUrl";
 
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
-
+  const { isTyping, content: typingContent, chatId: typingChatId } = useTypingStore();
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,9 +49,14 @@ export default function Messages() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await axiosClient.get(
-          `/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`
+        const res = await fetch(
+          `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`, {
+            credentials: "include",
+            next:{revalidate:0},
+            cache:"reload"
+          }
         );
+        const data=await res.json()
         if (messages.length === 0) {
           dispatch({ type: SET_MESSAGES, payload: data.messages });
         }
@@ -63,14 +71,20 @@ export default function Messages() {
         fetchData();
       }
     };
-  }, []);
+  }, [selectedChat?.chatId]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axiosClient.get(
-          `/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`
+        const res = await fetch(
+          `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
+          {
+            credentials: "include",
+            next: { revalidate: 0 },
+            cache: "reload",
+          }
         );
+        const data = await res.json();
         dispatch({ type: SET_MESSAGES, payload: data.messages });
         const container = document.getElementById("CustomscrollableTarget");
         if (container) {
@@ -80,7 +94,7 @@ export default function Messages() {
           } else {
             const heightDifference = scrollHeight - prevMessageRef.current;
 
-            const checkDifference = prevMessageRef.current > 487 ? heightDifference : 50;
+            const checkDifference = prevMessageRef.current > 487 ? heightDifference : 150;
 
             //ofcontainer.scrollTop = scrollTop+clientHeight or greter than 500px
             container.scrollTop = scrollTop + checkDifference; // Maintain scroll position
@@ -140,7 +154,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-
+console.log({messages})
   return (
     <div
       id="CustomscrollableTarget"
@@ -172,6 +186,9 @@ export default function Messages() {
       >
         <div className="flex flex-col-reverse gap-3 m-2 p-2">
           <div id="messageEndTarget" ref={messageEndRef}></div>
+          {isTyping && typingContent && typingChatId === selectedChat?.chatId && (
+            <TypingIndicator user={selectedChat} isTyping={isTyping} />
+          )}
           {loading ? (
             <div className="flex justify-center items-center mt-6">
               <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>

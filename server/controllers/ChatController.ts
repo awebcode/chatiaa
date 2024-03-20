@@ -84,12 +84,12 @@ export const fetchChats = async (
       users: { $elemMatch: { $eq: req.id } },
     })
       .populate("users", "-password")
-      .populate("groupAdmin", "-password")
+      // .populate("groupAdmin", "-password")
       .populate("latestMessage")
-      .populate({
-        path: "chatStatus.updatedBy",
-        select: "name image email lastActive",
-      })
+      // .populate({
+      //   path: "chatStatus.updatedBy",
+      //   select: "name image email lastActive",
+      // })
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit);
