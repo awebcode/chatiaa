@@ -5,6 +5,7 @@ import React from "react";
 import { RenderStatus } from "../logics/RenderStatusComponent";
 import dynamic from "next/dynamic";
 
+
 const TextMessage = dynamic(() => import("./typeMessages/TextMessage"));
 const ImageMessage = dynamic(() => import("./typeMessages/ImageMessage"));
 const VoiceMessage = dynamic(() => import("./typeMessages/VoiceMessage"));
@@ -29,7 +30,7 @@ const MessageCard = ({
       } mb-4 py-10`}
     >
       <div
-        className={`flex items-end ${
+        className={`flex items-center ${
           isCurrentUserMessage ? "flex-row-reverse" : "flex-row"
         } space-x-2`}
       >

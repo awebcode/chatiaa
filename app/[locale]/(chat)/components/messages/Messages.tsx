@@ -25,22 +25,23 @@ export default function Messages() {
   const [page, setpage] = useState(1);
   const { isIncomingMessage } = useIncomingMessageStore();
   const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
+  const prevMessageRef = useRef(0);
   useEffect(() => {
     const container = document.getElementById("CustomscrollableTarget"); //containerRef.current will be null and not work
 
-  
-   if (isIncomingMessage) {
+    if (isIncomingMessage) {
       container?.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
-   }
-   const tid = setTimeout(() => {
-     if (isIncomingMessage) {
-       useIncomingMessageStore.setState({
-         isIncomingMessage: false,
-       });
-     }
-   }, 1500);
-   return () => clearTimeout(tid);
- }, [isIncomingMessage]);
+    }
+    const tid = setTimeout(() => {
+      if (isIncomingMessage) {
+        useIncomingMessageStore.setState({
+          isIncomingMessage: false,
+        });
+      }
+    }, 1500);
+    return () => clearTimeout(tid);
+  }, [isIncomingMessage]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -63,6 +64,7 @@ export default function Messages() {
       }
     };
   }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -72,7 +74,18 @@ export default function Messages() {
         dispatch({ type: SET_MESSAGES, payload: data.messages });
         const container = document.getElementById("CustomscrollableTarget");
         if (container) {
-          container.scrollTop = -100;
+          const { scrollTop, scrollHeight, clientHeight } = container;
+          if (prevMessageRef.current === null) {
+            prevMessageRef.current = scrollHeight;
+          } else {
+            const heightDifference = scrollHeight - prevMessageRef.current;
+
+            const checkDifference = prevMessageRef.current > 487 ? heightDifference : 50;
+
+            //ofcontainer.scrollTop = scrollTop+clientHeight or greter than 500px
+            container.scrollTop = scrollTop + checkDifference; // Maintain scroll position
+            prevMessageRef.current = scrollHeight;
+          }
         }
       } catch (error) {
         console.log({ error });
@@ -80,8 +93,6 @@ export default function Messages() {
     };
     if (page > 1) {
       fetchData();
-
-      console.log("called in page > 1 page");
     }
   }, [page]);
 
@@ -89,15 +100,14 @@ export default function Messages() {
     setpage((prev) => prev + 1);
   };
 
- 
   // setShowScrollToBottomButton
   useEffect(() => {
     const handleScroll = () => {
       const container = document.getElementById("CustomscrollableTarget");
       if (container) {
         const { scrollTop, scrollHeight, clientHeight } = container;
-
-        setShowScrollToBottomButton(scrollTop <= -600);
+        //when will scroll top greater than 500px
+        setShowScrollToBottomButton(scrollTop <= -500);
       }
     };
 
@@ -124,10 +134,17 @@ export default function Messages() {
     //   messageEndRef.current.scrollIntoView({ behavior: "smooth" });
   };
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
+  useEffect(() => {
+    const container = document.getElementById("CustomscrollableTarget");
+    if (container) {
+      prevMessageRef.current = container.scrollHeight;
+    }
+  }, []);
+
   return (
     <div
       id="CustomscrollableTarget"
-      className="menu p-2 md:p-4 bg-base-200 h-[64vh] overflow-y-scroll overflow-x-hidden flex flex-col-reverse"
+      className="menu p-2 md:p-4 bg-base-200 h-[65vh] overflow-y-auto overflow-x-hidden flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
@@ -148,12 +165,13 @@ export default function Messages() {
           // </div>
           ""
         }
-        style={{ display: "flex", flexDirection: "column-reverse" }}
+        style={{ display: "flex", flexDirection: "column-reverse", height: "100%" }}
         inverse={true}
         scrollableTarget="CustomscrollableTarget"
         scrollThreshold={1}
       >
         <div className="flex flex-col-reverse gap-3 m-2 p-2">
+          <div id="messageEndTarget" ref={messageEndRef}></div>
           {loading ? (
             <div className="flex justify-center items-center mt-6">
               <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>

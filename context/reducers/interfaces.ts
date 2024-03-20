@@ -4,14 +4,16 @@ export interface IMessage {
   _id: string;
   chatId: string;
   content: string;
+  file: {
+    url: string;
+    public_id: string;
+  };
   createdAt: string;
   reactions: Tuser & { emoji: string };
   sender: Tuser;
   type: string;
-  file: {
-    url: string;
-    public_id:string
-  }
+  status: string;
+  removedBy: Tuser;
 }
 
 export interface IChat {

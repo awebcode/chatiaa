@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
+import dynamic from "next/dynamic";
+const RREsystem = dynamic(() => import("../RRE/RREsystem"));
 
 // styles
 
@@ -68,40 +70,46 @@ export default function VoiceMessage({ message }: { message: IMessage }) {
   };
 
   return (
-    <div
-      className={`flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
-    >
-      <div>
-        <Image
-          src={message.sender.image}
-          height={60}
-          width={60}
-          loading="lazy"
-          alt="avatar"
-          className="h-full w-full object-cover rounded-full"
-        />
-      </div>
-      <div className={"cursor-pointer text-xl"}>
-        {!playing ? (
-          <FaPlay onClick={handlePlayAudio} />
-        ) : (
-          <FaStop onClick={handlePauseAudio} />
-        )}
-      </div>
-      <div className={"relative"}>
-        <div className={"w-60"} ref={waveformRef}></div>
-        <div
-          className={
-            "text-bubble-meta text-[11px] pt-1 flex justify-between absolute bottom-[-22px] w-full"
-          }
-        >
-          <span className="text-sm font-medium">{playing ? currentTime : totalTime}</span>
-          <span className={"flex gap-1 text-sm font-medium "}>
-            <span>{calculateTime(message.createdAt)}</span>
-            {/* {message.senderId === userInfo.id && (
+    <div className="flex items-center gap-2">
+      {/* Remove/Replay/Emoji */}
+      <RREsystem message={message} />
+      <div
+        className={`flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
+      >
+        <div>
+          <Image
+            src={message.sender.image}
+            height={60}
+            width={60}
+            loading="lazy"
+            alt="avatar"
+            className="h-full w-full object-cover rounded-full"
+          />
+        </div>
+        <div className={"cursor-pointer text-xl"}>
+          {!playing ? (
+            <FaPlay onClick={handlePlayAudio} />
+          ) : (
+            <FaStop onClick={handlePauseAudio} />
+          )}
+        </div>
+        <div className={"relative"}>
+          <div className={"w-60"} ref={waveformRef}></div>
+          <div
+            className={
+              "text-bubble-meta text-[11px] pt-1 flex justify-between absolute bottom-[-22px] w-full"
+            }
+          >
+            <span className="text-sm font-medium">
+              {playing ? currentTime : totalTime}
+            </span>
+            <span className={"flex gap-1 text-sm font-medium "}>
+              <span>{calculateTime(message.createdAt)}</span>
+              {/* {message.senderId === userInfo.id && (
               <MessageStatus messageStatus={message.messageStatus} />
             )} */}
-          </span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
