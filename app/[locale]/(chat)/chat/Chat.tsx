@@ -7,17 +7,27 @@ import {
   ADD_EDITED_MESSAGE,
   ADD_REACTION_ON_MESSAGE,
   ADD_REPLY_MESSAGE,
+  REMOVE_UNSENT_MESSAGE,
   SET_MESSAGES,
   SET_TOTAL_MESSAGES_COUNT,
+  UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND,
+  UPDATE_CHAT_STATUS,
+  UPDATE_LATEST_CHAT_MESSAGE,
+  UPDATE_MESSAGE_STATUS,
 } from "@/context/reducers/actions";
 import { IChat } from "@/context/reducers/interfaces";
-import { Tuser } from "@/store/types";
+import { Reaction, Tuser } from "@/store/types";
 import { Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/navigation";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
 import { useTypingStore } from "@/store/useTyping";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
+import useReactionStore from "@/store/useReactionsStore";
+import {
+  updateAllMessageStatusAsDelivered,
+  updateMessageStatus,
+} from "@/functions/messageActions";
 
 const LeftSide = dynamic(() => import("../components/LeftSide"));
 const Main = dynamic(() => import("../components/Main"));
@@ -34,34 +44,91 @@ const Chat = () => {
   const dispatch = useMessageDispatch();
   const router = useRouter();
   const { startTyping, stopTyping } = useTypingStore();
-  const { addOnlineUser } = useOnlineUsersStore();
+  const { addOnlineUser, onlineUsers } = useOnlineUsersStore();
   const totalMessagesCountRef = useRef<number>(0); // Provide type annotation for number
   const selectedChatRef = useRef<IChat | null>(null); // Provide type annotation for IChat or null
   const currentUserRef = useRef<Tuser | null>(null); // Provide type annotation for Tuser or null
   const socketRef = useRef<Socket | null>(null); // Provide type annotation for socket, you can replace `any` with the specific type if available
+  const onlineUsersRef = useRef<any>([]);
 
   useEffect(() => {
     totalMessagesCountRef.current = totalMessagesCount;
     selectedChatRef.current = selectedChat;
     currentUserRef.current = currentUser;
     socketRef.current = socket;
-  }, [totalMessagesCount, selectedChat, currentUser, socket]);
+    onlineUsersRef.current = onlineUsers;
+  }, [totalMessagesCount, selectedChat, currentUser, socket, onlineUsers]);
+  //update friend message when i'm online
+  useEffect(() => {
+    updateAllMessageStatusAsDelivered(currentUser?._id as any);
+    const deliverData = {
+      senderId: currentUser?._id,
+      pic: currentUser?.image,
+    };
+    socket.emit("deliveredAllMessageAfterReconnect", deliverData);
+  }, []);
 
   const handleSocketMessage = useCallback(
-    (data: any) => {
-      if (selectedChat?.chatId === data.chatId) {
+    async (data: any) => {
+      //  update latest chat for both side
+
+      if (selectedChatRef.current?.chatId === data.chat._id) {
+        useIncomingMessageStore.setState({
+          isIncomingMessage: true,
+        });
         dispatch({ type: SET_MESSAGES, payload: data });
         dispatch({
           type: SET_TOTAL_MESSAGES_COUNT,
           payload: totalMessagesCountRef.current + 1,
         });
-        queryClient.invalidateQueries({ queryKey: ["users"] });
       }
-      useIncomingMessageStore.setState({
-        isIncomingMessage: true,
-      });
-      console.log({ socketMessage: data });
-      // Implementation goes here
+
+      // seen message
+      if (data.sender?._id === selectedChatRef.current?.userInfo._id) {
+        dispatch({
+          type: UPDATE_LATEST_CHAT_MESSAGE,
+          payload: { ...data, status: "seen" },
+        });
+        socketRef?.current?.emit("seenMessage", {
+          receiverId: data.sender._id,
+          chatId: data.chat._id,
+          messageId: data._id,
+          status: "seen",
+        });
+        const updateStatusData = {
+          chatId: data?.chat._id,
+          status: "seen",
+        };
+        await updateMessageStatus(updateStatusData);
+      } else if (
+        //delivered message
+        data.receiverId === currentUserRef.current?._id &&
+        onlineUsersRef.current.some(
+          (user: any) => user.id === currentUserRef.current?._id
+        )
+      ) {
+        dispatch({
+          type: UPDATE_LATEST_CHAT_MESSAGE,
+          payload: { ...data, status: "delivered" },
+        });
+        socketRef?.current?.emit("deliveredMessage", {
+          receiverId: data.sender._id,
+          chatId: data.chat._id,
+          messageId: data._id,
+          status: "delivered",
+        });
+        const updateStatusData = {
+          chatId: data?.chat._id,
+          status: "delivered",
+        };
+        await updateMessageStatus(updateStatusData);
+      } else {
+        //when friend offline
+        dispatch({
+          type: UPDATE_LATEST_CHAT_MESSAGE,
+          payload: data,
+        });
+      }
     },
 
     []
@@ -79,32 +146,38 @@ const Chat = () => {
   }, []);
 
   // Add Reaction on Message Handler
-  const handleAddReactionOnMessage = useCallback((message: any) => {
-    // Implementation for handling addReactionOnMessage event
-    dispatch({ type: ADD_REACTION_ON_MESSAGE, payload: message });
-  }, []);
+  const handleAddReactionOnMessage = useCallback(
+    (reaction: Reaction & { type: string }) => {
+      dispatch({ type: ADD_REACTION_ON_MESSAGE, payload: reaction });
+    },
+    []
+  );
 
-  // Remove Message Handler
-  const handleRemoveMessage = useCallback((message: any) => {
+  //handle_Remove_All_Unsent_Message
+  const handle_Remove_All_Unsent_Message = useCallback((message: any) => {
     // Implementation for handling removeMessage event
+     dispatch({
+       type: REMOVE_UNSENT_MESSAGE,
+       payload: message,
+     });
   }, []);
 
-  // Remove From All Handler
-  const handleRemoveFromAll = useCallback((message: any) => {
-    // Implementation for handling removeFromAll event
-  }, []);
+  //handleSeenMessage
+  const handleSeenMessage = useCallback((data: any) => {
+    dispatch({ type: UPDATE_CHAT_STATUS, payload: data });
+    dispatch({ type: UPDATE_MESSAGE_STATUS, payload: data });
 
-  // Unsent Message Handler
-  const handleUnsentMessage = useCallback((message: any) => {
-    // Implementation for handling unsentMessage event
+    // Implementation goes here
   }, []);
   const handleDeliverMessage = useCallback((data: any) => {
+    dispatch({ type: UPDATE_CHAT_STATUS, payload: data });
+    dispatch({ type: UPDATE_MESSAGE_STATUS, payload: data });
     // Implementation goes here
   }, []);
 
   const handleTyping = useCallback((data: any) => {
     // if (data.receiverId === currentUser?._id) {
-    startTyping(data.senderId, data.receiverId, data.chatId, data.content);
+    startTyping(data.senderId, data.receiverId, data.chatId, data.content, data.userInfo);
     // }
   }, []);
   const handleStopTyping = useCallback((data: any) => {
@@ -130,13 +203,16 @@ const Chat = () => {
   const chatDeletedNotifyReceivedHandler = useCallback((data: any) => {
     // Implementation goes here
   }, []);
-
-  const handleAllDeliveredAfterReconnect = useCallback((data: any) => {}, []);
+  //UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND
+  const handleAllDeliveredAfterReconnect = useCallback((data: any) => {
+    dispatch({ type: UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND, payload: data });
+  }, []);
 
   useEffect(() => {
     // Add event listeners
     socket.on("receiveMessage", handleSocketMessage);
     socket.on("receiveDeliveredMessage", handleDeliverMessage);
+    socket.on("receiveSeenMessage", handleSeenMessage);
     socket.on("typing", handleTyping);
     socket.on("stopTyping", handleStopTyping);
 
@@ -148,9 +224,7 @@ const Chat = () => {
     socket.on("replyMessage", handleReplyMessage);
     socket.on("editMessage", handleEditMessage);
     socket.on("addReactionOnMessage", handleAddReactionOnMessage);
-    socket.on("removeMessage", handleRemoveMessage);
-    socket.on("removeFromAll", handleRemoveFromAll);
-    socket.on("unsentMessage", handleUnsentMessage);
+    socket.on("remove_remove_All_unsentMessage", handle_Remove_All_Unsent_Message);
     socket.on(
       "receiveDeliveredAllMessageAfterReconnect",
       handleAllDeliveredAfterReconnect
@@ -161,6 +235,7 @@ const Chat = () => {
       socket.off("setup", handleOnlineUsers);
       socket.off("disconnect");
       socket.off("receiveMessage", handleSocketMessage);
+      socket.off("receiveSeenMessage", handleSeenMessage);
       socket.off("receiveDeliveredMessage", handleDeliverMessage);
       socket.off("typing", handleTyping);
       socket.off("stopTyping", handleStopTyping);
@@ -176,9 +251,7 @@ const Chat = () => {
       socket.off("replyMessage", handleReplyMessage);
       socket.off("editMessage", handleEditMessage);
       socket.off("addReactionOnMessage", handleAddReactionOnMessage);
-      socket.off("removeMessage", handleRemoveMessage);
-      socket.off("removeFromAll", handleRemoveFromAll);
-      socket.off("unsentMessage", handleUnsentMessage);
+      socket.off("remove_remove_All_unsentMessage", handle_Remove_All_Unsent_Message);
     };
   }, []); //
   useEffect(() => {

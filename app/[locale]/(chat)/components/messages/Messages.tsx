@@ -20,7 +20,7 @@ import { BaseUrl } from "@/config/BaseUrl";
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
-  const { isTyping, content: typingContent, chatId: typingChatId } = useTypingStore();
+  const { isTyping, content: typingContent, chatId: typingChatId,userInfo:typingUserInfo } = useTypingStore();
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -53,10 +53,10 @@ export default function Messages() {
           `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`, {
             credentials: "include",
             next:{revalidate:0},
-            cache:"reload"
+            // cache:"reload"
           }
         );
-        const data=await res.json()
+        const data=await res.json();
         if (messages.length === 0) {
           dispatch({ type: SET_MESSAGES, payload: data.messages });
         }
@@ -81,7 +81,7 @@ export default function Messages() {
           {
             credentials: "include",
             next: { revalidate: 0 },
-            cache: "reload",
+            // cache: "reload",
           }
         );
         const data = await res.json();
@@ -154,7 +154,6 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-console.log({messages})
   return (
     <div
       id="CustomscrollableTarget"
@@ -187,7 +186,11 @@ console.log({messages})
         <div className="flex flex-col-reverse gap-3 m-2 p-2">
           <div id="messageEndTarget" ref={messageEndRef}></div>
           {isTyping && typingContent && typingChatId === selectedChat?.chatId && (
-            <TypingIndicator user={selectedChat} isTyping={isTyping} />
+            <TypingIndicator
+              user={typingUserInfo}
+              isTyping={isTyping}
+              onFriendListCard={false}
+            />
           )}
           {loading ? (
             <div className="flex justify-center items-center mt-6">
@@ -206,14 +209,18 @@ console.log({messages})
             })
           )}
         </div>
-        {totalMessagesCount > 0 && totalMessagesCount === messages?.length && (
-          <div className="text-center text-2xl text-green-400 pt-10">
-            You have viewed all messages
-          </div>
-        )}
-        {totalMessagesCount > 0 && totalMessagesCount === messages?.length && (
-          <NoChatProfile user={selectedChat as any} />
-        )}
+        {!loading &&
+          totalMessagesCount > 0 &&
+          totalMessagesCount === messages?.length && (
+            <div className="text-center text-2xl text-green-400 pt-10">
+              You have viewed all messages
+            </div>
+          )}
+        {!loading &&
+          totalMessagesCount > 0 &&
+          totalMessagesCount === messages?.length && (
+            <NoChatProfile user={selectedChat as any} />
+          )}
         {/* when user have no chat */}
         {messages.length === 0 && !loading && (
           <NoChatProfile user={selectedChat as any} />

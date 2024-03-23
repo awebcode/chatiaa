@@ -32,7 +32,7 @@ const register = async (req: Request | any, res: Response, next: NextFunction) =
     const hashedPassword = await bcrypt.hash(password, 10);
     // Fetch avatar URL and upload it to Cloudinary
     const generator = new AvatarGenerator();
-    const randomAvatarUrl = generator.generateRandomAvatar("avatar");
+    const randomAvatarUrl = generator.generateRandomAvatar();
     const cloudinaryResponse = await v2.uploader.upload(randomAvatarUrl, {
       folder: "messengaria",
       format: "png", // Specify the format as PNG

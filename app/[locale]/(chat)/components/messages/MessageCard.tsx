@@ -42,6 +42,7 @@ const MessageCard = ({
         isCurrentUserMessage ? "justify-end " : "justify-start"
       } mb-4 py-10`}
     >
+
       <div
         className={`flex items-center ${
           isCurrentUserMessage ? "flex-row-reverse" : "flex-row"
@@ -59,7 +60,7 @@ const MessageCard = ({
         {message.type === "video" && (
           <VideoMessage
             message={message}
-             isCurrentUserMessage={isCurrentUserMessage}
+            isCurrentUserMessage={isCurrentUserMessage}
             isLastSeenMessage={isLastSeenMessage}
             isUserOnline={isUserOnline}
           />
@@ -67,7 +68,7 @@ const MessageCard = ({
         {message.type === "audio" && (
           <VoiceMessage
             message={message}
-             isCurrentUserMessage={isCurrentUserMessage}
+            isCurrentUserMessage={isCurrentUserMessage}
             isLastSeenMessage={isLastSeenMessage}
             isUserOnline={isUserOnline}
           />
@@ -75,7 +76,7 @@ const MessageCard = ({
         {message.type === "image" && (
           <ImageMessage
             message={message}
-             isCurrentUserMessage={isCurrentUserMessage}
+            isCurrentUserMessage={isCurrentUserMessage}
             isLastSeenMessage={isLastSeenMessage}
             isUserOnline={isUserOnline}
           />
@@ -83,7 +84,7 @@ const MessageCard = ({
         {message.type === "application" && (
           <PdfMessage
             message={message}
-             isCurrentUserMessage={isCurrentUserMessage}
+            isCurrentUserMessage={isCurrentUserMessage}
             isLastSeenMessage={isLastSeenMessage}
             isUserOnline={isUserOnline}
           />

@@ -63,8 +63,9 @@ export const fetchChats = async (
   next: NextFunction
 ) => {
   try {
-    const limit = parseInt(req.query.limit) || 4;
-    const skip = parseInt(req.query.skip) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
     const keyword: any = req.query.search
       ? {
           $or: [
@@ -84,15 +85,18 @@ export const fetchChats = async (
       users: { $elemMatch: { $eq: req.id } },
     })
       .populate("users", "-password")
-      // .populate("groupAdmin", "-password")
+      .populate("groupAdmin", "email name image lastActive")
       .populate("latestMessage")
-      // .populate({
-      //   path: "chatStatus.updatedBy",
-      //   select: "name image email lastActive",
-      // })
+      .populate({
+        path: "chatBlockStatus",
+        populate: {
+          path: "user",
+          select: "name image email lastActive",
+        },
+      })
       .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .skip(skip);
 
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
@@ -109,10 +113,37 @@ export const fetchChats = async (
         )
       );
     }
+    const filteredChatsWithUnseenCount = filteredChats.map((chat: any) => {
+      const correspondingUnseenCount = unseenCount.find(
+        (count: any) => count._id.toString() === chat._id.toString()
+      );
+      return {
+        ...chat.toObject(),
+        unseenCount: correspondingUnseenCount
+          ? correspondingUnseenCount.unseenMessagesCount
+          : 0,
+      };
+    });
 
+    // Modify populatedChats to include unseenCount for each chat
+    const populatedChatsWithUnseenCount = populatedChats.map((chat: any) => {
+      const correspondingUnseenCount = unseenCount.find(
+        (count: any) => count._id.toString() === chat._id.toString()
+      );
+      return {
+        ...chat.toObject(),
+        unseenCount: correspondingUnseenCount
+          ? correspondingUnseenCount.unseenMessagesCount
+          : 0,
+      };
+    });
     res.status(200).send({
       chats:
-        filteredChats.length > 0 ? filteredChats : req.query.search ? [] : populatedChats,
+        filteredChats.length > 0
+          ? filteredChatsWithUnseenCount
+          : req.query.search
+          ? []
+          : populatedChatsWithUnseenCount,
       total:
         filteredChats.length > 0
           ? filteredChats.length
@@ -191,8 +222,8 @@ export const createGroupChat = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.body.users || !req.body.name) {
-    throw new CustomErrorHandler("Please Fill all the feilds!", 400);
+  if (!req.body.users || !req.body.groupName) {
+    return next(new CustomErrorHandler("GroupName or users cannot be empty!", 400)) 
   }
 
   var users = req.body.users;
@@ -207,7 +238,7 @@ export const createGroupChat = async (
 
   try {
     const groupChat = await Chat.create({
-      chatName: req.body.name,
+      chatName: req.body.groupName,
       users: users,
       isGroupChat: true,
       groupAdmin: req.id,

@@ -10,7 +10,7 @@ import { Reaction } from "../model/reactModal";
 import { v2 } from "cloudinary";
 import fs from "fs";
 import mongoose from "mongoose";
-import { io } from "../index";
+import { getSocketConnectedUser, io } from "../index";
 import { getFileType } from "./functions";
 //@access          Protected
 export const allMessages = async (
@@ -59,7 +59,9 @@ export const allMessages = async (
     // Populate reactions for each message
     messages = await Promise.all(
       messages.map(async (message: any) => {
-        const reactionsGroup = await countReactionsForMessage(message._id);
+        const { reactionsGroup, totalReactions } = await countReactionsGroupForMessage(
+          message._id
+        );
         const reactions = await Reaction.find({ messageId: message._id })
           .populate({
             path: "reactBy",
@@ -68,7 +70,7 @@ export const allMessages = async (
           .sort({ updatedAt: -1 })
           .exec();
 
-        return { ...message.toObject(), reactions, reactionsGroup };
+        return { ...message.toObject(), reactions, reactionsGroup, totalReactions };
       })
     );
     //find reactions here and pass with every message
@@ -82,21 +84,54 @@ export const allMessages = async (
   }
 };
 // Count the number of reactions for a specific message
-const countReactionsForMessage = async (messageId: any) => {
+const countReactionsGroupForMessage = async (messageId: any) => {
   try {
-    const aggregate = await Reaction.aggregate([
+    const reactionsGroup = await Reaction.aggregate([
       { $match: { messageId: new mongoose.Types.ObjectId(messageId) } }, // Match reactions for the given message ID
       { $group: { _id: "$emoji", count: { $sum: 1 } } }, // Group reactions by emoji and count
       { $sort: { count: -1 } }, // Sort by count in descending order
       // { $limit: 4 }, // Limit to top 4 groups
     ]);
-    return aggregate;
+    const totalReactions = await Reaction.countDocuments({ messageId });
+    return { reactionsGroup, totalReactions };
   } catch (error) {
     console.error("Error counting reactions:", error);
     throw error; // Forward error to the caller
   }
 };
-
+//get reaction base on message id while scroll and filter
+export const getMessageReactions = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { messageId } = req.params;
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+    console.log(req.query)
+    const reactions = await Reaction.find(
+      req.query.emoji === "all" || req.query.emoji === ""
+        ? {
+            messageId,
+          }
+        : { messageId, emoji: req.query.emoji }
+    )
+      .populate({
+        path: "reactBy",
+        select: "name image email",
+      })
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .skip(skip)
+      .exec();
+    res.json( reactions );
+  } catch (error) {
+    console.error("Error getting message reactions:", error);
+    next(error);
+  }
+};
 //@description     Create New Message
 //@route           POST /api/Message/
 //@access          Protected
@@ -155,11 +190,22 @@ export const sendMessage = async (
 
         // Send message to client
         if (chat?.isGroupChat) {
-          io.to(chat?._id.toString()).emit("receiveMessage", message);
+          
+           chat?.users.forEach((user) => {
+             const receiverId = getSocketConnectedUser(user);
+             if (receiverId) {
+               io.to(chat?._id.toString())
+                 .to(receiverId.socketId)
+                 .emit("receiveMessage", {
+                   ...message.toObject(),
+                   receiverId: receiverId.id,
+                 });
+             }
+           });
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
-            .emit("receiveMessage", message);
+            .emit("receiveMessage", {...message,receiverId });
         }
         return message;
       });
@@ -186,11 +232,21 @@ export const sendMessage = async (
       // Update latest message for the chat
       const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
       if (chat?.isGroupChat) {
-        io.to(chat?._id.toString()).emit("receiveMessage", message);
+         chat?.users.forEach((user) => {
+           const receiverId = getSocketConnectedUser(user);
+           if (receiverId) {
+             io.to(chat?._id.toString())
+               .to(receiverId.socketId)
+               .emit("receiveMessage", {
+                 ...message.toObject(),
+                 receiverId: receiverId.id,
+               });
+           }
+         });
       } else {
         io.to(chat?._id.toString() as any)
           .to(receiverId)
-          .emit("receiveMessage", message);
+          .emit("receiveMessage", { ...message, receiverId });
       }
 
       res.status(200).json({ message: "File send sucessfully" });
@@ -366,7 +422,7 @@ export const updateMessageStatusAsRemove = async (
 
     let updateMessage: any;
 
-    if (status === "remove" || status === "reBack") {
+    if (status === "removed" || status === "reBack") {
       updateMessage = await Message.updateOne(
         { _id: messageId },
         { $set: { status, removedBy: status === "reBack" ? null : req.id } }
@@ -421,22 +477,47 @@ export const updateChatStatusAsBlockOrUnblock = async (
   try {
     const { chatId, status } = req.body;
     if (!status || !chatId)
-      return next(new CustomErrorHandler("chat Id or status  cannot be empty!", 400));
-    const updatedChat = await Chat.findByIdAndUpdate(
-      chatId,
-      { chatStatus: { status, updatedBy: req.id } },
-      { new: true }
-    );
+      return next(new CustomErrorHandler("chat Id or status cannot be empty!", 400));
+
+    let updateQuery = {};
+
+    if (status === "block") {
+      updateQuery = {
+        $addToSet: {
+          chatBlockStatus: {
+            user: req.id,
+            status: "blocked",
+          },
+        },
+      };
+    } else if (status === "unblock") {
+      updateQuery = {
+        $pull: {
+          chatBlockStatus: {
+            user: req.id,
+          },
+        },
+      };
+    } else {
+      return next(new CustomErrorHandler("Invalid status!", 400));
+    }
+
+    const updatedChat = await Chat.findByIdAndUpdate(chatId, updateQuery, { new: true });
+
     res.status(200).json({
       success: true,
-      status: updatedChat?.chatStatus?.status,
+      status: getStatusForUser(updatedChat, req.id),
       updatedBy: req.id,
     });
   } catch (error) {
     next(error);
   }
 };
-
+// Helper function to get block status for a specific user
+function getStatusForUser(chat:any, userId:any) {
+  const userBlockStatus = chat.chatBlockStatus.find((status:any) => status.user.equals(userId));
+  return userBlockStatus ? userBlockStatus.status : "unblocked";
+}
 //reply Message
 
 export const replyMessage = async (
@@ -485,7 +566,7 @@ export const replyMessage = async (
               ? "image"
               : fileType,
         });
- 
+
         message = await message
           .populate([
             {
@@ -505,15 +586,27 @@ export const replyMessage = async (
           select: "name image email",
         });
         // Update latest message for the chat
-        const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+        const chat = await Chat.findByIdAndUpdate(chatId, {
+          latestMessage: message,
+        });
 
         // Send message to client
         if (chat?.isGroupChat) {
-          io.to(chat?._id.toString()).emit("replyMessage", message);
+           chat?.users.forEach((user) => {
+             const receiverId = getSocketConnectedUser(user);
+             if (receiverId) {
+               io.to(chat?._id.toString())
+                 .to(receiverId.socketId)
+                 .emit("replyMessage", {
+                   ...message.toObject(),
+                   receiverId: receiverId.id,
+                 });
+             }
+           });
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
-            .emit("replyMessage", message);
+            .emit("replyMessage", { ...message, receiverId });
         }
         return message;
       });
@@ -534,16 +627,16 @@ export const replyMessage = async (
     message = await Message.findOne(message._id)
       .populate("sender chat", "name image email")
       .populate([
-          {
-            path: "isReply.messageId",
-            select: "content file type",
-            populate: { path: "sender", select: "name image email" },
-          },
-          {
-            path: "isReply.repliedBy",
-            select: "name image email",
-          },
-        ])
+        {
+          path: "isReply.messageId",
+          select: "content file type",
+          populate: { path: "sender", select: "name image email" },
+        },
+        {
+          path: "isReply.repliedBy",
+          select: "name image email",
+        },
+      ])
       .populate("chat");
 
     message = await User.populate(message, {
@@ -554,11 +647,21 @@ export const replyMessage = async (
     const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
 
     if (chat?.isGroupChat) {
-      io.to(chat?._id.toString()).emit("replyMessage", message);
+      chat?.users.forEach((user) => {
+        const receiverId = getSocketConnectedUser(user);
+        if (receiverId) {
+          io.to(chat?._id.toString())
+            .to(receiverId.socketId)
+            .emit("replyMessage", {
+              ...message.toObject(),
+              receiverId: receiverId.id,
+            });
+        }
+      });
     } else {
       io.to(chat?._id.toString() as any)
         .to(receiverId)
-        .emit("replyMessage", message);
+        .emit("replyMessage", { ...message, receiverId });
     }
 
     res.status(200).json({ success: true, message });
@@ -578,7 +681,8 @@ export const editMessage = async (
     const { messageId, chatId, content, type, receiverId } = req.body;
     if (!messageId)
       return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
-
+    const isLastMessage = await Chat.findOne({ _id: chatId, latestMessage: messageId });
+   
     const prevMessage: any = await Message.findById(messageId);
     //delete Previous Image
     if (prevMessage.file?.public_Id) {
@@ -627,14 +731,28 @@ export const editMessage = async (
           path: "chat.users",
           select: "name image email",
         });
+        if (isLastMessage) {
+          await Chat.findByIdAndUpdate(chatId, { latestMessage: editedChat });
+        }
         const chat = await Chat.findByIdAndUpdate(chatId);
         // Send message to client
         if (chat?.isGroupChat) {
-          io.to(chat?._id.toString()).emit("editMessage", editedChat);
+          chat?.users.forEach((user) => {
+            const receiverId = getSocketConnectedUser(user);
+            if (receiverId) {
+              io.to(chat?._id.toString())
+                .to(receiverId.socketId)
+                .emit("editMessage", {
+                  ...editedChat.toObject(),
+                  receiverId: receiverId.id,
+                });
+            }
+          });
+         
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
-            .emit("editMessage", editedChat);
+            .emit("editMessage", {...editedChat,receiverId});
         }
         return editedChat;
       });
@@ -669,14 +787,27 @@ export const editMessage = async (
         select: "name image email",
       });
     }
+    if (isLastMessage) {
+      await Chat.findByIdAndUpdate(chatId, { latestMessage: editedChat });
+    }
     const chat = await Chat.findByIdAndUpdate(chatId);
     // Send message to client
     if (chat?.isGroupChat) {
-      io.to(chat?._id.toString()).emit("editMessage", editedChat);
+      chat?.users.forEach((user) => {
+        const receiverId = getSocketConnectedUser(user);
+        if (receiverId) {
+          io.to(chat?._id.toString())
+            .to(receiverId.socketId)
+            .emit("editMessage", {
+              ...editedChat.toObject(),
+              receiverId: receiverId.id,
+            });
+        }
+      });
     } else {
       io.to(chat?._id.toString() as any)
         .to(receiverId)
-        .emit("editMessage", editedChat);
+        .emit("editMessage", {...editedChat,receiverId});
     }
     res.status(200).json({ success: true, editedChat });
   } catch (error) {
@@ -714,10 +845,17 @@ export const addRemoveEmojiReactions = async (
           ).populate("reactBy", "name email image");
           // Send message to client
           if (chat?.isGroupChat) {
-            io.to(chat?._id.toString()).emit("addReactionOnMessage", {
-              reaction,
-              type: "update",
-            });
+             chat?.users.forEach((user) => {
+               const receiverId = getSocketConnectedUser(user);
+               if (receiverId) {
+                 io.to(chat?._id.toString())
+                   .to(receiverId.socketId)
+                   .emit("addReactionOnMessage", {
+                     reaction,
+                     type: "update",
+                   });
+               }
+             });
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
@@ -736,10 +874,19 @@ export const addRemoveEmojiReactions = async (
 
           // Send message to client
           if (chat?.isGroupChat) {
-            io.to(chat?._id.toString()).emit("addReactionOnMessage", {
-              reaction,
-              type: "add",
-            });
+           
+
+             chat?.users.forEach((user) => {
+               const receiverId = getSocketConnectedUser(user);
+               if (receiverId) {
+                 io.to(chat?._id.toString())
+                   .to(receiverId.socketId)
+                   .emit("addReactionOnMessage", {
+                     reaction,
+                     type: "add",
+                   });
+               }
+             });
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
@@ -756,9 +903,16 @@ export const addRemoveEmojiReactions = async (
           return next(new CustomErrorHandler("reactionId cannot be empty!", 400));
         const reaction = await Reaction.findByIdAndDelete(reactionId);
         if (chat?.isGroupChat) {
-          io.to(chat?._id.toString()).emit("addReactionOnMessage", {
-            reaction,
-            type: "remove",
+          chat?.users.forEach((user) => {
+            const receiverId = getSocketConnectedUser(user);
+            if (receiverId) {
+              io.to(chat?._id.toString())
+                .to(receiverId.socketId)
+                .emit("addReactionOnMessage", {
+                  reaction,
+                  type: "remove",
+                });
+            }
           });
         } else {
           io.to(chat?._id.toString() as any)

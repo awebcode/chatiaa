@@ -6,7 +6,12 @@ import useEditReplyStore from "@/store/useEditReply";
 import { IMessage } from "@/context/reducers/interfaces";
 import EditUnModal from "./unedremove/EditUnModal";
 import ReactModal from "./reaction/ReactModal";
-const RREsystem = ({ message }: { message: IMessage }) => {
+const RREsystem = ({
+  message,
+  isCurrentUserMessage,
+}: {
+  message: IMessage;
+  isCurrentUserMessage:boolean}) => {
   const { onReply, onEdit, cancelReply, cancelEdit, isReply, isEdit } =
     useEditReplyStore();
   const [openEdRemoveDialog, setopenEdRemoveDialog] = useState(false);
@@ -16,23 +21,23 @@ const RREsystem = ({ message }: { message: IMessage }) => {
 
   //emoji
   const [isOpenReactModal, setIsOpenReactModal] = useState(false);
- 
+
   const clickOutsideReactModal: any = useClickAway(() => {
     setIsOpenReactModal(false);
   });
   return (
     <div className="">
-      <div className="flex items-center gap-2">
-        {/* EditRemoveUnsent */}
-        <div className={`relative`} ref={clickOutsideEdRemoveDialog}>
-          <HiDotsVertical
-            onClick={() => {
-              setopenEdRemoveDialog(!openEdRemoveDialog);
-              console.log("click");
-            }}
-            className="text-lg cursor-pointer relative"
+      <div
+        className={`flex items-center gap-2 ${
+          isCurrentUserMessage ? "" : "flex-row-reverse"
+        }`}
+      >
+        {/* Reply */}
+        <div className={`relative`}>
+          <BsReply
+            onClick={() => onReply(message)}
+            className={`${isReply ? "text-blue-500" : ""}text-lg cursor-pointer`}
           />
-          <EditUnModal message={message} openEdRemoveDialog={openEdRemoveDialog} />
         </div>
         {/* emoji */}
         <div className={`relative`} ref={clickOutsideReactModal}>
@@ -41,17 +46,22 @@ const RREsystem = ({ message }: { message: IMessage }) => {
             className="text-lg cursor-pointer relative"
           />
           <ReactModal
+            isCurrentUserMessage={isCurrentUserMessage}
             message={message}
             isOpenReactModal={isOpenReactModal}
             setIsOpenReactModal={setIsOpenReactModal}
           />
         </div>
-        {/* Reply */}
-        <div className={`relative`}>
-          <BsReply
-            onClick={() => onReply(message)}
-            className={`${isReply ? "text-blue-500" : ""}text-lg cursor-pointer`}
+
+        {/* EditRemoveUnsent */}
+        <div className={`relative`} ref={clickOutsideEdRemoveDialog}>
+          <HiDotsVertical
+            onClick={() => {
+              setopenEdRemoveDialog(!openEdRemoveDialog);
+            }}
+            className="text-lg cursor-pointer relative"
           />
+          <EditUnModal message={message} openEdRemoveDialog={openEdRemoveDialog} />
         </div>
       </div>
     </div>

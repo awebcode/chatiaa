@@ -15,6 +15,8 @@ import { User } from "./model/UserModel";
 import cookieParser from "cookie-parser";
 config();
 import { sentSocketTextMessage } from "./controllers/functions";
+import { Chat } from "./model/ChatModel";
+import { Types } from "mongoose";
 const app = express();
 // app.use(uploadMiddleware.array("files"));
 
@@ -75,7 +77,7 @@ const removeUser = async (socketId: string) => {
   }
 };
 
-const getUser = (id: string) => {
+export const getSocketConnectedUser = (id: string | Types.ObjectId) => {
   return users.find((user) => user.id === id);
 };
 // WebSocket server logic
@@ -100,11 +102,26 @@ io.on("connection", (socket: Socket) => {
       content: message.content,
     });
     if (message.isGroupChat) {
-      io.to(message.groupChatId).emit("receiveMessage", data);
+      const chatUsers = await Chat.findById(message.chatId);
+      // console.log({chatU})
+      chatUsers?.users.forEach((user) => {
+        const receiverId = getSocketConnectedUser(user.toString());
+        if (receiverId) {
+          io.to(message.groupChatId)
+            .to(receiverId.socketId)
+            .emit("receiveMessage", {
+              ...data.toObject(),
+              receiverId: message.receiverId,
+            });
+        }
+      });
+
       //  socket.emit("receiveMessage", message);
     } else {
       //all connected clients in room
-      io.to(message.chatId).to(message.receiverId).emit("receiveMessage", data);
+      io.to(message.chatId)
+        .to(message.receiverId)
+        .emit("receiveMessage", { ...data.toObject(), receiverId: message.receiverId });
     }
   });
 
@@ -117,18 +134,24 @@ io.on("connection", (socket: Socket) => {
   //addReactionOnMessage
 
   socket.on("addReactionOnMessage", async (message: any) => {});
-  //removeMessage
+  //remove_remove_All_unsentMessage
 
-  socket.on("removeMessage", async (message: any) => {});
+  socket.on("remove_remove_All_unsentMessage", async (message: any) => {
+    if (message.groupChat) {
+      io.to(message.chatId).emit("remove_remove_All_unsentMessage", message);
+    } else {
+      io.to(message.receiverId).emit("remove_remove_All_unsentMessage", message);
+    }
+  });
   //removeFromAll
 
-  socket.on("removeFromAll", async (message: any) => {});
-  //unsentMessage
-
-  socket.on("unsentMessage", async (message: any) => {});
+  //deliveredMessage
+  socket.on("seenMessage", (message: any) => {
+    socket.to(message.receiverId).emit("receiveSeenMessage", message);
+  });
   //deliveredMessage
   socket.on("deliveredMessage", (message: any) => {
-    socket.broadcast.to(message.receiverId).emit("receiveDeliveredMessage", message);
+    socket.to(message.receiverId).emit("receiveDeliveredMessage", message);
   });
 
   //deliveredAllMessageAfterReconnect -To all users
@@ -151,34 +174,24 @@ io.on("connection", (socket: Socket) => {
       socket.in(data.receiverId).emit("stopTyping", data);
     }
   });
-  //@@@@@@ calling system start
 
-  socket.on("user:call", ({ to, offer, user, chatId }) => {
-    io.to(to).emit("incomming:call", { from: user._id, offer, user, chatId }); //from=socket.id prev
-  });
-  socket.on("call:rejected", ({ to, user }) => {
-    io.to(to).emit("call:rejected", { from: user._id, user });
-  });
-  socket.on("call:accepted", ({ to, ans, user }) => {
-    // console.log({ to, ans, user });
-    io.to(to).emit("call:accepted", { from: user._id, ans });
-  });
-
-  socket.on("peer:nego:needed", ({ to, offer, user }) => {
-    console.log("peer:nego:needed", offer);
-    io.to(to).emit("peer:nego:needed", { from: user._id, offer, user });
-  });
-
-  socket.on("peer:nego:done", ({ to, ans, user }) => {
-    console.log("peer:nego:done", ans);
-    io.to(to).emit("peer:nego:final", { from: user._id, ans });
-  });
   //groupCreatedNotify
 
-  socket.on("groupCreatedNotify", (data) => {
-    data.forEach((userId: any) => {
-      socket.to(userId).emit("groupCreatedNotifyReceived");
-    });
+  socket.on("groupCreatedNotify", async (data) => {
+    const chatUsers = await Chat.findById(data.chatId);
+    chatUsers?.users.forEach((user) => {
+      const receiverId = getSocketConnectedUser(user.toString());
+      if (receiverId) {
+        io.to(data.chatId)
+          .to(receiverId.socketId)
+          
+          .emit("groupCreatedNotifyReceived", {
+            ...data.toObject(),
+            receiverId: receiverId.id,
+          });
+      }
+    })
+    
   });
   //singleChat createdNitify
   socket.on("chatCreatedNotify", (data) => {

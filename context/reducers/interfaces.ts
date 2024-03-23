@@ -8,13 +8,19 @@ export interface IMessage {
     url: string;
     public_id: string;
   };
-  createdAt: string;
+  createdAt: string ;
+  updatedAt: string ;
   isReply: {
     messageId: IMessage;
-    repliedBy:Tuser
-  }
+    repliedBy: Tuser;
+  };
+  isEdit: {
+    messageId: IMessage;
+    editedBy: Tuser;
+  };
   reactions: Reaction[];
   reactionsGroup: ReactionGroup[];
+  totalReactions: number;
   sender: Tuser;
   type: string;
   status: string;
@@ -22,21 +28,21 @@ export interface IMessage {
 }
 
 export interface IChat {
+  _id: string;
   chatId?: string;
   latestMessage?: IMessage;
   isGroupChat: boolean;
   groupChatName: string;
+  chatName: string;
+
   userInfo: Tuser;
   groupAdmin?: Tuser[];
   users: Tuser[];
-  chatStatus: {
-    status: [string];
-    blockedBy: [Tuser];
-    mutedBy: [Tuser];
-    deleteBy: [Tuser];
-    archiveBy: [Tuser];
-    leaveBy: [Tuser];
-    markAsUnreadBy: [Tuser];
+  unseenCount: number;
+  createdAt: string;
+  chatBlockStatus: {
+    status: string;
+    blockedBy: Tuser[];
   };
 }
 
@@ -45,6 +51,8 @@ export interface State {
   selectedChat: IChat | null;
   messages: IMessage[];
   totalMessagesCount: number;
+  totalChats: number;
+  chats: IChat[];
 }
 
 export interface Action {

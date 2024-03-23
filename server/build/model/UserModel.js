@@ -15,10 +15,6 @@ const userSchema = new mongoose_1.default.Schema({
     provider: {
         type: "String",
     },
-    isAdmin: {
-        type: Boolean,
-        default: false,
-    },
     lastActive: {
         type: Date,
         // default: Date.now,

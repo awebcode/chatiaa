@@ -1,13 +1,7 @@
 import React from "react";
-import {
-  BsArchive,
-  BsBoxArrowLeft,
-  BsCheck,
-  BsLock,
-  BsMicMute,
-} from "react-icons/bs";
+import { BsArchive, BsBoxArrowLeft, BsCheck, BsLock, BsMicMute } from "react-icons/bs";
 import { MdCall, MdDelete, MdVideoCall } from "react-icons/md";
-import {  RiProfileLine } from "react-icons/ri";
+import { RiProfileLine } from "react-icons/ri";
 import {
   useBlockMutation,
   useDeleteSingleChatMutation,
@@ -17,7 +11,7 @@ import { useMessageState } from "@/context/MessageContext";
 
 const Modal = ({ open, setOpen, chatId, status, updatedBy, chat }: any) => {
   const blockMutation = useBlockMutation();
-  const { user:currentUser } = useMessageState();
+  const { user: currentUser } = useMessageState();
   const leaveMutation = useRemoveFromGroup();
   const deleteSignleChatMutation = useDeleteSingleChatMutation(chatId as any, false);
   const blockData = {
@@ -77,7 +71,7 @@ const Modal = ({ open, setOpen, chatId, status, updatedBy, chat }: any) => {
           blockMutation.mutateAsync(blockData);
         }
       },
-      isHidden: false,
+      isHidden: chat?.isGroupChat ? true : false,
     },
     {
       name: <span className="text-rose-500">Delete</span>,

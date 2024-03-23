@@ -4,6 +4,8 @@ import { calculateTime } from "@/functions/formatTime";
 import React from "react";
 import dynamic from "next/dynamic";
 import { ChatSkeleton } from "../../mychats/ChatSkeleton";
+import moment from "moment";
+import Time from "./Time";
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
   loading: () => <ChatSkeleton />,
   ssr: false,
@@ -36,44 +38,51 @@ const TextMessage = ({
 }) => {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   return (
-    <div className="flex items-center gap-2 max-w-sm md:max-w-2xl">
+    <div
+      className={`flex items-center gap-2 max-w-sm md:max-w-2xl ${
+        isCurrentUserMessage ? "" : "flex-row-reverse"
+      }`}
+    >
       {/* Remove/Replay/Emoji */}
-      <RREsystem message={message} />
+      <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
 
-      <div
-        className={`relative m-4 p-1 rounded  ${
-          message.sender._id === currentChatUser?.userInfo._id
-            ? "bg-incoming-background rounded-bl-3xl"
-            : "bg-outgoing-background rounded-br-3xl"
-        }`}
-      >
-        <div className={""}>
-          <div className="relative px-4 py-2">
-            {/* Reply */}
-            <RepliedMessage message={message} currentUser={currentUser as any} />
-            {/* REACTIONS */}
-            {message.reactions?.length > 0 && (
-              <DisplayReaction
-                reactions={message.reactions}
+      <div className="">
+        <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
+
+        <div
+          className={`relative m-4 p-1 rounded  ${
+            message.sender._id === currentChatUser?.userInfo._id
+              ? "bg-incoming-background rounded-bl-3xl"
+              : "bg-outgoing-background rounded-br-3xl"
+          }`}
+        >
+          <div className={""}>
+            <div className="relative px-4 py-2">
+              {/* Reply */}
+              <RepliedMessage message={message} currentUser={currentUser as any} />
+              {/* REACTIONS */}
+              {message.reactions?.length > 0 && (
+                <DisplayReaction
+                  message={message}
+                  reactions={message.reactions}
+                  isCurrentUserMessage={isCurrentUserMessage}
+                  reactionsGroup={message.reactionsGroup}
+                />
+              )}
+
+              {/* message status */}
+              <Status
+                message={message}
+                isLastSeenMessage={isLastSeenMessage}
+                isUserOnline={isUserOnline}
                 isCurrentUserMessage={isCurrentUserMessage}
-                reactionsGroup={message.reactionsGroup}
               />
-            )}
-            {/* message status */}
-            <Status
-              message={message}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
-            />
+            </div>
           </div>
         </div>
-        <div className={"absolute -top-5 right-1 flex items-end gap-1"}>
-          <span className={"text-bubble-meta text-[11px] pt-1 min-w-fit"}>
-            {calculateTime(message.createdAt)}
-          </span>
-          <span className={"text-bubble-meta"}></span>
-        </div>
       </div>
+
+      {/* Time */}
     </div>
   );
 };

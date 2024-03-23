@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import dynamic from "next/dynamic";
+import Time from "./Time";
 const RREsystem = dynamic(() => import("../RRE/RREsystem"));
 const Status = dynamic(() => import("./Status"));
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
@@ -86,59 +87,64 @@ export default function  ({
   return (
     <div className="flex items-center gap-2 ">
       {/* Remove/Replay/Emoji */}
-      <RREsystem message={message} />
-      <div
-        className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
-      >
-        <div>
-          <Image
-            src={message.sender.image}
-            height={60}
-            width={60}
-            loading="lazy"
-            alt="avatar"
-            className="h-full w-full object-cover rounded-full"
-          />
-        </div>
-        <div className={"cursor-pointer text-xl"}>
-          {!playing ? (
-            <FaPlay onClick={handlePlayAudio} />
-          ) : (
-            <FaStop onClick={handlePauseAudio} />
-          )}
-        </div>
-        <div className={"relative "}>
-          <div className={"w-60"} ref={waveformRef}></div>
-          <div
-            className={
-              "text-bubble-meta text-[11px] pt-1 flex justify-between absolute bottom-[-22px] w-full"
-            }
-          >
-            <span className="text-sm font-medium">
-              {playing ? currentTime : totalTime}
-            </span>
-            {/* Reply */}
-            <RepliedMessage message={message} currentUser={currentUser as any} />
-            {/* REACTIONS */}
-            {message.reactions?.length > 0 && (
-              <DisplayReaction
-                reactions={message.reactions}
-                isCurrentUserMessage={isCurrentUserMessage}
-                reactionsGroup={message.reactionsGroup}
-              />
-            )}
-            {/* message status */}
-            <Status
-              message={message}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
+      <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
+      <div className="">
+        <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
+        <div
+          className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
+        >
+          <div>
+            <Image
+              src={message.sender.image}
+              height={60}
+              width={60}
+              loading="lazy"
+              alt="avatar"
+              className="h-full w-full object-cover rounded-full"
             />
-            <span className={"flex gap-1 text-sm font-medium "}>
-              <span>{calculateTime(message.createdAt)}</span>
-              {/* {message.senderId === userInfo.id && (
-              <MessageStatus messageStatus={message.messageStatus} />
-            )} */}
-            </span>
+          </div>
+          <div className={"cursor-pointer text-xl"}>
+            {!playing ? (
+              <FaPlay onClick={handlePlayAudio} />
+            ) : (
+              <FaStop onClick={handlePauseAudio} />
+            )}
+          </div>
+          <div className={"relative "}>
+            <div className={"w-60"} ref={waveformRef}></div>
+            <div
+              className={
+                "text-bubble-meta text-[11px] pt-1 flex justify-between absolute bottom-[-22px] w-full"
+              }
+            >
+              <span className="text-sm font-medium">
+                {playing ? currentTime : totalTime}
+              </span>
+              {/* Reply */}
+              <RepliedMessage message={message} currentUser={currentUser as any} />
+              {/* REACTIONS */}
+              {message.reactions?.length > 0 && (
+                <DisplayReaction
+                  message={message}
+                  reactions={message.reactions}
+                  isCurrentUserMessage={isCurrentUserMessage}
+                  reactionsGroup={message.reactionsGroup}
+                />
+              )}
+              {/* message status */}
+              <Status
+                isCurrentUserMessage={isCurrentUserMessage}
+                message={message}
+                isLastSeenMessage={isLastSeenMessage}
+                isUserOnline={isUserOnline}
+              />
+            </div>
+            <div className={"absolute -top-5 right-1 flex items-end gap-1"}>
+              <span className={"text-bubble-meta text-[11px] pt-1 min-w-fit"}>
+                {calculateTime(message.createdAt)}
+              </span>
+              <span className={"text-bubble-meta"}></span>
+            </div>
           </div>
         </div>
       </div>

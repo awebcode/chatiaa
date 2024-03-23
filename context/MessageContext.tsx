@@ -21,7 +21,9 @@ const initialState: State = {
   selectedChat:null,
   messages: [],
   user: null,
-  totalMessagesCount:0
+  totalMessagesCount: 0,
+  totalChats:0,
+  chats:[]
 };
 
 export const MessageContextProvider = ({ children }: { children: ReactNode }) => {

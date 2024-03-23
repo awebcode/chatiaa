@@ -4,6 +4,7 @@ import {
   addRemoveEmojiReactions,
   allMessages,
   editMessage,
+  getMessageReactions,
   replyMessage,
   sendMessage,
   updateAllMessageStatusSeen,
@@ -18,6 +19,9 @@ import uploadMiddleware from "../middlewares/uploadMiddleware";
 const messageRoute = express.Router();
 
 messageRoute.route("/allmessages/:chatId").get(authMiddleware, allMessages);
+messageRoute
+  .route("/getMessageReactions/:messageId")
+  .get(authMiddleware, getMessageReactions);
 messageRoute
   .route("/sentmessage")
   .post(authMiddleware, uploadMiddleware.array("files"), sendMessage);

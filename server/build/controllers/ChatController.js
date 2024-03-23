@@ -61,8 +61,9 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 exports.accessChat = accessChat;
 const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const limit = parseInt(req.query.limit) || 4;
-        const skip = parseInt(req.query.skip) || 0;
+        const limit = parseInt(req.query.limit) || 10;
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit;
         const keyword = req.query.search
             ? {
                 $or: [
@@ -81,15 +82,18 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             users: { $elemMatch: { $eq: req.id } },
         })
             .populate("users", "-password")
-            // .populate("groupAdmin", "-password")
+            .populate("groupAdmin", "email name image lastActive")
             .populate("latestMessage")
-            // .populate({
-            //   path: "chatStatus.updatedBy",
-            //   select: "name image email lastActive",
-            // })
+            .populate({
+            path: "chatBlockStatus",
+            populate: {
+                path: "user",
+                select: "name image email lastActive",
+            },
+        })
             .sort({ updatedAt: -1 })
-            .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .skip(skip);
         const populatedChats = yield UserModel_1.User.populate(chats, {
             path: "latestMessage.sender",
             select: "name image email lastActive ",
@@ -100,8 +104,25 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             filteredChats = populatedChats.filter((chat) => chat.users.some((user) => user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
                 user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))));
         }
+        const filteredChatsWithUnseenCount = filteredChats.map((chat) => {
+            const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
+            return Object.assign(Object.assign({}, chat.toObject()), { unseenCount: correspondingUnseenCount
+                    ? correspondingUnseenCount.unseenMessagesCount
+                    : 0 });
+        });
+        // Modify populatedChats to include unseenCount for each chat
+        const populatedChatsWithUnseenCount = populatedChats.map((chat) => {
+            const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
+            return Object.assign(Object.assign({}, chat.toObject()), { unseenCount: correspondingUnseenCount
+                    ? correspondingUnseenCount.unseenMessagesCount
+                    : 0 });
+        });
         res.status(200).send({
-            chats: filteredChats.length > 0 ? filteredChats : req.query.search ? [] : populatedChats,
+            chats: filteredChats.length > 0
+                ? filteredChatsWithUnseenCount
+                : req.query.search
+                    ? []
+                    : populatedChatsWithUnseenCount,
             total: filteredChats.length > 0
                 ? filteredChats.length
                 : req.query.search
@@ -177,8 +198,8 @@ const unseenMessagesCounts = (limit, skip, keyword, userId) => __awaiter(void 0,
 //@route           POST /api/chat/group
 //@access          Protected
 const createGroupChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!req.body.users || !req.body.name) {
-        throw new errorHandler_1.CustomErrorHandler("Please Fill all the feilds!", 400);
+    if (!req.body.users || !req.body.groupName) {
+        return next(new errorHandler_1.CustomErrorHandler("GroupName or users cannot be empty!", 400));
     }
     var users = req.body.users;
     if (users.length < 2) {
@@ -187,7 +208,7 @@ const createGroupChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     users.push(req.id);
     try {
         const groupChat = yield ChatModel_1.Chat.create({
-            chatName: req.body.name,
+            chatName: req.body.groupName,
             users: users,
             isGroupChat: true,
             groupAdmin: req.id,

@@ -10,6 +10,9 @@ const uploadMiddleware_1 = __importDefault(require("../middlewares/uploadMiddlew
 const messageRoute = express_1.default.Router();
 messageRoute.route("/allmessages/:chatId").get(authMiddleware_1.default, messageController_1.allMessages);
 messageRoute
+    .route("/getMessageReactions/:messageId")
+    .get(authMiddleware_1.default, messageController_1.getMessageReactions);
+messageRoute
     .route("/sentmessage")
     .post(authMiddleware_1.default, uploadMiddleware_1.default.array("files"), messageController_1.sendMessage);
 messageRoute

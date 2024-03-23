@@ -44,7 +44,7 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         // Fetch avatar URL and upload it to Cloudinary
         const generator = new random_avatar_generator_1.AvatarGenerator();
-        const randomAvatarUrl = generator.generateRandomAvatar("avatar");
+        const randomAvatarUrl = generator.generateRandomAvatar();
         const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(randomAvatarUrl, {
             folder: "messengaria",
             format: "png", // Specify the format as PNG

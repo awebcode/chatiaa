@@ -15,56 +15,54 @@ import dynamic from "next/dynamic";
 import { Link, useRouter } from "@/navigation";
 import { RenderStatus } from "../logics/RenderStatusComponent";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { CLEAR_MESSAGES, SET_SELECTED_CHAT } from "@/context/reducers/actions";
+import {
+  CLEAR_MESSAGES,
+  SET_SELECTED_CHAT,
+  UPDATE_CHAT_STATUS,
+} from "@/context/reducers/actions";
 import { MessagePreview } from "./PreviewMessage";
+import { IChat } from "@/context/reducers/interfaces";
 const Modal = dynamic(() => import("./Modal"));
 const TypingIndicator = dynamic(() => import("../TypingIndicator"));
 
-type TChat = {
-  _id?: string;
-  latestMessage: { content: string; createdAt: string | any; status: string };
-  createdAt: Date | any;
-};
-
 const FriendsCard: React.FC<{
-  chat: TChat | any;
-  unseenArray: any;
-}> = ({ chat, unseenArray }) => {
+  chat: IChat;
+}> = ({ chat }) => {
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser, selectedChat } = useMessageState();
   const queryclient = useQueryClient();
   const { onlineUsers } = useOnlineUsersStore();
-  const { isTyping, content: typingContent, chatId: typingChatId } = useTypingStore();
+  const {
+    isTyping,
+    content: typingContent,
+    chatId: typingChatId,
+    userInfo: typingUserInfo,
+  } = useTypingStore();
   const updateStatusMutation = useMutation({
     mutationKey: ["messages"],
     mutationFn: (chatId: string) => updateAllMessageStatusAsSeen(chatId),
     onSuccess: (data) => {
-      const deliverData = {
+      const seenData = {
         senderId: currentUser?._id,
         receiverId: !chat.isGroupChat
           ? getSenderFull(currentUser, chat.users)?._id
           : chat._id,
 
         image: !chat.isGroupChat ? currentUser?.image : "/vercel.svg",
+        chatId: chat._id,
+        messageId: chat.latestMessage?._id,
+        status: "seen",
+        type:"seenAll"
       };
-      socket.emit("deliveredMessage", deliverData);
-      queryclient.invalidateQueries({ queryKey: ["messages"] });
-    },
-  });
-  const mutaion = useMutation({
-    mutationKey: ["messages", chat?._id],
-    mutationFn: (data) => accessChats(data),
-    onSuccess: (data) => {
-      queryclient.invalidateQueries({ queryKey: ["messages", chat?._id] });
-
-      // console.log({onsuccess:data})
+      socket.emit("seenMessage", seenData);
     },
   });
 
   const handleClick = (chatId: string) => {
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
-    dispatch({ type: CLEAR_MESSAGES });
+    // dispatch({ type: CLEAR_MESSAGES });
+    dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
@@ -96,13 +94,12 @@ const FriendsCard: React.FC<{
     socket.emit("join", {
       chatId: chat?._id,
     });
-    //accessChat
-    mutaion.mutateAsync(getSenderFull(currentUser, chat.users)?._id as any);
+
     if (
       chat?.latestMessage?.status === "unseen" ||
       chat?.latestMessage?.status === "delivered"
     ) {
-      updateStatusMutation.mutateAsync(chatId);
+      updateStatusMutation.mutate(chatId);
     }
     // queryclient.invalidateQueries({ queryKey: ["messages", chatId] });
   };
@@ -125,40 +122,23 @@ const FriendsCard: React.FC<{
           onClick={() => handleClick(chat._id as string)}
         >
           <div className="relative p-[2px] h-10 w-10 ring-2 ring-violet-600 rounded-full">
-            {!chat.isGroupChat &&
-            getSenderFull(currentUser, chat.users).image?.includes("accessoriesType") ? (
-              <img
-                height={35}
-                width={35}
-                className="rounded-full  h-full w-full"
-                alt={
-                  !chat.isGroupChat
-                    ? getSenderFull(currentUser, chat.users).image
-                    : chat.chatName
-                }
-                src={
-                  !chat.isGroupChat
-                    ? getSenderFull(currentUser, chat.users)?.image
-                    : "/vercel.svg"
-                }
-              />
-            ) : (
-              <Image
-                height={35}
-                width={35}
-                className="rounded-full  h-full w-full"
-                alt={
-                  !chat.isGroupChat
-                    ? getSenderFull(currentUser, chat.users).image
-                    : chat.chatName
-                }
-                src={
-                  !chat.isGroupChat
-                    ? getSenderFull(currentUser, chat.users)?.image
-                    : "/vercel.svg"
-                }
-              />
-            )}
+            <Image
+              height={35}
+              width={35}
+              className="rounded-full  h-full w-full"
+              alt={
+                !chat.isGroupChat
+                  ? getSenderFull(currentUser, chat.users).image
+                  : chat.chatName
+              }
+              src={
+                !chat.isGroupChat
+                  ? getSenderFull(currentUser, chat.users)?.image
+                  : "/vercel.svg"
+              }
+              loading="lazy"
+            />
+
             <span
               className={`absolute bottom-0 right-0 rounded-full p-[6px] ${
                 isUserOnline ? "bg-green-500" : "bg-rose-500"
@@ -179,7 +159,11 @@ const FriendsCard: React.FC<{
               }`}
             >
               {isTyping && typingContent && typingChatId === chat?._id ? (
-                <TypingIndicator />
+                <TypingIndicator
+                  user={typingUserInfo}
+                  isTyping={isTyping}
+                  onFriendListCard={true}
+                />
               ) : (
                 <MessagePreview chat={chat} currentUser={currentUser as any} />
               )}
@@ -203,8 +187,7 @@ const FriendsCard: React.FC<{
           {RenderStatus(
             chat?.latestMessage,
             "onFriendListCard",
-            unseenArray,
-            currentUser,
+            chat?.unseenCount,
             false
           )}
           <div ref={userModalRef} className="relative">
@@ -214,7 +197,7 @@ const FriendsCard: React.FC<{
               setOpen={setOpen}
               chatId={chat?._id}
               status={chat?.chatStatus?.status}
-              updatedBy={chat?.chatStatus?.updatedBy}
+              updatedBy={chat?.chatStatus} //chat?.chatStatus?.updatedBy
               currentUser={currentUser}
               chat={chat}
             />

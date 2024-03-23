@@ -3,20 +3,23 @@ import { Emoji, EmojiStyle } from "emoji-picker-react";
 import React, { useState } from "react";
 const EmojiModal = dynamic(() => import("./EmojiModal"));
 import { MdAdd } from "react-icons/md";
-import { useClickAway } from "@uidotdev/usehooks";
+import { useClickAway, useMediaQuery } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
 import { useMessageState } from "@/context/MessageContext";
 import { addRemoveEmojiReactions } from "@/functions/messageActions";
 import { toast } from "react-toastify";
+import { EmojiBottomSheet } from "./SheetBottomEmoji";
 
 const ReactModal = ({
   message,
   setIsOpenReactModal,
   isOpenReactModal,
+  isCurrentUserMessage
 }: {
   isOpenReactModal: boolean;
   setIsOpenReactModal: any;
-  message: IMessage;
+    message: IMessage;
+  isCurrentUserMessage:boolean
 }) => {
   //emoji
   const { selectedChat } = useMessageState();
@@ -39,10 +42,17 @@ const ReactModal = ({
     if (res.success) {
     }
   };
-
+ const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   return (
     <div
-      className={`absolute  z-50  -top-[80px] -left-10 md:-left-52 p-2 flex md:p-4 rounded-xl bg-gray-800  max-w-[40rem] transition-transform   duration-500  ${
+      className={`absolute  z-50  -top-[80px] ${
+        isCurrentUserMessage
+          ? `${
+              isSmallDevice?"-left-10":""} -top-[32px] md:-top-[70px] md:-left-44  items-center justify-center`
+          : `${
+              isSmallDevice ? `-right-6 flex-row` : `-left-0 flex-row-reverse`
+            }   -top-[32px] md:-top-[80px]`
+      }  p-2 flex md:p-4 rounded-xl bg-gray-800  max-w-[40rem] transition-transform   duration-500  ${
         isOpenReactModal
           ? "translate-y-1 scale-100 opacity-100"
           : "translate-y-0 scale-0 opacity-0"
@@ -73,13 +83,16 @@ const ReactModal = ({
           </div>
         );
       })}
-      <span
-        ref={clickOutsideEmojiModal}
-        className="p-2 rounded-full bg-gray-700 relative"
-      >
+      <span ref={clickOutsideEmojiModal} className=" rounded-full  relative ">
         <MdAdd
           onClick={() => setIsOpenEmojiModal((prev: boolean) => !prev)}
-          className={`text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer `}
+          className={`hidden md:flex text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer `}
+        />
+        <EmojiBottomSheet
+          onEmojiClick={onEmojiClick}
+          openEmoji={isOpenEmojiModal}
+          setIsOpenReactModal={setIsOpenReactModal}
+          message={message}
         />
         <EmojiModal
           onEmojiClick={onEmojiClick}
@@ -87,6 +100,7 @@ const ReactModal = ({
           setIsOpenEmojiModal={setIsOpenEmojiModal}
           setIsOpenReactModal={setIsOpenReactModal}
           message={message}
+          isCurrentUserMessage={isCurrentUserMessage}
         />
       </span>
     </div>

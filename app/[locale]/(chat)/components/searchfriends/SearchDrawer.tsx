@@ -21,7 +21,7 @@ export function SearchDrawer() {
         <SheetClose id="closeSheetDialog" className="hidden"></SheetClose>
 
         <SheetTrigger asChild className="w-full">
-          <Button variant="default" size={"lg"}>
+          <Button variant="secondary" size={"lg"}>
             Search User
           </Button>
         </SheetTrigger>

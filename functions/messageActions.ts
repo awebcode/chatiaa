@@ -9,23 +9,32 @@ export const allMessages = async ({
 }: {
   pageParam: any;
   queryKey: any;
-  }) => {
+}) => {
   const chatId = queryKey[1];
   if (chatId === undefined) {
-     
-     // Handle the case where chatId is undefined
-     return { data: [], prevOffset: 0, skip: 0 };
-   }
+    // Handle the case where chatId is undefined
+    return { data: [], prevOffset: 0, skip: 0 };
+  }
 
-    const { data } = await axios.get(
-      `${BaseUrl}/allMessages/${chatId}?skip=${pageParam}&limit=${10}`,
-      {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      }
-    );
-    return { ...data, prevOffset: pageParam, skip: pageParam };
-  
+  const { data } = await axios.get(
+    `${BaseUrl}/allMessages/${chatId}?skip=${pageParam}&limit=${10}`,
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+  return { ...data, prevOffset: pageParam, skip: pageParam };
+};
+export const getMessageReactions = async (messageId: string, page: number) => {
+  const { data } = await axiosClient.get(
+    `/getMessageReactions/${messageId}?page=${page}&limit=10`,
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+  const reactions = data.reactions;
+  return reactions;
 };
 // export const allMessages = async (chatId: string) => {
 //   const { data } = await axiosClient.get(`/allMessages/${chatId}`, {
@@ -76,31 +85,51 @@ export const updateAllMessageStatusAsDelivered = async (userId: string) => {
   return data;
 };
 
-//update all  message status as Remove
-export const updateAllMessageStatusAsRemove = async (userData: any) => {
-  const { data } = await axiosClient.put(`/updateMessageStatusRemove`, userData, {
-    headers: { "Content-Type": "application/json" },
-    withCredentials: true,
-  });
-  return data;
+//update   message status as Remove
+export const updateMessageStatusAsRemove = async (removeData: {
+  status: string;
+  messageId: string;
+  chatId: string;
+}) => {
+  try {
+    const { data } = await axiosClient.put(`/updateMessageStatusRemove`, removeData, {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
+    return data;
+  } catch (error) {
+    return error;
+  }
 };
 
-//update all  message status as Unsent
-export const updateAllMessageStatusAsUnsent = async (userData: any) => {
-  const { data } = await axiosClient.put(`/updateMessageStatusUnsent`, userData, {
-    headers: { "Content-Type": "application/json" },
-    withCredentials: true,
-  });
-  return data;
+//update  message status as Unsent
+export const updateMessageStatusAsUnsent = async (unsentData: {
+  status: string;
+  messageId: string;
+  chatId: string;
+}) => {
+  try {
+    const { data } = await axiosClient.put(`/updateMessageStatusUnsent`, unsentData, {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
+    return data;
+  } catch (error) {
+    return error;
+  }
 };
 
 //update chat status as Block/Unblock
 export const updateChatStatusAsBlockOUnblock = async (userData: any) => {
-  const { data } = await axiosClient.put(`/updateChatStatusAsBlockOUnblock`, userData, {
-    headers: { "Content-Type": "application/json" },
-    withCredentials: true,
-  });
-  return data;
+  try {
+    const { data } = await axiosClient.put(`/updateChatStatusAsBlockOUnblock`, userData, {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
+    return data;
+  } catch (error) {
+    return error;
+  }
 };
 
 //ReplyMessage

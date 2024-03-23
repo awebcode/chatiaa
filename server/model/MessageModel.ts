@@ -27,7 +27,7 @@ const messageSchema = new mongoose.Schema(
         "seen",
         "unseen",
         "delivered",
-        "remove",
+        "removed",
         "removeFromAll",
         "reBack",
         "unsent",

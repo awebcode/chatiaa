@@ -5,7 +5,6 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { getAllUsers } from "@/functions/authActions";
 
 import dynamic from "next/dynamic";
-import { useTheme } from "next-themes";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const UserCard = dynamic(() => import("./UserCard"));

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.io = void 0;
+exports.getSocketConnectedUser = exports.io = void 0;
 // server.ts
 const express_1 = __importDefault(require("express"));
 const http_1 = require("http");
@@ -29,6 +29,7 @@ const UserModel_1 = require("./model/UserModel");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 (0, dotenv_1.config)();
 const functions_1 = require("./controllers/functions");
+const ChatModel_1 = require("./model/ChatModel");
 const app = (0, express_1.default)();
 // app.use(uploadMiddleware.array("files"));
 app.use(express_1.default.json({ limit: "100mb" }));
@@ -71,9 +72,10 @@ const removeUser = (socketId) => __awaiter(void 0, void 0, void 0, function* () 
         }
     }
 });
-const getUser = (id) => {
+const getSocketConnectedUser = (id) => {
     return users.find((user) => user.id === id);
 };
+exports.getSocketConnectedUser = getSocketConnectedUser;
 // WebSocket server logic
 exports.io.on("connection", (socket) => {
     socket.on("setup", (userData) => {
@@ -95,12 +97,23 @@ exports.io.on("connection", (socket) => {
             content: message.content,
         });
         if (message.isGroupChat) {
-            exports.io.to(message.groupChatId).emit("receiveMessage", data);
+            const chatUsers = yield ChatModel_1.Chat.findById(message.chatId);
+            // console.log({chatU})
+            chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
+                const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
+                if (receiverId) {
+                    exports.io.to(message.groupChatId)
+                        .to(receiverId.socketId)
+                        .emit("receiveMessage", Object.assign(Object.assign({}, data.toObject()), { receiverId: message.receiverId }));
+                }
+            });
             //  socket.emit("receiveMessage", message);
         }
         else {
             //all connected clients in room
-            exports.io.to(message.chatId).to(message.receiverId).emit("receiveMessage", data);
+            exports.io.to(message.chatId)
+                .to(message.receiverId)
+                .emit("receiveMessage", Object.assign(Object.assign({}, data.toObject()), { receiverId: message.receiverId }));
         }
     }));
     //ReplyMessage
@@ -109,15 +122,23 @@ exports.io.on("connection", (socket) => {
     socket.on("editMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
     //addReactionOnMessage
     socket.on("addReactionOnMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
-    //removeMessage
-    socket.on("removeMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
+    //remove_remove_All_unsentMessage
+    socket.on("remove_remove_All_unsentMessage", (message) => __awaiter(void 0, void 0, void 0, function* () {
+        if (message.groupChat) {
+            exports.io.to(message.chatId).emit("remove_remove_All_unsentMessage", message);
+        }
+        else {
+            exports.io.to(message.receiverId).emit("remove_remove_All_unsentMessage", message);
+        }
+    }));
     //removeFromAll
-    socket.on("removeFromAll", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
-    //unsentMessage
-    socket.on("unsentMessage", (message) => __awaiter(void 0, void 0, void 0, function* () { }));
+    //deliveredMessage
+    socket.on("seenMessage", (message) => {
+        socket.to(message.receiverId).emit("receiveSeenMessage", message);
+    });
     //deliveredMessage
     socket.on("deliveredMessage", (message) => {
-        socket.broadcast.to(message.receiverId).emit("receiveDeliveredMessage", message);
+        socket.to(message.receiverId).emit("receiveDeliveredMessage", message);
     });
     //deliveredAllMessageAfterReconnect -To all users
     socket.on("deliveredAllMessageAfterReconnect", (message) => {
@@ -141,31 +162,18 @@ exports.io.on("connection", (socket) => {
             socket.in(data.receiverId).emit("stopTyping", data);
         }
     });
-    //@@@@@@ calling system start
-    socket.on("user:call", ({ to, offer, user, chatId }) => {
-        exports.io.to(to).emit("incomming:call", { from: user._id, offer, user, chatId }); //from=socket.id prev
-    });
-    socket.on("call:rejected", ({ to, user }) => {
-        exports.io.to(to).emit("call:rejected", { from: user._id, user });
-    });
-    socket.on("call:accepted", ({ to, ans, user }) => {
-        // console.log({ to, ans, user });
-        exports.io.to(to).emit("call:accepted", { from: user._id, ans });
-    });
-    socket.on("peer:nego:needed", ({ to, offer, user }) => {
-        console.log("peer:nego:needed", offer);
-        exports.io.to(to).emit("peer:nego:needed", { from: user._id, offer, user });
-    });
-    socket.on("peer:nego:done", ({ to, ans, user }) => {
-        console.log("peer:nego:done", ans);
-        exports.io.to(to).emit("peer:nego:final", { from: user._id, ans });
-    });
     //groupCreatedNotify
-    socket.on("groupCreatedNotify", (data) => {
-        data.forEach((userId) => {
-            socket.to(userId).emit("groupCreatedNotifyReceived");
+    socket.on("groupCreatedNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        const chatUsers = yield ChatModel_1.Chat.findById(data.chatId);
+        chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
+            const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
+            if (receiverId) {
+                exports.io.to(data.chatId)
+                    .to(receiverId.socketId)
+                    .emit("groupCreatedNotifyReceived", Object.assign(Object.assign({}, data.toObject()), { receiverId: receiverId.id }));
+            }
         });
-    });
+    }));
     //singleChat createdNitify
     socket.on("chatCreatedNotify", (data) => {
         console.log({ chatCreatedNotify: data });

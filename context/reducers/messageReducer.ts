@@ -5,15 +5,18 @@ import {
   SET_USER,
   CLEAR_MESSAGES,
   SET_TOTAL_MESSAGES_COUNT,
+  SET_CHATS,
+  UPDATE_MESSAGE_STATUS,
+  UPDATE_CHAT_STATUS,
+  UPDATE_LATEST_CHAT_MESSAGE,
+  UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND,
+  REMOVE_UNSENT_MESSAGE,
 } from "./actions";
 import { Action, State } from "./interfaces";
 import {
   ADD_REPLY_MESSAGE,
   ADD_EDITED_MESSAGE,
   ADD_REACTION_ON_MESSAGE,
-  REMOVE_MESSAGE,
-  REMOVE_FROM_ALL,
-  UNSENT_MESSAGE,
 } from "./actions";
 export const MessageStateContext = createContext<State | undefined>(undefined);
 export const MessageDispatchContext = createContext<Dispatch<Action> | undefined>(
@@ -24,8 +27,76 @@ export const messageReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case SET_USER:
       return { ...state, user: action.payload };
+
+    // set chats start
+    case SET_CHATS:
+      let updatedChats;
+      if (Array.isArray(action.payload.chats)) {
+        if (action.payload.onScrollingData) {
+          //when scroll
+          updatedChats = [...state.chats, ...action.payload.chats];
+        } else {
+          updatedChats = action.payload.chats;
+        }
+      } else {
+        updatedChats = [action.payload, ...state.chats];
+      }
+      return { ...state, chats: updatedChats, totalChats: action.payload.total };
+    //UPDATE_CHAT_STATUS
+    case UPDATE_CHAT_STATUS:
+      return {
+        ...state,
+        // Update chats array to replace the existing message with the edited one
+        chats: state.chats.map((chat) =>
+          chat._id === action.payload.chatId
+            ? {
+                ...chat,
+                latestMessage: {
+                  ...(chat.latestMessage as any),
+                  status: action.payload.status,
+                },
+              }
+            : chat
+        ),
+      };
+
+    //UPDATE_LATEST_CHAT_MESSAGE
+    case UPDATE_LATEST_CHAT_MESSAGE:
+      // Find the index of the chat being updated
+      const updatedChatIndex = state.chats.findIndex(
+        (chat) => chat._id === action.payload.chat._id
+      );
+
+      // If the chat is not found, return state as is
+      if (updatedChatIndex === -1) {
+        return state;
+      }
+
+      // Update the chat message and unseen count
+      const updatedChat = {
+        ...state.chats[updatedChatIndex],
+        latestMessage: action.payload,
+        unseenCount: (state.chats[updatedChatIndex].unseenCount || 0) + 1,
+      };
+
+      // Remove the chat from its current position
+      const newUpdatedChats = state.chats.filter(
+        (chat) => chat._id !== action.payload.chat._id
+      );
+
+      // Add the updated chat at the beginning
+      newUpdatedChats.unshift(updatedChat);
+
+      return {
+        ...state,
+        chats: newUpdatedChats,
+      };
+
+    // set chats end
+    //selected chat start
     case SET_SELECTED_CHAT:
       return { ...state, selectedChat: action.payload };
+    //selected chat end
     case SET_MESSAGES:
       let updatedMessages;
       //&&
@@ -36,14 +107,39 @@ export const messageReducer = (state: State, action: Action): State => {
         updatedMessages = [action.payload, ...state.messages];
       }
       return { ...state, messages: updatedMessages };
+    case SET_TOTAL_MESSAGES_COUNT:
+      return {
+        ...state,
+        totalMessagesCount: action.payload,
+      };
+    //UPDATE MESSAGE STATUS
+    case UPDATE_MESSAGE_STATUS:
+      return {
+        ...state,
+        // Update messages array to replace the existing message with the edited one
+        messages: state?.messages?.map((message) =>
+          // Check if message.type is "seenAll", if so, update status of all messages
+          action.payload.type === "seenAll"
+            ? { ...message, status: action.payload.status }
+            : // Otherwise, update status of a specific message identified by messageId
+            message._id === action.payload.messageId
+            ? { ...message, status: action.payload.status }
+            : message
+        ),
+      };
+
+    case UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND:
+      return {
+        ...state,
+        // Update messages array to replace the existing message with the edited one
+        chats: state?.chats?.map((chat) =>
+          chat.latestMessage?.sender._id === action.payload.senderId
+            ? { ...chat, status: "delivered" }
+            : chat
+        ),
+      };
     case CLEAR_MESSAGES: {
       return { ...state, messages: [] };
-    }
-    case CLEAR_MESSAGES: {
-      return { ...state, messages: [] };
-    }
-    case SET_TOTAL_MESSAGES_COUNT: {
-      return { ...state, totalMessagesCount: action.payload };
     }
 
     case ADD_REPLY_MESSAGE:
@@ -57,10 +153,12 @@ export const messageReducer = (state: State, action: Action): State => {
       return {
         ...state,
         // Update messages array to replace the existing message with the edited one
-        messages: state.messages.map((message) =>
+        messages: state?.messages?.map((message) =>
           message._id === action.payload._id ? action.payload : message
         ),
       };
+
+    //reaction add/remove/update handler
     case ADD_REACTION_ON_MESSAGE:
       return {
         ...state,
@@ -94,6 +192,7 @@ export const messageReducer = (state: State, action: Action): State => {
 
               return {
                 ...message,
+                totalReactions: message.totalReactions + 1,
                 reactions: updatedReactions,
                 reactionsGroup: updatedReactionsGroup,
               };
@@ -132,11 +231,20 @@ export const messageReducer = (state: State, action: Action): State => {
                   // If the emoji exists in reactionsGroup, increment its count
                   updatedReactionsGroup[updatedEmojiIndex].count++;
                 } else {
+                  const findExisting = message.reactions.find(
+                    (user) => user.reactBy?._id === action.payload.reaction?.reactBy?._id
+                  );
+
+                  const updatedEmojiIndex = updatedReactionsGroup.findIndex(
+                    (emoji) => emoji._id === findExisting?.emoji
+                  );
                   // If the emoji doesn't exist, add a new entry
-                  updatedReactionsGroup.push({
-                    _id: action.payload.reaction.emoji,
-                    count: 1,
-                  });
+                  if (findExisting) {
+                    if (updatedEmojiIndex !== -1) {
+                      updatedReactionsGroup[updatedEmojiIndex]._id =
+                        action.payload.reaction.emoji;
+                    }
+                  }
                 }
               }
 
@@ -151,20 +259,17 @@ export const messageReducer = (state: State, action: Action): State => {
                 (reaction) => reaction._id !== action.payload.reaction._id
               );
               // Filter out emojis with count === 1 before mapping
-              const updatedReactionsGroup = message.reactionsGroup
-                .filter((emoji) => emoji.count !== 1) // Filter out emojis with count === 1
-                .map((emoji) => {
-                  if (emoji._id === action.payload.reaction.emoji) {
-                    // If the emoji matches, decrement the count
-                    return { ...emoji, count: Math.max(0, emoji.count - 1) };
-                  }
-                  return emoji;
-                });
-
+              let updatedReactionsGroup;
+              if (message.reactions.length < 3) {
+                updatedReactionsGroup = message.reactionsGroup.filter(
+                  (emoji) => emoji._id !== action.payload.reaction.emoji
+                ); // Filter out emojis with count === 1
+              }
               return {
                 ...message,
+                totalReactions: message.totalReactions - 1,
                 reactions: updatedReactions,
-                reactionsGroup: updatedReactionsGroup,
+                reactionsGroup: updatedReactionsGroup as any,
               };
             }
           }
@@ -172,29 +277,52 @@ export const messageReducer = (state: State, action: Action): State => {
         }),
       };
 
-    // Handle removing message
-    case REMOVE_MESSAGE:
+    // Handle remove/unsent/removefromall/reback removed message
+    case REMOVE_UNSENT_MESSAGE:
       return {
         ...state,
-        // Update messages array to exclude the removed message
-        messages: state.messages.filter((message) => message._id !== action.payload),
+        // Update messages array to replace the existing message with the edited one
+        messages:
+          action.payload.status === "removed"
+            ? state?.messages?.map((message) =>
+                message?._id === action.payload.messageId
+                  ? {
+                      ...message,
+                      status: "removed",
+                      updatedAt: Date.now().toString(),
+                      removedBy: action.payload.updatedBy,
+                    }
+                  : message
+              )
+            : action.payload.status === "removeFromAll"
+            ? state.messages.filter((message) => message._id !== action.payload.messageId)
+            : action.payload.status === "reBack"
+            ? state?.messages?.map((message) =>
+                message?._id === action.payload.messageId
+                  ? {
+                      ...message,
+                      status: "reBack",
+                      updatedAt: Date.now().toString(),
+                      removedBy: action.payload.updatedBy,
+                    }
+                  : message
+              )
+            : action.payload.status === "unsent"
+            ? state?.messages?.map((message) =>
+                message?._id === action.payload.messageId
+                  ? {
+                      ...message,
+                      status: "unsent",
+                      content: "unsent",
+                      updatedAt: Date.now().toString(),
+
+                      removedBy: action.payload.updatedBy,
+                    }
+                  : message
+              )
+            : state.messages,
       };
-    // Handle removing message from all
-    case REMOVE_FROM_ALL:
-      return {
-        ...state,
-        // Update messages array to exclude messages removed from all
-        messages: state.messages.filter(
-          (message) => !action.payload.includes(message._id)
-        ),
-      };
-    // Handle unsent message
-    case UNSENT_MESSAGE:
-      return {
-        ...state,
-        // Update messages array to exclude unsent message
-        messages: state.messages.filter((message) => message._id !== action.payload),
-      };
+
     default:
       return state;
   }

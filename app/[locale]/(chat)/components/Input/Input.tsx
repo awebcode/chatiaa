@@ -53,6 +53,7 @@ const Input = () => {
         content: message,
         chatId: selectedChat?.chatId,
         senderId: currentUser?._id,
+        userInfo:currentUser,
         receiverId: selectedChat?.userInfo._id,
         isGroupChat: selectedChat?.isGroupChat,
         groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
@@ -63,6 +64,7 @@ const Input = () => {
           content: message,
           chatId: selectedChat?.chatId,
           senderId: currentUser?._id,
+          userInfo:currentUser,
           receiverId: selectedChat?.userInfo._id,
           isGroupChat: selectedChat?.isGroupChat,
           groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
@@ -86,6 +88,7 @@ const Input = () => {
           chatId: selectedChat?.chatId,
           senderId: currentUser?._id,
           receiverId: selectedChat?.userInfo._id,
+          userInfo: currentUser,
           isGroupChat: selectedChat?.isGroupChat,
           groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
         });

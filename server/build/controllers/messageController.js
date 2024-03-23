@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addRemoveEmojiReactions = exports.editMessage = exports.replyMessage = exports.updateChatStatusAsBlockOrUnblock = exports.updateMessageStatusAsUnsent = exports.updateMessageStatusAsRemove = exports.updateChatMessageAsDeliveredController = exports.updateAllMessageStatusSeen = exports.updateChatMessageController = exports.sendMessage = exports.allMessages = void 0;
+exports.addRemoveEmojiReactions = exports.editMessage = exports.replyMessage = exports.updateChatStatusAsBlockOrUnblock = exports.updateMessageStatusAsUnsent = exports.updateMessageStatusAsRemove = exports.updateChatMessageAsDeliveredController = exports.updateAllMessageStatusSeen = exports.updateChatMessageController = exports.sendMessage = exports.getMessageReactions = exports.allMessages = void 0;
 const MessageModel_1 = require("../model/MessageModel");
 const UserModel_1 = require("../model/UserModel");
 const ChatModel_1 = require("../model/ChatModel");
@@ -64,7 +64,7 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         });
         // Populate reactions for each message
         messages = yield Promise.all(messages.map((message) => __awaiter(void 0, void 0, void 0, function* () {
-            const reactionsGroup = yield countReactionsForMessage(message._id);
+            const { reactionsGroup, totalReactions } = yield countReactionsGroupForMessage(message._id);
             const reactions = yield reactModal_1.Reaction.find({ messageId: message._id })
                 .populate({
                 path: "reactBy",
@@ -72,7 +72,7 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             })
                 .sort({ updatedAt: -1 })
                 .exec();
-            return Object.assign(Object.assign({}, message.toObject()), { reactions, reactionsGroup });
+            return Object.assign(Object.assign({}, message.toObject()), { reactions, reactionsGroup, totalReactions });
         })));
         //find reactions here and pass with every message
         //@
@@ -86,21 +86,51 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.allMessages = allMessages;
 // Count the number of reactions for a specific message
-const countReactionsForMessage = (messageId) => __awaiter(void 0, void 0, void 0, function* () {
+const countReactionsGroupForMessage = (messageId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const aggregate = yield reactModal_1.Reaction.aggregate([
+        const reactionsGroup = yield reactModal_1.Reaction.aggregate([
             { $match: { messageId: new mongoose_1.default.Types.ObjectId(messageId) } }, // Match reactions for the given message ID
             { $group: { _id: "$emoji", count: { $sum: 1 } } }, // Group reactions by emoji and count
             { $sort: { count: -1 } }, // Sort by count in descending order
             // { $limit: 4 }, // Limit to top 4 groups
         ]);
-        return aggregate;
+        const totalReactions = yield reactModal_1.Reaction.countDocuments({ messageId });
+        return { reactionsGroup, totalReactions };
     }
     catch (error) {
         console.error("Error counting reactions:", error);
         throw error; // Forward error to the caller
     }
 });
+//get reaction base on message id while scroll and filter
+const getMessageReactions = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { messageId } = req.params;
+        const limit = parseInt(req.query.limit) || 10;
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit;
+        console.log(req.query);
+        const reactions = yield reactModal_1.Reaction.find(req.query.emoji === "all" || req.query.emoji === ""
+            ? {
+                messageId,
+            }
+            : { messageId, emoji: req.query.emoji })
+            .populate({
+            path: "reactBy",
+            select: "name image email",
+        })
+            .sort({ updatedAt: -1 })
+            .limit(limit)
+            .skip(skip)
+            .exec();
+        res.json(reactions);
+    }
+    catch (error) {
+        console.error("Error getting message reactions:", error);
+        next(error);
+    }
+});
+exports.getMessageReactions = getMessageReactions;
 //@description     Create New Message
 //@route           POST /api/Message/
 //@access          Protected
@@ -148,12 +178,19 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
                 // Send message to client
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("receiveMessage", message);
+                    chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        if (receiverId) {
+                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                .to(receiverId.socketId)
+                                .emit("receiveMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
+                        }
+                    });
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId)
-                        .emit("receiveMessage", message);
+                        .emit("receiveMessage", Object.assign(Object.assign({}, message), { receiverId }));
                 }
                 return message;
             }));
@@ -178,12 +215,19 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             // Update latest message for the chat
             const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
             if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("receiveMessage", message);
+                chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                    const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                    if (receiverId) {
+                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                            .to(receiverId.socketId)
+                            .emit("receiveMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
+                    }
+                });
             }
             else {
                 index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                     .to(receiverId)
-                    .emit("receiveMessage", message);
+                    .emit("receiveMessage", Object.assign(Object.assign({}, message), { receiverId }));
             }
             res.status(200).json({ message: "File send sucessfully" });
             // Send message to client
@@ -310,7 +354,7 @@ const updateMessageStatusAsRemove = (req, res, next) => __awaiter(void 0, void 0
             return next(new errorHandler_1.CustomErrorHandler("You cannot remove the latestMessage", 400));
         }
         let updateMessage;
-        if (status === "remove" || status === "reBack") {
+        if (status === "removed" || status === "reBack") {
             updateMessage = yield MessageModel_1.Message.updateOne({ _id: messageId }, { $set: { status, removedBy: status === "reBack" ? null : req.id } });
         }
         else if (status === "removeFromAll") {
@@ -347,15 +391,37 @@ const updateMessageStatusAsUnsent = (req, res, next) => __awaiter(void 0, void 0
 exports.updateMessageStatusAsUnsent = updateMessageStatusAsUnsent;
 //update Chat status as Blocked/Unblocked
 const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l;
     try {
         const { chatId, status } = req.body;
         if (!status || !chatId)
-            return next(new errorHandler_1.CustomErrorHandler("chat Id or status  cannot be empty!", 400));
-        const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { chatStatus: { status, updatedBy: req.id } }, { new: true });
+            return next(new errorHandler_1.CustomErrorHandler("chat Id or status cannot be empty!", 400));
+        let updateQuery = {};
+        if (status === "block") {
+            updateQuery = {
+                $addToSet: {
+                    chatBlockStatus: {
+                        user: req.id,
+                        status: "blocked",
+                    },
+                },
+            };
+        }
+        else if (status === "unblock") {
+            updateQuery = {
+                $pull: {
+                    chatBlockStatus: {
+                        user: req.id,
+                    },
+                },
+            };
+        }
+        else {
+            return next(new errorHandler_1.CustomErrorHandler("Invalid status!", 400));
+        }
+        const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, updateQuery, { new: true });
         res.status(200).json({
             success: true,
-            status: (_l = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.chatStatus) === null || _l === void 0 ? void 0 : _l.status,
+            status: getStatusForUser(updatedChat, req.id),
             updatedBy: req.id,
         });
     }
@@ -364,6 +430,11 @@ const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, v
     }
 });
 exports.updateChatStatusAsBlockOrUnblock = updateChatStatusAsBlockOrUnblock;
+// Helper function to get block status for a specific user
+function getStatusForUser(chat, userId) {
+    const userBlockStatus = chat.chatBlockStatus.find((status) => status.user.equals(userId));
+    return userBlockStatus ? userBlockStatus.status : "unblocked";
+}
 //reply Message
 const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -420,15 +491,24 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                     select: "name image email",
                 });
                 // Update latest message for the chat
-                const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+                const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
+                    latestMessage: message,
+                });
                 // Send message to client
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("replyMessage", message);
+                    chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        if (receiverId) {
+                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                .to(receiverId.socketId)
+                                .emit("replyMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
+                        }
+                    });
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId)
-                        .emit("replyMessage", message);
+                        .emit("replyMessage", Object.assign(Object.assign({}, message), { receiverId }));
                 }
                 return message;
             }));
@@ -465,12 +545,19 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         });
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("replyMessage", message);
+            chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                if (receiverId) {
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                        .to(receiverId.socketId)
+                        .emit("replyMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
+                }
+            });
         }
         else {
             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                 .to(receiverId)
-                .emit("replyMessage", message);
+                .emit("replyMessage", Object.assign(Object.assign({}, message), { receiverId }));
         }
         res.status(200).json({ success: true, message });
     }
@@ -481,15 +568,16 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
 exports.replyMessage = replyMessage;
 //edit message
 const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _m, _o, _p;
+    var _l, _m, _o;
     try {
         const { messageId, chatId, content, type, receiverId } = req.body;
         if (!messageId)
             return next(new errorHandler_1.CustomErrorHandler("messageId  cannot be empty!", 400));
+        const isLastMessage = yield ChatModel_1.Chat.findOne({ _id: chatId, latestMessage: messageId });
         const prevMessage = yield MessageModel_1.Message.findById(messageId);
         //delete Previous Image
-        if ((_m = prevMessage.file) === null || _m === void 0 ? void 0 : _m.public_Id) {
-            yield cloudinary_1.v2.uploader.destroy((_o = prevMessage.file) === null || _o === void 0 ? void 0 : _o.public_Id);
+        if ((_l = prevMessage.file) === null || _l === void 0 ? void 0 : _l.public_Id) {
+            yield cloudinary_1.v2.uploader.destroy((_m = prevMessage.file) === null || _m === void 0 ? void 0 : _m.public_Id);
         }
         let editedChat;
         if (type === "file") {
@@ -525,15 +613,25 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                     path: "chat.users",
                     select: "name image email",
                 });
+                if (isLastMessage) {
+                    yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: editedChat });
+                }
                 const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
                 // Send message to client
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("editMessage", editedChat);
+                    chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        if (receiverId) {
+                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                .to(receiverId.socketId)
+                                .emit("editMessage", Object.assign(Object.assign({}, editedChat.toObject()), { receiverId: receiverId.id }));
+                        }
+                    });
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId)
-                        .emit("editMessage", editedChat);
+                        .emit("editMessage", Object.assign(Object.assign({}, editedChat), { receiverId }));
                 }
                 return editedChat;
             }));
@@ -545,7 +643,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             if (!messageId || !content)
                 return next(new errorHandler_1.CustomErrorHandler("messageId or content  cannot be empty!", 400));
             const message = yield MessageModel_1.Message.findOne(messageId);
-            if ((_p = message === null || message === void 0 ? void 0 : message.file) === null || _p === void 0 ? void 0 : _p.public_Id) {
+            if ((_o = message === null || message === void 0 ? void 0 : message.file) === null || _o === void 0 ? void 0 : _o.public_Id) {
                 yield cloudinary_1.v2.uploader.destroy(message.file.public_Id);
             }
             editedChat = yield MessageModel_1.Message.findByIdAndUpdate(messageId, {
@@ -561,15 +659,25 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 select: "name image email",
             });
         }
+        if (isLastMessage) {
+            yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: editedChat });
+        }
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
         // Send message to client
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("editMessage", editedChat);
+            chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                if (receiverId) {
+                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                        .to(receiverId.socketId)
+                        .emit("editMessage", Object.assign(Object.assign({}, editedChat.toObject()), { receiverId: receiverId.id }));
+                }
+            });
         }
         else {
             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                 .to(receiverId)
-                .emit("editMessage", editedChat);
+                .emit("editMessage", Object.assign(Object.assign({}, editedChat), { receiverId }));
         }
         res.status(200).json({ success: true, editedChat });
     }
@@ -597,9 +705,16 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                     const reaction = yield reactModal_1.Reaction.findOneAndUpdate({ messageId, reactBy: req.id }, { $set: { emoji } }, { new: true, upsert: true }).populate("reactBy", "name email image");
                     // Send message to client
                     if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("addReactionOnMessage", {
-                            reaction,
-                            type: "update",
+                        chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                            const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                            if (receiverId) {
+                                index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                    .to(receiverId.socketId)
+                                    .emit("addReactionOnMessage", {
+                                    reaction,
+                                    type: "update",
+                                });
+                            }
                         });
                     }
                     else {
@@ -619,9 +734,16 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                     const reaction = yield react.populate("reactBy", "name email image");
                     // Send message to client
                     if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("addReactionOnMessage", {
-                            reaction,
-                            type: "add",
+                        chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                            const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                            if (receiverId) {
+                                index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                    .to(receiverId.socketId)
+                                    .emit("addReactionOnMessage", {
+                                    reaction,
+                                    type: "add",
+                                });
+                            }
                         });
                     }
                     else {
@@ -638,9 +760,16 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                     return next(new errorHandler_1.CustomErrorHandler("reactionId cannot be empty!", 400));
                 const reaction = yield reactModal_1.Reaction.findByIdAndDelete(reactionId);
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString()).emit("addReactionOnMessage", {
-                        reaction,
-                        type: "remove",
+                    chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        if (receiverId) {
+                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                .to(receiverId.socketId)
+                                .emit("addReactionOnMessage", {
+                                reaction,
+                                type: "remove",
+                            });
+                        }
                     });
                 }
                 else {

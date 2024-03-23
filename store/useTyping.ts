@@ -1,4 +1,5 @@
-import {create} from "zustand";
+import { create } from "zustand";
+import { Tuser } from "./types";
 
 interface TypingStore {
   isTyping: boolean;
@@ -6,18 +7,32 @@ interface TypingStore {
   chatId: string | null;
   receiverId: string | null;
   content: string | null;
-  startTyping: (senderId: string, receiverId: string,chatId:string, content: string) => void;
+  userInfo: Tuser|null;
+  startTyping: (
+    senderId: string,
+    receiverId: string,
+    chatId: string,
+    content: string,
+    userInfo: Tuser
+  ) => void;
   stopTyping: () => void;
 }
 
 export const useTypingStore = create<TypingStore>((set) => ({
   isTyping: false,
   senderId: null,
-  chatId:null,
+  chatId: null,
   receiverId: null,
   content: null,
-  startTyping: (senderId, receiverId,chatId, content) =>
-    set({ isTyping: true, senderId, receiverId,chatId, content }),
+  userInfo: null,
+  startTyping: (senderId, receiverId, chatId, content, userInfo) =>
+    set({ isTyping: true, senderId, receiverId, chatId, content, userInfo }),
   stopTyping: () =>
-    set({ isTyping: false, senderId: null, receiverId: null,chatId:null, content: null }),
+    set({
+      isTyping: false,
+      senderId: null,
+      receiverId: null,
+      chatId: null,
+      content: null,
+    }),
 }));
