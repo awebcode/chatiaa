@@ -11,25 +11,28 @@ import {
 import { useMessageState } from "@/context/MessageContext";
 import { Tuser } from "@/store/types";
 import { IChat } from "@/context/reducers/interfaces";
+import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { PopoverContent } from "@/components/ui/popover";
+import { PopoverArrow } from "@radix-ui/react-popover";
+import { useTheme } from "next-themes";
 
 const Modal = ({
-  open,
-  setOpen,
   chatBlockedBy,
   chat,
 }: {
-  open:boolean;
-  setOpen:any;
-  chatBlockedBy:Tuser[];
-  chat:IChat;
+  chatBlockedBy: Tuser[];
+  chat: IChat;
 }) => {
+  const {theme}=useTheme()
   const blockMutation = useBlockMutation();
   const { user: currentUser } = useMessageState();
-  const leaveMutation = useLeaveChatMutation(chat._id as any, currentUser?._id as any,);
+  const leaveMutation = useLeaveChatMutation(chat._id as any, currentUser?._id as any);
   const deleteSignleChatMutation = useDeleteSingleChatMutation(chat._id as any, false);
   const blockData = {
     chatId: chat._id,
-    status: chatBlockedBy?.some((user)=>user?._id===currentUser?._id)?  "unblock":"block" 
+    status: chatBlockedBy?.some((user) => user?._id === currentUser?._id)
+      ? "unblock"
+      : "block",
   };
   const items = [
     {
@@ -111,28 +114,25 @@ const Modal = ({
   ];
 
   return (
-    <div>
-      <ul
-        className={`z-[999999] absolute right-0  w-[250px]  p-4  shadow-md  bg-gray-200 dark:bg-gray-800 rounded duration-500 ring-2 ring-violet-500 ${
-          open
-            ? "translate-y-1 scale-100 opacity-100 duration-300"
-            : "translate-y-0 scale-0 opacity-0 duration-300"
-        }`}
-      >
-        {items.map((item, index) => (
-          <li
-            key={index}
-            className={`flex items-center py-2 px-4 cursor-pointer    hover:bg-gray-600 rounded duration-300 ${
-              item.isHidden && "hidden"
-            }`}
-            onClick={item.action}
-          >
-            <span className="mr-2 text-xs md:text-sm">{item.icon}</span>
-            <span className="text-xs md:text-sm">{item.name}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <PopoverContent className=" max-w-52 md:max-w-60 bg-gray-200 dark:bg-gray-900">
+      <PopoverArrow
+        fill={theme === "dark" ? "#1f2937" : "#e4e4e7"}
+        height={12}
+        width={12}
+      />
+      {items.map((item, index) => (
+        <ul
+          key={index}
+          className={`flex items-center py-2 px-2 cursor-pointer     hover:bg-gray-600 rounded duration-300 ${
+            item.isHidden && "hidden"
+          }`}
+          onClick={item.action}
+        >
+          <span className="mr-2 text-xs md:text-sm">{item.icon}</span>
+          <span className="text-xs md:text-sm">{item.name}</span>
+        </ul>
+      ))}
+    </PopoverContent>
   );
 };
 

@@ -24,7 +24,7 @@ export default function SearchGroupModal() {
   const [searchTerm, setSearchTerm] = useState("");
   const { selectedAddGroupUsers } = useGroupStore();
   const searchText = useDebounce(searchTerm, 600);
-  const { data, isFetching, fetchNextPage, hasNextPage } = useInfiniteQuery({
+  const { data, isFetching, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ["messages", searchText, "onGroupsearch"],
 
     queryFn: getAllUsers as any,
@@ -53,7 +53,7 @@ export default function SearchGroupModal() {
         chatId: chat?._id,
         latestMessage: chat?.latestMessage,
         chatCreatedAt: chat?.createdAt,
-         groupChatName: chat?.chatName,
+        groupChatName: chat?.chatName,
         chatName: chat?.chatName,
         isGroupChat: chat?.isGroupChat,
         groupAdmin: chat?.groupAdmin,
@@ -72,7 +72,7 @@ export default function SearchGroupModal() {
           createdAt: !chat.isGroupChat ? isFriend?.createdAt : "",
         } as any,
       };
-      socket.emit("groupCreatedNotify", { chatId: chat._id,chat });
+      socket.emit("groupCreatedNotify", { chatId: chat._id, chat });
 
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
       dispatch({ type: SET_CHATS, payload: chatData });
@@ -162,7 +162,7 @@ export default function SearchGroupModal() {
                 users?.length > 0 &&
                 searchText.trim() !== "" && (
                   <p className="text-green-400">
-                    <b>all  users here!</b>
+                    <b>all users here!</b>
                   </p>
                 )
               }
@@ -171,13 +171,16 @@ export default function SearchGroupModal() {
             >
               <div className="flex flex-col gap-5 my-4">
                 <div className="flex flex-col gap-3">
-                  {users && users?.length > 0 ? (
-                    users?.map((user: any) => {
-                      return <GroupCard user={user} key={user._id} />;
-                    })
-                  ) : (
-                    <h1 className="text-sm md:text-xl m-4 text-center">No User Found!</h1>
-                  )}
+                  {users && users?.length > 0
+                    ? users?.map((user: any) => {
+                        return <GroupCard user={user} key={user._id} />;
+                      })
+                    : !isLoading &&
+                      !isFetching && (
+                        <h1 className="text-sm md:text-xl m-4 text-center">
+                          No User Found!
+                        </h1>
+                      )}
                 </div>
 
                 <h1>{isFetching ? "isFetching" : ""}</h1>

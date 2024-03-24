@@ -1,4 +1,3 @@
-import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
 import { calculateTime, formatTime } from "@/functions/formatTime";
 import Image from "next/image";
@@ -6,13 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import dynamic from "next/dynamic";
-import Time from "./Time";
-const RREsystem = dynamic(() => import("../RRE/RREsystem"));
-const Status = dynamic(() => import("./Status"));
-const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
-
+const Time = dynamic(() => import("../../messages/typeMessages/Time"));
 // Import RepliedMessage dynamically
-const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"));
 // styles
 
 const formWaveSurferOptions = (ref: any) => ({
@@ -28,18 +22,11 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
-export default function  ({
+export default function ({
   message,
-  isLastSeenMessage,
-  isUserOnline,
-  isCurrentUserMessage,
 }: {
   message: IMessage;
-  isLastSeenMessage: boolean;
-  isUserOnline: boolean;
-  isCurrentUserMessage:boolean
-})  {
-  const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
+}) {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -87,9 +74,8 @@ export default function  ({
   return (
     <div className="flex items-center gap-2 ">
       {/* Remove/Replay/Emoji */}
-      <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
       <div className="">
-        <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
+        <Time message={message} isCurrentUserMessage={true} />
         <div
           className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
         >
@@ -120,26 +106,9 @@ export default function  ({
               <span className="text-sm font-medium">
                 {playing ? currentTime : totalTime}
               </span>
-              {/* Reply */}
-              <RepliedMessage message={message} currentUser={currentUser as any} />
-              {/* REACTIONS */}
-              {message.reactions?.length > 0 && (
-                <DisplayReaction
-                  message={message}
-                  reactions={message.reactions}
-                  isCurrentUserMessage={isCurrentUserMessage}
-                  reactionsGroup={message.reactionsGroup}
-                />
-              )}
-              {/* message status */}
-              <Status
-                isCurrentUserMessage={isCurrentUserMessage}
-                message={message}
-                isLastSeenMessage={isLastSeenMessage}
-                isUserOnline={isUserOnline}
-              />
-            </div>
+              
             
+            </div>
           </div>
         </div>
       </div>

@@ -15,7 +15,7 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
           (user: any) => user._id === u.id && user._id !== currentUser?._id
         )
       : selectedChat?.userInfo?._id === u.id
-  );
+  )
   return (
     <div>
       <div className="max-w-sm bg-gray-200 dark:bg-gray-800 mx-auto m-20 rounded-lg shadow-md p-4">

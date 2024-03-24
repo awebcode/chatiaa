@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 import nextIntl from "next-intl/plugin";
+import nodeExternals from "webpack-node-externals"
 const withNextIntl = nextIntl();
 
 const nextConfig = {

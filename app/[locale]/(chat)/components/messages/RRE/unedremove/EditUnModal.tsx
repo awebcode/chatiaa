@@ -6,14 +6,9 @@ import useEditReplyStore from "@/store/useEditReply";
 import React from "react";
 import { unsent_remove_Message_function } from "./function";
 import { toast } from "react-toastify";
+import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-const EditUnModal = ({
-  message,
-  openEdRemoveDialog,
-}: {
-  message: IMessage;
-  openEdRemoveDialog: boolean;
-}) => {
+const EditUnModal = ({ message }: { message: IMessage }) => {
   const { socket } = useSocketContext();
   const { onEdit, cancelReply } = useEditReplyStore();
   const { user: currentUser, selectedChat } = useMessageState();
@@ -80,98 +75,81 @@ const EditUnModal = ({
     }
   };
   return (
-    <div>
-      {" "}
-      <div
-        className={`absolute z-50 ${
-          !isCurrentUserMessage
-            ? "left-[0px] -top-24"
-            : "right-0 -top-[148px]  md:-top-40"
-        }   w-[140px]  bg-gray-200 dark:bg-gray-800  p-3 rounded-lg duration-300 transition-transform ${
-          openEdRemoveDialog
-            ? "translate-y-1 scale-100 opacity-100"
-            : "translate-y-0 scale-0 opacity-0"
-        }`}
-      >
-        <ul className="flex flex-col gap-1">
-          {isCurrentUserMessage && (
-            <a
-              onClick={() => {
-                onEdit(message as any);
-                cancelReply();
-              }}
-              className="cursor-pointer text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
-            >
-              Edit
-            </a>
-          )}
-          {message.status !== "removed" ? (
-            <>
-              {message.status !== "unsent" && (
-                <a
-                  onClick={() => removeHandler(message._id)}
-                  className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
-                >
-                  Remove
-                </a>
-              )}
-              {message.status !== "unsent" ? (
-                <a
-                  onClick={() => removeFromAllHandler(message._id)}
-                  className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
-                >
-                  Remove from all
-                </a>
-              ) : (
-                <a
-                  onClick={() => removeFromAllHandler(message._id)}
-                  className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
-                >
-                  Delete
-                </a>
-              )}
-            </>
-          ) : message.status === "removed" &&
-            message.removedBy?._id === currentUser?._id ? (
-            <a
-              onClick={() => BackRemoveFromAllHandler(message._id)}
+    <DropdownMenuContent>
+      {isCurrentUserMessage && (
+        <DropdownMenuItem
+          onClick={() => {
+            onEdit(message as any);
+            cancelReply();
+          }}
+          className="cursor-pointer text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+        >
+          Edit
+        </DropdownMenuItem>
+      )}
+      {message.status !== "removed" ? (
+        <>
+          {message.status !== "unsent" && (
+            <DropdownMenuItem
+              onClick={() => removeHandler(message._id)}
               className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
             >
-              Back Message
-            </a>
-          ) : message.status === "removed" &&
-            message.removedBy?._id !== currentUser?._id ? (
-            <>
-              <a
-                // onClick={() => removeHandler(message._id)}
-                className=" text-[8px] md:text-[11px] text-rose-500 cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
-              >
-                {message.removedBy?.name.slice(0, 12)} Removed this
-              </a>
-              <a
-                onClick={() => removeFromAllHandler(message._id)}
-                className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
-              >
-                Remove from all
-              </a>
-            </>
+              Remove
+            </DropdownMenuItem>
+          )}
+          {message.status !== "unsent" ? (
+            <DropdownMenuItem
+              onClick={() => removeFromAllHandler(message._id)}
+              className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+            >
+              Remove from all
+            </DropdownMenuItem>
           ) : (
-            ""
-          )}
-
-          {isCurrentUserMessage && message.status !== "unsent" && (
-            <a
-              onClick={() => {
-                unsentHandler(message._id);
-              }}
-              className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+            <DropdownMenuItem
+              onClick={() => removeFromAllHandler(message._id)}
+              className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
             >
-              Unsent
-            </a>
+              Delete
+            </DropdownMenuItem>
           )}
-        </ul>
-      </div>
-    </div>
+        </>
+      ) : message.status === "removed" && message.removedBy?._id === currentUser?._id ? (
+        <DropdownMenuItem
+          onClick={() => BackRemoveFromAllHandler(message._id)}
+          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+        >
+          Back Message
+        </DropdownMenuItem>
+      ) : message.status === "removed" && message.removedBy?._id !== currentUser?._id ? (
+        <>
+          <DropdownMenuItem
+            // onClick={() => removeHandler(message._id)}
+            className=" text-[8px] md:text-[11px] text-rose-500 cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          >
+            {message.removedBy?.name.slice(0, 12)} Removed this
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => removeFromAllHandler(message._id)}
+            className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          >
+            Remove from all
+          </DropdownMenuItem>
+        </>
+      ) : (
+        ""
+      )}
+
+      {isCurrentUserMessage && message.status !== "unsent" && (
+        <DropdownMenuItem
+          onClick={() => {
+            unsentHandler(message._id);
+          }}
+          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+        >
+          Unsent
+        </DropdownMenuItem>
+      )}
+    </DropdownMenuContent>
   );
 };
 

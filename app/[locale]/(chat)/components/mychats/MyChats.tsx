@@ -168,7 +168,7 @@ const MyFriends = () => {
               scrollableTarget="ChatscrollableTarget"
               scrollThreshold={0.5}
             >
-              <div className="flex flex-col gap-5 z-50 min-h-[80vh] ">
+              <div className="flex flex-col gap-2 z-50 min-h-[80vh] ">
                 {isLoading ? (
                   <>
                     <SkeletonContainer />

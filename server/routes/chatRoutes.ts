@@ -1,6 +1,6 @@
 import express from "express";
 import authMiddleware from "../middlewares/authMiddleware";
-import { accessChat, addToGroup, createGroupChat, deleteSingleChat, fetchChats, leaveFromChat, makeAdmin, removeFromAdmin, removeFromGroup, renameGroup, updateChatStatusAsBlockOrUnblock } from "../controllers/ChatController";
+import { accessChat, addToGroup, createGroupChat, deleteSingleChat, fetchChats, getFilesInChat, getUsersInAChat, leaveFromChat, makeAdmin, removeFromAdmin, removeFromGroup, renameGroup, updateChatStatusAsBlockOrUnblock } from "../controllers/ChatController";
 
 
 const chatRoute = express.Router();
@@ -26,4 +26,8 @@ chatRoute
 chatRoute
   .route("/leaveChat")
   .put(authMiddleware, leaveFromChat);
+//getFiles in a chat
+chatRoute.get("/getFilesInChat/:chatId", authMiddleware, getFilesInChat);
+// getUsersInAChat;
+chatRoute.get("/getUsersInAChat/:chatId", authMiddleware, getUsersInAChat);
 export default chatRoute;

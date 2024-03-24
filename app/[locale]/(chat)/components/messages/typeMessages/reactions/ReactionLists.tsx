@@ -12,6 +12,8 @@ import Card from "./Card";
 import { BaseUrl } from "@/config/BaseUrl";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Button } from "@/components/ui/button";
+import { PopoverArrow, PopoverClose, PopoverContent } from "@radix-ui/react-popover";
+import { useTheme } from "next-themes";
 
 const ReactionLists = ({
   message,
@@ -33,8 +35,7 @@ const ReactionLists = ({
   reactionsGroup: ReactionGroup[];
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
-  const { onlineUsers } = useOnlineUsersStore();
-  const { user: currentUser, selectedChat } = useMessageState();
+  const {theme}=useTheme()
   const [activeTab, setActiveTab] = useState("");
   const [page, setpage] = useState(1);
   const [data, setData] = useState<Reaction[]>([]);
@@ -52,7 +53,7 @@ const ReactionLists = ({
       const data = await res.json();
       setData(data);
     };
-    if (messageId !== ""&&page===1) {
+    if (messageId !== "" && page === 1) {
       fetchData();
     }
   }, [activeTab, messageId]);
@@ -103,30 +104,21 @@ const ReactionLists = ({
     container?.scrollTo({ top: 0, behavior: "smooth" });
   };
   return (
-    <div
-      className={`z-50 absolute bottom-4 ${
-        !isCurrentUserMessage
-          ? isSmallDevice
-            ? "-60px min-w-60 -top-52 max-h-[250px]"
-            : "-right-[290px]  md:w-[400px]"
-          : "right-10   min-w-60"
-      } rounded transition-all bg-gray-100 hover:bg-gray-200 dark:bg-gray-800  p-4 md:p-8 duration-500 ${
-        isOpenReactionListModal
-          ? "translate-y-1 scale-100 opacity-100 w-auto md:w-[400px] max-h-[300px] overflow-y-auto"
-          : "translate-y-0 scale-0 opacity-0"
-      }`}
+    <PopoverContent
+      align={isCurrentUserMessage ? "end" : "start"}
+      className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 z-50 min-w-60 md:min-w-80"
+      sideOffset={3}
     >
-      <button
-        onClick={() => setIsOpenReactionListModal(false)}
-        className="btn float-right "
-      >
+      <PopoverClose className="float-right">
         <MdClose />
-      </button>
-      <h1 className="text-sm md:text-3xl p-3 border-b-2 mb-6 border-violet-600">
+      </PopoverClose>
+      <PopoverArrow fill={theme === "dark" ? "#1f2937" : "#e5e7eb"} height={12} width={12}/>
+
+      <h1 className="text-xs md:text-sm p-3 border-b-2 mb-6 border-violet-600">
         Reactions ({message.totalReactions})
       </h1>
       {/* Tab start */}
-      <div className="flex gap-2 w-full  overflow-x-auto bg-gray-800">
+      <div className="flex gap-2 w-full items-center  overflow-x-auto  ">
         <div className="all">
           <div
             onClick={() => setActiveTab("all")}
@@ -136,7 +128,7 @@ const ReactionLists = ({
           >
             All
           </div>
-          <span className="-mt-2 mx-2 w-full text-gray-300 text-[10px] rounded-lg p bg-gray-700">
+          <span className="-mt-2 mx-2 w-full text-gray-800 dark:text-gray-300 text-[10px] rounded-lg p ">
             {message.totalReactions}
           </span>
         </div>
@@ -157,7 +149,7 @@ const ReactionLists = ({
                     unified={(emoji as any)._id.codePointAt(0).toString(16)}
                   />
                 </div>
-                <span className="-mt-2 mx-2 w-full text-gray-300 text-[10px] rounded-lg p bg-gray-700">
+                <span className="-mt-2 mx-2 w-full text-gray-800 dark:text-gray-300 text-[10px] rounded-lg p ">
                   {emoji.count}
                 </span>
               </div>
@@ -175,7 +167,7 @@ const ReactionLists = ({
           next={() => {
             fetchNextPage();
           }}
-          hasMore={message.totalReactions > data.length&&data.length>=10}
+          hasMore={message.totalReactions > data.length && data.length >= 10}
           loader={
             <div className="flex justify-center items-center mt-8">
               <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>
@@ -213,7 +205,7 @@ const ReactionLists = ({
           Top
         </Button>
       </div>
-    </div>
+    </PopoverContent>
   );
 };
 

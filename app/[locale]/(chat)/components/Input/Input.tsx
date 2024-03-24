@@ -31,7 +31,7 @@ const Input = () => {
   const { user: currentUser, messages, selectedChat } = useMessageState();
   const [audioRecorder, setAudioRecorder] = useState(false);
   const [message, setMessage] = useState("");
-  const { isTyping, content: typingContent, chatId: typingChatId } = useTypingStore();
+  // const { isTyping, content: typingContent, chatId: typingChatId } = useTypingStore();
   const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
   const [openEmoji, setOpenEmoji] = useState(false);
   // Function to handle emoji click

@@ -21,14 +21,12 @@ import {
 } from "@/context/reducers/actions";
 
 export const useBlockMutation = () => {
-  const queryClient = useQueryClient();
   const { selectedChat, user } = useMessageState();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   return useMutation({
     mutationFn: (data: any) => updateChatStatusAsBlockOUnblock(data),
     onSuccess: (data) => {
-      console.log({blockData:data})
       dispatch({
         type: BLOCK_CHAT,
         payload: { user: user, chatId: data.chatId }, //data.chat.chatBlockedBy

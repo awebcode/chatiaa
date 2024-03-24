@@ -16,7 +16,7 @@ import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actio
 import TypingIndicator from "../TypingIndicator";
 import { useTypingStore } from "@/store/useTyping";
 import { BaseUrl } from "@/config/BaseUrl";
-
+import { useShallow } from 'zustand/react/shallow'
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
@@ -26,6 +26,8 @@ export default function Messages() {
     chatId: typingChatId,
     userInfo: typingUserInfo,
   } = useTypingStore();
+
+ 
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,43 +51,78 @@ export default function Messages() {
     }, 1500);
     return () => clearTimeout(tid);
   }, [isIncomingMessage]);
-  const mountref=useRef(true)
+  //   const mountref=useRef(true)
+  //   useEffect(() => {
+  //  console.log(mountref.current,selectedChat,page);
+  //     const fetchData = async () => {
+  //       try {
+  //         setLoading(true);
+  //         await new Promise(resolve => setTimeout(resolve, 3000));
+  //         const res = await fetch(
+  //           `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
+  //           {
+  //             credentials: "include",
+  //             // cache: "reload",
+  //           }
+  //         );
+  //         const data = await res.json();
+  //         console.log({res:data})
+
+  //         if (messages.length < 10) {
+
+  //           dispatch({ type: SET_MESSAGES, payload: data.messages });
+  //           dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
+  //         }
+
+  //         setLoading(false);
+  //       } catch (error) {
+  //         setLoading(false);
+  //       }
+  //     };
+
+  //     if (mountref.current&&selectedChat && page === 1) {
+  //       fetchData();
+  //     }
+
+  //     return () => {
+  //       mountref.current = false; // Setting mounted flag to false on component unmount
+  //     };
+  //   }, [selectedChat,page]);
   useEffect(() => {
+    let isMounted = true;
 
     const fetchData = async () => {
       try {
         setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 100));
         const res = await fetch(
           `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
           {
             credentials: "include",
-            // cache: "reload",
           }
         );
         const data = await res.json();
-        console.log({res:data})
+        // console.log({ res: data });
 
-        if (messages.length < 10) {
-          
+        if (messages.length < 10 && isMounted) {
           dispatch({ type: SET_MESSAGES, payload: data.messages });
           dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
         }
-
         setLoading(false);
+        // if (isMounted) setLoading(false);
       } catch (error) {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    if (mountref.current&&selectedChat && page === 1) {
+    if (selectedChat && page === 1) {
       fetchData();
     }
 
     return () => {
-      mountref.current = false; // Setting mounted flag to false on component unmount
+      isMounted = false;
     };
-  }, []);
-
+  }, [selectedChat, page]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,11 +135,10 @@ export default function Messages() {
           }
         );
         const data = await res.json();
-       
-          dispatch({ type: SET_MESSAGES, payload: data.messages });
+
+        dispatch({ type: SET_MESSAGES, payload: data.messages });
         dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
 
-        
         const container = document.getElementById("CustomscrollableTarget");
         if (container) {
           const { scrollTop, scrollHeight, clientHeight } = container;
@@ -171,7 +207,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-  console.log("called",messages);
+  console.log("called", messages);
   return (
     <div
       id="CustomscrollableTarget"
@@ -229,7 +265,8 @@ export default function Messages() {
         </div>
         {!loading &&
           totalMessagesCount > 0 &&
-          totalMessagesCount === messages?.length && messages?.length>10 && (
+          totalMessagesCount === messages?.length &&
+          messages?.length > 10 && (
             <div className="text-center text-2xl text-green-400 pt-10">
               You have viewed all messages
             </div>

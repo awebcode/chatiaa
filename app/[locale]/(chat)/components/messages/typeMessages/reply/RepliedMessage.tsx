@@ -31,7 +31,11 @@ const RepliedMessage = ({
             message.isReply.messageId.removedBy._id === currentUser._id ? (
               "Removed"
             ) : message.isReply.messageId.content ? (
-              <span className={"break-all text-xs font-thin text-gray-200 "}>
+              <span
+                className={
+                  "break-all text-xs font-thin text-gray-700 dark:text-gray-200 "
+                }
+              >
                 {message.isReply.messageId.content?.length < 65
                   ? message.isReply.messageId?.content
                   : message.isReply.messageId?.content.slice(0, 65) + "..."}
@@ -98,14 +102,18 @@ const RepliedMessage = ({
               ""
             )}
           </div>
-          <span className={"break-all text-sm font-thin text-gray-200"}>
+          <span
+            className={"break-all text-sm font-thin text-gray-700 dark:text-gray-200"}
+          >
             {message.status === "removed" && message.removedBy._id === currentUser._id
               ? "Removed"
               : message.content}
           </span>
         </>
       ) : (
-        <span className={"break-all text-sm font-thin text-gray-200"}>
+        <span
+          className={"break-all text-sm font-medium text-gray-700 dark:text-gray-200"}
+        >
           {message.status === "removed" && message.removedBy._id === currentUser._id
             ? "Removed"
             : message.content}

@@ -46,8 +46,8 @@ function PdfMessage({
         <div
           className={`m-4 p-1 rounded-lg ${
             message?.sender?._id === currentChatUser?.userInfo?._id
-              ? "bg-incoming-background"
-              : "bg-outgoing-background"
+              ? "bg-gray-200 text-gray-900 dark:text-gray-200 dark:bg-incoming-background rounded-bl-3xl"
+              : "dark:bg-outgoing-background rounded-br-3xl bg-gray-300"
           }`}
         >
           <div className={"relative"}>

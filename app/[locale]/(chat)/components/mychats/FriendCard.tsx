@@ -22,6 +22,8 @@ import {
 } from "@/context/reducers/actions";
 import { MessagePreview } from "./PreviewMessage";
 import { IChat } from "@/context/reducers/interfaces";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
 const Modal = dynamic(() => import("./Modal"));
 const TypingIndicator = dynamic(() => import("../TypingIndicator"));
 
@@ -31,7 +33,6 @@ const FriendsCard: React.FC<{
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser, selectedChat } = useMessageState();
-  const queryclient = useQueryClient();
   const { onlineUsers } = useOnlineUsersStore();
   const {
     isTyping,
@@ -61,12 +62,13 @@ const FriendsCard: React.FC<{
 
   const handleClick = (chatId: string) => {
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
-    // dispatch({ type: CLEAR_MESSAGES });
+    dispatch({ type: CLEAR_MESSAGES });
     dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
       chatId: chat?._id,
+       chatName: chat?.chatName,
       latestMessage: chat?.latestMessage,
       createdAt: chat?.latestMessage?.createdAt,
       chatCreatedAt: chat?.createdAt,
@@ -109,11 +111,7 @@ const FriendsCard: React.FC<{
       : getSenderFull(currentUser, chat.users)?._id === u.id
   );
 
-  const [open, setOpen] = useState(false);
-  const userModalRef: any = useClickAway(() => {
-    setOpen(false);
-  });
-  // console.log({chat:getSenderFull(currentUser, chat.users)})
+
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
@@ -184,21 +182,28 @@ const FriendsCard: React.FC<{
           </div>
         </div>
         <div className="flex gap-5 items-center ">
+          {/* Chat status */}
           {RenderStatus(
             chat?.latestMessage,
             "onFriendListCard",
             chat?.unseenCount,
             false
           )}
-          <div ref={userModalRef} className="relative">
-            <BsThreeDots onClick={() => setOpen((prev) => !prev)} className="h-6 w-6 " />
-            <Modal
-              open={open}
-              setOpen={setOpen}
-              chatBlockedBy={chat.chatBlockedBy}
-              chat={chat}
-            />
-          </div>
+          {/* Right chat dropdown */}
+          <Popover>
+            <div className="relative">
+              <PopoverTrigger className="border-none outline-none">
+                <BsThreeDots
+                  className="h-6 w-6 "
+                />
+              </PopoverTrigger>
+              <Modal
+               
+                chatBlockedBy={chat.chatBlockedBy}
+                chat={chat}
+              />
+            </div>
+          </Popover>
         </div>
       </div>
     </div>

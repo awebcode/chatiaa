@@ -1,6 +1,5 @@
 import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
-import { calculateTime } from "@/functions/formatTime";
 import React from "react";
 import dynamic from "next/dynamic";
 import { ChatSkeleton } from "../../mychats/ChatSkeleton";
@@ -13,16 +12,16 @@ const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
 
 // Import RepliedMessage dynamically
 const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"), {
-  loading: () => <ChatSkeleton />,
+  // loading: () => <ChatSkeleton />,
   ssr: false,
 });
 
 const RREsystem = dynamic(() => import("../RRE/RREsystem"), {
-  loading: () => <ChatSkeleton />,
+  // loading: () => <ChatSkeleton />,
   ssr: false,
 });
 const Status = dynamic(() => import("./Status"), {
-  loading: () => <ChatSkeleton />,
+  // loading: () => <ChatSkeleton />,
   ssr: false,
 });
 const TextMessage = ({
@@ -52,8 +51,8 @@ const TextMessage = ({
         <div
           className={`relative m-4 p-1 rounded  ${
             message?.sender?._id === currentChatUser?.userInfo?._id
-              ? "bg-incoming-background rounded-bl-3xl"
-              : "bg-outgoing-background rounded-br-3xl"
+              ? "bg-gray-200 text-gray-900 dark:text-gray-200 dark:bg-incoming-background rounded-bl-3xl"
+              : "dark:bg-outgoing-background rounded-br-3xl bg-gray-300"
           }`}
         >
           <div className={""}>

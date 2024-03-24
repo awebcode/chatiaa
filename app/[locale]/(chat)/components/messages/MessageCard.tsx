@@ -6,7 +6,7 @@ import { ChatSkeleton } from "../mychats/ChatSkeleton";
 import LeaveRemoveMessage from "./typeMessages/LeaveRemoveMessage";
 
 const TextMessage = dynamic(() => import("./typeMessages/TextMessage"), {
-  loading:()=><ChatSkeleton/>,
+  // loading:()=><ChatSkeleton/>,
   ssr:false
 });
 const ImageMessage = dynamic(() => import("./typeMessages/ImageMessage"), {

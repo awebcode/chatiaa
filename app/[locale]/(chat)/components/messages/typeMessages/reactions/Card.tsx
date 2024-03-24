@@ -17,7 +17,7 @@ const Card = ({
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser, selectedChat } = useMessageState();
   return (
-    <div className="flexBetween gap-1 bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-gray-900 duration-300 p-1 rounded-md">
+    <div className="flexBetween gap-1 bg-gray-200  hover:bg-gray-300 dark:bg-gray-900 duration-300 p-1 rounded-md">
       <div className=" p-1 flex items-center w-full">
         {" "}
         <div className="h-5 w-5  relative rounded-full ring  ring-violet-600">

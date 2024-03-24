@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Chat = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const chatModel = new mongoose_1.default.Schema({
-    chatName: { type: String, trim: true },
+    chatName: { type: String },
     isGroupChat: { type: Boolean, default: false },
     users: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" }],
     latestMessage: {

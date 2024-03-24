@@ -27,15 +27,11 @@ import { useRouter } from "@/navigation";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
 import { useTypingStore } from "@/store/useTyping";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
-import useReactionStore from "@/store/useReactionsStore";
 import {
   updateAllMessageStatusAsDelivered,
   updateMessageStatus,
 } from "@/functions/messageActions";
 
-const LeftSide = dynamic(() => import("../components/LeftSide"));
-const Main = dynamic(() => import("../components/Main"));
-const EmptyChat = dynamic(() => import("../components/Empty"));
 const Chat = () => {
   const queryClient = useQueryClient();
   const { socket } = useSocketContext();
@@ -70,6 +66,7 @@ const Chat = () => {
     if (user) {
       socket?.emit("setup", { id: user._id });
     }
+  
   }, []);
   //update friend message when i'm online
   useEffect(() => {
@@ -84,6 +81,7 @@ const Chat = () => {
   const handleSocketMessage = useCallback(
     async (data: any) => {
       //  update latest chat for both side
+      console.log({ socketMessage: data });
 
       if (selectedChatRef.current?.chatId === data.chat._id) {
         useIncomingMessageStore.setState({
@@ -267,7 +265,7 @@ const Chat = () => {
 
     //block single chat
 
-    socket.on("chatBlockedNotifyReceived",chatBlockedNotifyReceivedHandler)
+    socket.on("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
     // Clean up event listeners when the component unmounts
     return () => {
       socket.off("setup", handleOnlineUsers);
@@ -293,7 +291,7 @@ const Chat = () => {
       socket.off("editMessage", handleEditMessage);
       socket.off("addReactionOnMessage", handleAddReactionOnMessage);
       socket.off("remove_remove_All_unsentMessage", handle_Remove_All_Unsent_Message);
-    socket.off("chatBlockedNotifyReceived",chatBlockedNotifyReceivedHandler)
+      socket.off("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
     };
   }, []); //
 
@@ -305,28 +303,7 @@ const Chat = () => {
   //    }, 2000);
   //    return () => clearTimeout(timeoutId);
   //  }, [router, currentUser]);
-  return (
-    <div className="">
-      <div className="  flexBetween gap-2 overflow-hidden">
-        {/* Left side */}
-        <div
-          className={`h-[88vh] basis-[100%] ${
-            selectedChat ? "hidden" : "block"
-          } md:block w-full md:basis-2/4 border `}
-        >
-          <LeftSide />
-        </div>
-        {/* Rightside */}
-        <div
-          className={`h-[88vh] border w-full ${
-            selectedChat ? "block basis-[100%] w-full" : "hidden"
-          }  md:block`}
-        >
-          {selectedChat ? <Main /> : <EmptyChat />}
-        </div>
-      </div>
-    </div>
-  );
+  return <></>;
 };
 
 export default Chat;

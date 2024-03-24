@@ -6,6 +6,7 @@ import { CustomErrorHandler } from "../middlewares/errorHandler";
 import { User } from "../model/UserModel";
 import { Chat } from "../model/ChatModel";
 import { AvatarGenerator } from "random-avatar-generator";
+import { Message } from "../model/MessageModel";
 const register = async (req: Request | any, res: Response, next: NextFunction) => {
   const { name, password, email } = req.body;
 
@@ -141,15 +142,13 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
             ],
           }
         : {
-            $and: [
-              { _id: { $ne: req.id } },
-              { ...keyword }, // Include the keyword fields here
-            ],
-          };
+         
+          $and: [
+            { _id: { $ne: req.id } },
+          ],
+        };
     const users = await User.find(usersQuery).limit(limit).skip(skip);
-    console.log(req.query);
     const total = await User.countDocuments(usersQuery);
-    console.log({ total });
     res.send({ users, total, limit });
   } catch (error) {
     next(error);
@@ -200,5 +199,6 @@ export const deleteUser = async (
     next(error)
   }
 };
+
 
 export { register, login, getUser, allUsers };

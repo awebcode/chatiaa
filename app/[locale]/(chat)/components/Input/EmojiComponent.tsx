@@ -32,7 +32,7 @@ const EmojiComponent = ({ onEmojiClick, openEmoji }: { onEmojiClick: any; openEm
         lazyLoadEmojis
         // previewConfig={{defaultEmoji:<Emoji/>}}
 
-        emojiStyle={EmojiStyle.FACEBOOK}
+        emojiStyle={EmojiStyle.APPLE}
         searchPlaceholder="Search chat emojis..."
         suggestedEmojisMode={SuggestionMode.RECENT}
         customEmojis={[

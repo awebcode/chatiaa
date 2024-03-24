@@ -6,18 +6,16 @@ import "react-toastify/dist/ReactToastify.css";
 const ToastProvider = () => {
   return (
     <>
- 
       <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
+        position="top-left"
+        autoClose={false}
+        limit={4}
+        newestOnTop
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
-        pauseOnHover
-        theme="dark"
+        theme="colored"
         transition={Bounce}
       />
     </>

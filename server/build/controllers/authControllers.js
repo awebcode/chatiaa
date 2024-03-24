@@ -143,13 +143,10 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             : {
                 $and: [
                     { _id: { $ne: req.id } },
-                    Object.assign({}, keyword),
                 ],
             };
         const users = yield UserModel_1.User.find(usersQuery).limit(limit).skip(skip);
-        console.log(req.query);
         const total = yield UserModel_1.User.countDocuments(usersQuery);
-        console.log({ total });
         res.send({ users, total, limit });
     }
     catch (error) {

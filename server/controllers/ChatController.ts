@@ -36,7 +36,7 @@ export const accessChat = async (
   });
 
   if (isChat.length > 0) {
-    res.status(200).send({chatData:isChat[0]});
+    res.status(200).send({ chatData: isChat[0] });
   } else {
     var chatData = {
       chatName: "sender",
@@ -50,7 +50,7 @@ export const accessChat = async (
         "users",
         "name email image lastActive"
       );
-     
+
       res.status(201).json({ success: true, isNewChat: true, chatData: FullChat });
     } catch (error: any) {
       next(error);
@@ -83,16 +83,22 @@ export const fetchChats = async (
     });
 
     const chats = await Chat.find({
-      users: { $elemMatch: { $eq: req.id } },
+      $or: [
+        { users: { $elemMatch: { $eq: req.id } } },
+        { chatName: { $regex: req.query.search, $options: "i" } },
+      ],
     })
-      .populate("users", "-password")
+      .populate({
+        path: "users",
+        select: "-password",
+        options: { limit: 5 }, // Set limit to Infinity to populate all documents
+      })
       .populate("groupAdmin", "email name image")
       .populate("latestMessage")
       .populate("chatBlockedBy", "name image email")
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(skip);
-
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
       select: "name image email lastActive ",
@@ -100,14 +106,16 @@ export const fetchChats = async (
     // Filter the populatedChats array based on the keyword
     let filteredChats: any = [];
     if (req.query.search && keyword) {
-      filteredChats = populatedChats.filter((chat: any) =>
-        chat.users.some(
-          (user: any) =>
-            user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
-            user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))
-        )
+      filteredChats = populatedChats.filter(
+        (chat: any) =>
+          chat.users.some(
+            (user: any) =>
+              user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
+              user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))
+          ) || chat.chatName.match(new RegExp(keyword.$or[0].name.$regex, "i")) // Add chatName filtering condition
       );
     }
+
     const filteredChatsWithUnseenCount = filteredChats.map((chat: any) => {
       const correspondingUnseenCount = unseenCount.find(
         (count: any) => count._id.toString() === chat._id.toString()
@@ -243,7 +251,7 @@ export const createGroupChat = async (
       .populate("users", "-password")
       .populate("groupAdmin", "-password");
 
-    res.status(200).json(fullGroupChat );
+    res.status(200).json(fullGroupChat);
   } catch (error: any) {
     console.log({ error });
     next(error);
@@ -413,7 +421,7 @@ export const addToGroup = async (req: Request, res: Response, next: NextFunction
 //delete single chat one to one chat
 
 export const deleteSingleChat = async (
-  req: Request |any,
+  req: Request | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -427,9 +435,7 @@ export const deleteSingleChat = async (
     res.json({
       success: true,
       chat: chat,
-      receiverId: chat?.users
-        .find((user) => user.toString() !== req.id)
-        ?._id.toString(),
+      receiverId: chat?.users.find((user) => user.toString() !== req.id)?._id.toString(),
     });
   } catch (error) {
     next(error);
@@ -561,7 +567,7 @@ export const updateChatStatusAsBlockOrUnblock = async (
       new: true,
     }).populate("chatBlockedBy");
     res.status(200).json({
-      chat:updatedChat,
+      chat: updatedChat,
       chatId: updatedChat?._id,
       receiverId: updatedChat?.users
         .find((user) => user.toString() !== req.id)
@@ -603,6 +609,69 @@ export const leaveFromChat = async (
     }
 
     res.json({ chat: updatedChat, userId });
+  } catch (error) {
+    next(error);
+  }
+};
+//get users in a chat
+export const getUsersInAChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = parseInt(req.query.skip) || 0;
+  const search = req.query.search;
+
+  try {
+    let query: any = {
+      _id: req.params.chatId,
+      users: { $elemMatch: { $eq: req.id } },
+    };
+
+    if (search) {
+      query["$or"] = [
+        { "users.name": { $regex: search, $options: "i" } },
+        { "users.email": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const users = await Chat.find(query).limit(limit).skip(skip);
+
+    const chat = await Chat.findOne({ _id: req.params.chatId });
+    const total = chat ? chat.users.length : 0;
+
+    res.send({ users, total, limit });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//find files from a chat
+
+export const getFilesInChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = parseInt(req.query.skip) || 0;
+
+  const filter = req.query.filter;
+  try {
+    const query: any = {
+      chat: req.params.chatId,
+    };
+
+    if (filter === "all") {
+      query.type = { $in: ["image", "application", "audio", "video"] };
+    } else {
+      query.type = filter;
+    }
+
+    const files = await Message.find(query).limit(limit).skip(skip);
+    const total = await Message.countDocuments(query);
+    res.send({ files, total, limit });
   } catch (error) {
     next(error);
   }

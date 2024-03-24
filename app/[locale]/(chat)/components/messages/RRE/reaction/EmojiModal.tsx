@@ -6,9 +6,13 @@ const EmojiPicker = dynamic(
   },
   { ssr: false }
 );
+import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
+import { PopoverContent } from "@/components/ui/popover";
 import { IMessage } from "@/context/reducers/interfaces";
+import { PopoverArrow } from "@radix-ui/react-popover";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { Theme, EmojiStyle, SuggestionMode, Emoji } from "emoji-picker-react";
+import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
 
 const EmojiModal = ({
@@ -26,75 +30,42 @@ const EmojiModal = ({
   message: IMessage;
   isCurrentUserMessage: boolean;
 }) => {
+  const { theme } = useTheme();
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   return (
-    <div className="hidden md:block">
-      {isCurrentUserMessage ? (
-        <EmojiPicker
-          open={openEmoji}
-          className="emojiReactModal"
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: isSmallDevice ? "10%" : "40%",
+    <PopoverContent
+     
+      className="bg-transparent border-none outline-none shadow-none"
+    >
+      <PopoverArrow
+        fill={theme === "dark" ? "#1f2937" : "#e5e7eb"}
+        height={12}
+        width={12}
+      />
+      <EmojiPicker
+        open={openEmoji}
+        style={{
+          zIndex: 1000,
+          height: isSmallDevice ? "280px" : "310px",
+          width: isSmallDevice ? "260px" : "310px",
+          fontSize: "10px",
+          overflow: "auto",
+        }}
+        onEmojiClick={(e) => {
+          onEmojiClick(e, message._id);
+          setIsOpenReactModal(false);
+          setIsOpenEmojiModal(false);
+        }}
+        autoFocusSearch
+        theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
+        lazyLoadEmojis
+        // previewConfig={{defaultEmoji:<Emoji/>}}
 
-            // bottom:"0px",
-            // top: isSmallDevice ? "-320px" : "-350px", // Adjust this value based on your design
-            // right: "-100px",
-            zIndex: 1000,
-            height: isSmallDevice ? "288px" : "310px",
-            width: isSmallDevice ? "250px" : "310px",
-            fontSize: "10px",
-            overflow: "auto",
-          }}
-          onEmojiClick={(e) => {
-            onEmojiClick(e, message._id);
-            setIsOpenReactModal(false);
-            setIsOpenEmojiModal(false);
-          }}
-          autoFocusSearch
-          theme={Theme.DARK}
-          lazyLoadEmojis
-          // previewConfig={{defaultEmoji:<Emoji/>}}
-
-          emojiStyle={EmojiStyle.APPLE}
-          searchPlaceholder="Search chat emojis..."
-          suggestedEmojisMode={SuggestionMode.RECENT}
-        />
-      ) : (
-        <EmojiPicker
-          open={openEmoji}
-          className="emojiReactModal"
-          style={{
-            position: "absolute",
-            top: "0%",
-            left: isSmallDevice ? "100%" : "0%",
-
-            // bottom:"0px",
-            // top: isSmallDevice ? "-320px" : "-350px", // Adjust this value based on your design
-            // right: "-100px",
-            zIndex: 1000,
-            height: isSmallDevice ? "288px" : "310px",
-            width: isSmallDevice ? "250px" : "310px",
-            fontSize: "10px",
-            overflow: "auto",
-          }}
-          onEmojiClick={(e) => {
-            onEmojiClick(e, message._id);
-            setIsOpenReactModal(false);
-            setIsOpenEmojiModal(false);
-          }}
-          autoFocusSearch
-          theme={Theme.DARK}
-          lazyLoadEmojis
-          // previewConfig={{defaultEmoji:<Emoji/>}}
-
-          emojiStyle={EmojiStyle.APPLE}
-          searchPlaceholder="Search chat emojis..."
-          suggestedEmojisMode={SuggestionMode.RECENT}
-        />
-      )}
-    </div>
+        emojiStyle={EmojiStyle.APPLE}
+        searchPlaceholder="Search chat emojis..."
+        suggestedEmojisMode={SuggestionMode.RECENT}
+      />
+    </PopoverContent>
   );
 };
 

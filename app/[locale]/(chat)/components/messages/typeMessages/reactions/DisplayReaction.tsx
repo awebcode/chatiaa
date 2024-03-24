@@ -1,3 +1,4 @@
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
 import { addRemoveEmojiReactions } from "@/functions/messageActions";
@@ -47,35 +48,37 @@ const DisplayReaction = ({
       }`}
     >
       {/* ref={clickOutsideEmojiModal} */}
-      <div
-        onClick={() => {
-          setIsOpenReactionListModal(!isOpenReactionListModal);
-          setMessageId(message._id);
-        }}
-        className="relative  cursor-pointer flex gap-1 bg-gray-700 border border-black p-1 rounded-lg"
-      >
-        {reactionsGroup.slice(0, 4).map((react, i) => {
-          return (
-            <Emoji
-              size={isSmallDevice?12:16}
-              lazyLoad
-              emojiStyle={EmojiStyle.APPLE}
-              unified={(react as any)?._id?.codePointAt(0).toString(16)}
-            />
-          );
-        })}
-        <span className="text-xs">{message.totalReactions}</span>
-      </div>
-      <ReactionLists
-        messageId={messageId}
-        message={message}
-        reactions={reactions}
-        reactionsGroup={reactionsGroup}
-        isCurrentUserMessage={isCurrentUserMessage}
-        isOpenReactionListModal={isOpenReactionListModal}
-        setIsOpenReactionListModal={setIsOpenReactionListModal}
-        handleRemoveReact={handleRemoveReact}
-      />
+      <Popover>
+        <PopoverTrigger
+          onClick={() => {
+            setIsOpenReactionListModal(!isOpenReactionListModal);
+            setMessageId(message._id);
+          }}
+          className="relative  cursor-pointer flex gap-1 bg-gray-700 border border-black p-1 rounded-lg"
+        >
+          {reactionsGroup.slice(0, 4).map((react, i) => {
+            return (
+              <Emoji
+                size={isSmallDevice ? 12 : 16}
+                lazyLoad
+                emojiStyle={EmojiStyle.APPLE}
+                unified={(react as any)?._id?.codePointAt(0).toString(16)}
+              />
+            );
+          })}
+          <span className="text-xs">{message.totalReactions}</span>
+        </PopoverTrigger>
+        <ReactionLists
+          messageId={messageId}
+          message={message}
+          reactions={reactions}
+          reactionsGroup={reactionsGroup}
+          isCurrentUserMessage={isCurrentUserMessage}
+          isOpenReactionListModal={isOpenReactionListModal}
+          setIsOpenReactionListModal={setIsOpenReactionListModal}
+          handleRemoveReact={handleRemoveReact}
+        />
+      </Popover>
     </div>
   );
 };

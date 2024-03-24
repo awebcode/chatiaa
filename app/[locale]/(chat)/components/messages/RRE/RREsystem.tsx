@@ -6,12 +6,15 @@ import useEditReplyStore from "@/store/useEditReply";
 import { IMessage } from "@/context/reducers/interfaces";
 import EditUnModal from "./unedremove/EditUnModal";
 import ReactModal from "./reaction/ReactModal";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover } from "@/components/ui/popover";
 const RREsystem = ({
   message,
   isCurrentUserMessage,
 }: {
   message: IMessage;
-  isCurrentUserMessage:boolean}) => {
+  isCurrentUserMessage: boolean;
+}) => {
   const { onReply, onEdit, cancelReply, cancelEdit, isReply, isEdit } =
     useEditReplyStore();
   const [openEdRemoveDialog, setopenEdRemoveDialog] = useState(false);
@@ -40,29 +43,26 @@ const RREsystem = ({
           />
         </div>
         {/* emoji */}
-        <div className={`relative`} ref={clickOutsideReactModal}>
-          <HiOutlineEmojiHappy
-            onClick={() => setIsOpenReactModal(!isOpenReactModal)}
-            className="text-lg cursor-pointer relative"
-          />
+        <DropdownMenu >
+          <DropdownMenuTrigger className="border-none outline-none">
+            <HiOutlineEmojiHappy className="text-lg cursor-pointer" />
+          </DropdownMenuTrigger>
           <ReactModal
             isCurrentUserMessage={isCurrentUserMessage}
             message={message}
-            isOpenReactModal={isOpenReactModal}
             setIsOpenReactModal={setIsOpenReactModal}
           />
-        </div>
-
+        </DropdownMenu>
         {/* EditRemoveUnsent */}
-        <div className={`relative`} ref={clickOutsideEdRemoveDialog}>
-          <HiDotsVertical
-            onClick={() => {
-              setopenEdRemoveDialog(!openEdRemoveDialog);
-            }}
-            className="text-lg cursor-pointer relative"
-          />
-          <EditUnModal message={message} openEdRemoveDialog={openEdRemoveDialog} />
-        </div>
+        <DropdownMenu>
+          <div className="relative">
+            <DropdownMenuTrigger className="border-none outline-none">
+              {" "}
+              <HiDotsVertical className="text-lg cursor-pointer relative" />
+            </DropdownMenuTrigger>
+            <EditUnModal message={message} />
+          </div>
+        </DropdownMenu>
       </div>
     </div>
   );

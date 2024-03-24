@@ -24,4 +24,8 @@ chatRoute
 chatRoute
     .route("/leaveChat")
     .put(authMiddleware_1.default, ChatController_1.leaveFromChat);
+//getFiles in a chat
+chatRoute.get("/getFilesInChat/:chatId", authMiddleware_1.default, ChatController_1.getFilesInChat);
+// getUsersInAChat;
+chatRoute.get("/getUsersInAChat/:chatId", authMiddleware_1.default, ChatController_1.getUsersInAChat);
 exports.default = chatRoute;

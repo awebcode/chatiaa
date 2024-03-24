@@ -1,7 +1,7 @@
 "use client";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import Image from "next/image";
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import { useClickAway } from "@uidotdev/usehooks";
@@ -10,30 +10,38 @@ import dynamic from "next/dynamic";
 import { useRouter } from "@/navigation";
 import moment from "moment";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { CLEAR_MESSAGES, SET_MESSAGES, SET_SELECTED_CHAT } from "@/context/reducers/actions";
-const RightUserDrawer = dynamic(() => import("./RightUserDrawer"));
-const RightGroupDrawer = dynamic(() => import("./RightGroupDrawer"));
+import {
+  CLEAR_MESSAGES,
+  SET_MESSAGES,
+  SET_SELECTED_CHAT,
+} from "@/context/reducers/actions";
+const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"));
+const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"));
 
 const ChatHeader = () => {
   const router = useRouter();
-    const { selectedChat } = useMessageState();
-    const dispatch = useMessageDispatch();
+  const { selectedChat, user: currentUser } = useMessageState();
+  const dispatch = useMessageDispatch();
   const { onlineUsers } = useOnlineUsersStore();
   const [open, setOpen] = useState(false);
   const [openVideoCall, setOpenVideoCall] = useState(false);
-  const isUserOnline = onlineUsers.some((u: any) => u.id === selectedChat?.userInfo?._id);
-  const userModalRef: any = useClickAway((e) => {
-    setOpen(false);
-  });
+   const isUserOnline = onlineUsers.some((u: any) =>
+     selectedChat?.isGroupChat
+       ? selectedChat?.users.some(
+           (user: any) => user._id === u.id && user._id !== currentUser?._id
+         )
+       : selectedChat?.userInfo?._id === u.id
+   );
+ 
 
   const videoCallModalRef: any = useClickAway(() => {
     setOpenVideoCall(false);
   });
 
-    const clearselectedChat = () => {
-      dispatch({ type: SET_SELECTED_CHAT, payload: null })
-      dispatch({ type: CLEAR_MESSAGES });
-    }
+  const clearselectedChat = () => {
+    dispatch({ type: SET_SELECTED_CHAT, payload: null });
+    dispatch({ type: CLEAR_MESSAGES });
+  };
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
       <div className="flex items-center gap-2">
@@ -48,16 +56,14 @@ const ChatHeader = () => {
         {selectedChat && (
           <>
             <div className="relative  p-[2px] h-8 w-8 md:h-10 md:w-10 ring md:ring-2 ring-violet-500 rounded-full">
-            
-                <Image
-                  height={35}
-                  width={35}
-                  className="rounded-full object-fill h-full w-full"
-                  alt={selectedChat?.userInfo?.name as any}
-                  src={selectedChat?.userInfo.image as any}
-                  loading="lazy"
-                />
-              
+              <Image
+                height={35}
+                width={35}
+                className="rounded-full object-fill h-full w-full"
+                alt={selectedChat?.userInfo?.name as any}
+                src={selectedChat?.userInfo.image as any}
+                loading="lazy"
+              />
 
               <span
                 className={`absolute bottom-0 -right-1 rounded-full  p-[6px] ${
@@ -109,7 +115,11 @@ const ChatHeader = () => {
             /> */}
           </span>
           {/* check is group chat or not */}
-          {!selectedChat?.isGroupChat ? <RightUserDrawer /> : <RightGroupDrawer />}
+          {!selectedChat?.isGroupChat ? (
+            <RightUserDrawer isUserOnline={isUserOnline} />
+          ) : (
+            <RightGroupDrawer isUserOnline={isUserOnline} />
+          )}
         </div>
       )}
       {/* <div>...</div> */}

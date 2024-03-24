@@ -16,6 +16,7 @@ import {
 } from "../controllers/messageController";
 import uploadMiddleware from "../middlewares/uploadMiddleware";
 
+
 const messageRoute = express.Router();
 
 messageRoute.route("/allmessages/:chatId").get(authMiddleware, allMessages);

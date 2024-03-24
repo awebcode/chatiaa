@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.renameGroup = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
+exports.getFilesInChat = exports.getUsersInAChat = exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.renameGroup = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
 const errorHandler_1 = require("../middlewares/errorHandler");
 const ChatModel_1 = require("../model/ChatModel");
 const UserModel_1 = require("../model/UserModel");
@@ -79,9 +79,16 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             users: { $elemMatch: { $eq: req.id } },
         });
         const chats = yield ChatModel_1.Chat.find({
-            users: { $elemMatch: { $eq: req.id } },
+            $or: [
+                { users: { $elemMatch: { $eq: req.id } } },
+                { chatName: { $regex: req.query.search, $options: "i" } },
+            ],
         })
-            .populate("users", "-password")
+            .populate({
+            path: "users",
+            select: "-password",
+            options: { limit: 5 }, // Set limit to Infinity to populate all documents
+        })
             .populate("groupAdmin", "email name image")
             .populate("latestMessage")
             .populate("chatBlockedBy", "name image email")
@@ -96,7 +103,8 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         let filteredChats = [];
         if (req.query.search && keyword) {
             filteredChats = populatedChats.filter((chat) => chat.users.some((user) => user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
-                user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))));
+                user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))) || chat.chatName.match(new RegExp(keyword.$or[0].name.$regex, "i")) // Add chatName filtering condition
+            );
         }
         const filteredChatsWithUnseenCount = filteredChats.map((chat) => {
             const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
@@ -487,3 +495,53 @@ const leaveFromChat = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.leaveFromChat = leaveFromChat;
+//get users in a chat
+const getUsersInAChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = parseInt(req.query.skip) || 0;
+    const search = req.query.search;
+    try {
+        let query = {
+            _id: req.params.chatId,
+            users: { $elemMatch: { $eq: req.id } },
+        };
+        if (search) {
+            query["$or"] = [
+                { "users.name": { $regex: search, $options: "i" } },
+                { "users.email": { $regex: search, $options: "i" } },
+            ];
+        }
+        const users = yield ChatModel_1.Chat.find(query).limit(limit).skip(skip);
+        const chat = yield ChatModel_1.Chat.findOne({ _id: req.params.chatId });
+        const total = chat ? chat.users.length : 0;
+        res.send({ users, total, limit });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getUsersInAChat = getUsersInAChat;
+//find files from a chat
+const getFilesInChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = parseInt(req.query.skip) || 0;
+    const filter = req.query.filter;
+    try {
+        const query = {
+            chat: req.params.chatId,
+        };
+        if (filter === "all") {
+            query.type = { $in: ["image", "application", "audio", "video"] };
+        }
+        else {
+            query.type = filter;
+        }
+        const files = yield MessageModel_1.Message.find(query).limit(limit).skip(skip);
+        const total = yield MessageModel_1.Message.countDocuments(query);
+        res.send({ files, total, limit });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getFilesInChat = getFilesInChat;

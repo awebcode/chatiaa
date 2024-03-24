@@ -99,3 +99,46 @@ export const leaveChat = async (chatId: string, userId: string) => {
   );
   return data;
 };
+
+
+
+//getFilesInChat
+
+export const getFilesInChat = async ({
+  queryKey = "",
+  pageParam = 0,
+}: {
+  pageParam: any;
+  queryKey: any;
+}) => {
+  const { data } = await axios.get(
+    `${BaseUrl}/getFilesInChat/${queryKey[0]}?filter=${
+      queryKey[1]
+    }&skip=${pageParam}&limit=${10}`,
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+  return { ...data, prevOffset: pageParam, skip: pageParam };
+};
+
+//getUsers in a chat
+export const getUsersInAChat = async ({
+  queryKey = "",
+  pageParam = 0,
+}: {
+  pageParam: any;
+  queryKey: any;
+}) => {
+  const { data } = await axios.get(
+    `${BaseUrl}/getUsersInAChat/${queryKey[0]}?search=${
+      queryKey[1]
+    }&skip=${pageParam}&limit=${10}`,
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+  return { ...data, prevOffset: pageParam, skip: pageParam };
+};
