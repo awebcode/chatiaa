@@ -43,6 +43,7 @@ const Profile = async () => {
         </div>
         <div>
           <DeleteButton
+            btnClassName=""
             buttonText="Delete Profile"
             title=""
             desc=""

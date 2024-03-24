@@ -19,7 +19,7 @@ import TypingIndicator from "../TypingIndicator";
 import { editMessage, replyMessage } from "@/functions/messageActions";
 
 const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"));
-const ChatStatus = dynamic(() => import("../ChatStatus"));
+const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"));
 const EmojiComponent = dynamic(() => import("./EmojiComponent"));
 type Temoji = {
   emoji: string;
@@ -53,7 +53,7 @@ const Input = () => {
         content: message,
         chatId: selectedChat?.chatId,
         senderId: currentUser?._id,
-        userInfo:currentUser,
+        userInfo: currentUser,
         receiverId: selectedChat?.userInfo._id,
         isGroupChat: selectedChat?.isGroupChat,
         groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
@@ -64,7 +64,7 @@ const Input = () => {
           content: message,
           chatId: selectedChat?.chatId,
           senderId: currentUser?._id,
-          userInfo:currentUser,
+          userInfo: currentUser,
           receiverId: selectedChat?.userInfo._id,
           isGroupChat: selectedChat?.isGroupChat,
           groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
@@ -180,20 +180,8 @@ const Input = () => {
       </div>
     );
   }
-  if (
-    selectedChat?.chatStatus?.status?.includes("blocked") &&
-    selectedChat?.chatStatus?.blockedBy?.some(
-      (user) => user._id === selectedChat.userInfo._id || user._id === currentUser?._id
-    )
-  ) {
-    return (
-      <ChatStatus
-        user={selectedChat?.chatStatus?.blockedBy?.find(
-          (user) =>
-            user._id === selectedChat.userInfo._id || user._id === currentUser?._id
-        )}
-      />
-    );
+  if (selectedChat?.chatBlockedBy && selectedChat?.chatBlockedBy?.length > 0) {
+    return <ChatBlockStatus chatBlockedBy={selectedChat?.chatBlockedBy} />;
   }
   return (
     <div className="w-full bg-gray-100 rounded dark:bg-gray-800">

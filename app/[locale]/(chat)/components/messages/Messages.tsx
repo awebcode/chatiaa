@@ -20,7 +20,12 @@ import { BaseUrl } from "@/config/BaseUrl";
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
-  const { isTyping, content: typingContent, chatId: typingChatId,userInfo:typingUserInfo } = useTypingStore();
+  const {
+    isTyping,
+    content: typingContent,
+    chatId: typingChatId,
+    userInfo: typingUserInfo,
+  } = useTypingStore();
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -44,34 +49,43 @@ export default function Messages() {
     }, 1500);
     return () => clearTimeout(tid);
   }, [isIncomingMessage]);
-
+  const mountref=useRef(true)
   useEffect(() => {
+
     const fetchData = async () => {
       try {
         setLoading(true);
         const res = await fetch(
-          `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`, {
+          `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
+          {
             credentials: "include",
-            next:{revalidate:0},
-            // cache:"reload"
+            // cache: "reload",
           }
         );
-        const data=await res.json();
-        if (messages.length === 0) {
+        const data = await res.json();
+        console.log({res:data})
+
+        if (messages.length < 10) {
+          
           dispatch({ type: SET_MESSAGES, payload: data.messages });
+          dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
         }
-        dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
+
         setLoading(false);
       } catch (error) {
         setLoading(false);
       }
     };
+
+    if (mountref.current&&selectedChat && page === 1) {
+      fetchData();
+    }
+
     return () => {
-      if (page === 1) {
-        fetchData();
-      }
+      mountref.current = false; // Setting mounted flag to false on component unmount
     };
-  }, [selectedChat?.chatId]);
+  }, []);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,12 +94,15 @@ export default function Messages() {
           `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
           {
             credentials: "include",
-            next: { revalidate: 0 },
             // cache: "reload",
           }
         );
         const data = await res.json();
-        dispatch({ type: SET_MESSAGES, payload: data.messages });
+       
+          dispatch({ type: SET_MESSAGES, payload: data.messages });
+        dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
+
+        
         const container = document.getElementById("CustomscrollableTarget");
         if (container) {
           const { scrollTop, scrollHeight, clientHeight } = container;
@@ -154,6 +171,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
+  console.log("called",messages);
   return (
     <div
       id="CustomscrollableTarget"
@@ -211,7 +229,7 @@ export default function Messages() {
         </div>
         {!loading &&
           totalMessagesCount > 0 &&
-          totalMessagesCount === messages?.length && (
+          totalMessagesCount === messages?.length && messages?.length>10 && (
             <div className="text-center text-2xl text-green-400 pt-10">
               You have viewed all messages
             </div>
@@ -219,11 +237,11 @@ export default function Messages() {
         {!loading &&
           totalMessagesCount > 0 &&
           totalMessagesCount === messages?.length && (
-            <NoChatProfile user={selectedChat as any} />
+            <NoChatProfile selectedChat={selectedChat as any} />
           )}
-        {/* when user have no chat */}
+        {/* when selectedChat have no chat */}
         {messages.length === 0 && !loading && (
-          <NoChatProfile user={selectedChat as any} />
+          <NoChatProfile selectedChat={selectedChat as any} />
         )}
         <div
           className={`absolute left-1/2 bottom-6  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${

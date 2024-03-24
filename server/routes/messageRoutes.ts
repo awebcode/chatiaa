@@ -10,7 +10,7 @@ import {
   updateAllMessageStatusSeen,
   updateChatMessageAsDeliveredController,
   updateChatMessageController,
-  updateChatStatusAsBlockOrUnblock,
+  
   updateMessageStatusAsRemove,
   updateMessageStatusAsUnsent,
 } from "../controllers/messageController";
@@ -48,11 +48,7 @@ messageRoute
   .route("/updateMessageStatusUnsent")
   .put(authMiddleware, updateMessageStatusAsUnsent);
 
-//update messesage status as Block/Unblock
 
-messageRoute
-  .route("/updateChatStatusAsBlockOUnblock")
-  .put(authMiddleware, updateChatStatusAsBlockOrUnblock);
 //editMessage
 
 messageRoute

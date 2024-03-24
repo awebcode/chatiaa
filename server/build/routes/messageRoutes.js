@@ -33,10 +33,6 @@ messageRoute
 messageRoute
     .route("/updateMessageStatusUnsent")
     .put(authMiddleware_1.default, messageController_1.updateMessageStatusAsUnsent);
-//update messesage status as Block/Unblock
-messageRoute
-    .route("/updateChatStatusAsBlockOUnblock")
-    .put(authMiddleware_1.default, messageController_1.updateChatStatusAsBlockOrUnblock);
 //editMessage
 messageRoute
     .route("/editMessage")

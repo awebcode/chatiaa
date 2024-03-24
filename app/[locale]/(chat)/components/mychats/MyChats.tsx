@@ -43,7 +43,7 @@ const MyFriends = () => {
           {
             credentials: "include",
             cache: "no-cache",
-            next: { revalidate: 0 },
+            // next: { revalidate: 0 },
             // cache: "reload",
           }
         );
@@ -71,7 +71,7 @@ const MyFriends = () => {
           {
             credentials: "include",
             cache:"no-cache",
-            next:{revalidate:0}
+            // next:{revalidate:0}
           }
         );
         const data = await res.json();
@@ -125,7 +125,9 @@ const MyFriends = () => {
     // if (messageEndRef.current)
     //   messageEndRef.current.scrollIntoView({ behavior: "smooth" });
   };
-  console.log({chats})
+
+  console.log({chats});
+  
   return (
     <>
       <div>

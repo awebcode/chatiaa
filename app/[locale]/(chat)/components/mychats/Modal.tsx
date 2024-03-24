@@ -5,18 +5,31 @@ import { RiProfileLine } from "react-icons/ri";
 import {
   useBlockMutation,
   useDeleteSingleChatMutation,
+  useLeaveChatMutation,
   useRemoveFromGroup,
 } from "../mutations/Chatmutations";
 import { useMessageState } from "@/context/MessageContext";
+import { Tuser } from "@/store/types";
+import { IChat } from "@/context/reducers/interfaces";
 
-const Modal = ({ open, setOpen, chatId, status, updatedBy, chat }: any) => {
+const Modal = ({
+  open,
+  setOpen,
+  chatBlockedBy,
+  chat,
+}: {
+  open:boolean;
+  setOpen:any;
+  chatBlockedBy:Tuser[];
+  chat:IChat;
+}) => {
   const blockMutation = useBlockMutation();
   const { user: currentUser } = useMessageState();
-  const leaveMutation = useRemoveFromGroup();
-  const deleteSignleChatMutation = useDeleteSingleChatMutation(chatId as any, false);
+  const leaveMutation = useLeaveChatMutation(chat._id as any, currentUser?._id as any,);
+  const deleteSignleChatMutation = useDeleteSingleChatMutation(chat._id as any, false);
   const blockData = {
-    chatId: chatId,
-    status: status === "blocked" ? "unblocked" : "blocked",
+    chatId: chat._id,
+    status: chatBlockedBy?.some((user)=>user?._id===currentUser?._id)?  "unblock":"block" 
   };
   const items = [
     {
@@ -57,14 +70,14 @@ const Modal = ({ open, setOpen, chatId, status, updatedBy, chat }: any) => {
     },
 
     {
-      name:
-        status === "blocked" && updatedBy?._id === currentUser?._id ? (
-          <span className="text-blue-500">Unblock</span>
-        ) : status === "blocked" && updatedBy._id !== currentUser?._id ? (
-          <span className="text-rose-600">{updatedBy.username} Blocked you</span>
-        ) : (
-          <span className="text-rose-500">Block</span>
-        ),
+      name: chatBlockedBy?.some((user) => user?._id === currentUser?._id) ? (
+        <span className="text-blue-500">Unblock</span>
+      ) : chatBlockedBy.length > 0 &&
+        chatBlockedBy?.some((user) => user?._id !== currentUser?._id) ? (
+        <span className="text-rose-600">{chatBlockedBy[0].name} Blocked you</span>
+      ) : (
+        <span className="text-rose-500">Block</span>
+      ),
       icon: <BsLock />,
       action: () => {
         if (confirm("Are you sure?")) {
@@ -90,10 +103,7 @@ const Modal = ({ open, setOpen, chatId, status, updatedBy, chat }: any) => {
       icon: <BsBoxArrowLeft className="text-rose-500" />,
       action: () => {
         if (confirm("Are you sure?")) {
-          leaveMutation.mutateAsync({
-            chatId: chat._id,
-            userId: currentUser?._id as any,
-          });
+          leaveMutation.mutateAsync();
         }
       },
       isHidden: !chat?.isGroupChat,

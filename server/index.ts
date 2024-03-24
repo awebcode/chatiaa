@@ -14,9 +14,10 @@ import messageRoute from "./routes/messageRoutes";
 import { User } from "./model/UserModel";
 import cookieParser from "cookie-parser";
 config();
-import { sentSocketTextMessage } from "./controllers/functions";
+import { leaveFromGroupMessage, sentSocketTextMessage } from "./controllers/functions";
 import { Chat } from "./model/ChatModel";
 import { Types } from "mongoose";
+import { Message } from "./model/MessageModel";
 const app = express();
 // app.use(uploadMiddleware.array("files"));
 
@@ -103,7 +104,6 @@ io.on("connection", (socket: Socket) => {
     });
     if (message.isGroupChat) {
       const chatUsers = await Chat.findById(message.chatId);
-      // console.log({chatU})
       chatUsers?.users.forEach((user) => {
         const receiverId = getSocketConnectedUser(user.toString());
         if (receiverId) {
@@ -182,27 +182,63 @@ io.on("connection", (socket: Socket) => {
     chatUsers?.users.forEach((user) => {
       const receiverId = getSocketConnectedUser(user.toString());
       if (receiverId) {
-        io.to(data.chatId)
+        socket
+          .to(data.chatId)
           .to(receiverId.socketId)
-          
-          .emit("groupCreatedNotifyReceived", {
-            ...data.toObject(),
-            receiverId: receiverId.id,
-          });
+
+          .emit("groupCreatedNotifyReceived", data);
       }
-    })
-    
+    });
   });
   //singleChat createdNitify
   socket.on("chatCreatedNotify", (data) => {
-    console.log({ chatCreatedNotify: data });
-    socket.to(data.to).emit("chatCreatedNotifyReceived");
+    socket.to(data.to).emit("chatCreatedNotifyReceived", data);
   });
-  //chatDeletedNotify
-  socket.on("chatDeletedNotify", (data) => {
-    data.forEach((userId: any) => {
-      socket.to(userId).emit("chatDeletedNotifyReceived");
+  //singlechatDeletedNotify
+  socket.on("singleChatDeletedNotify", (data) => {
+    const receiverId = getSocketConnectedUser(data.receiverId);
+    if (receiverId) {
+      socket
+        .to(receiverId?.socketId)
+        .emit("singleChatDeletedNotifyReceived", { chatId: data.chatId });
+    }
+  });
+
+  //leave from group chat
+  socket.on("groupChatLeaveNotify", async (data) => {
+    const chatUsers = await Chat.findById(data.chatId);
+    const leaveMessage = await leaveFromGroupMessage({
+      chatId: data.chatId,
+      user: data.currentUser,
     });
+    chatUsers?.users.forEach((user) => {
+      const receiverId = getSocketConnectedUser(user.toString());
+      if (receiverId) {
+        //send it without who sent
+        socket
+          .to(data.chatId)
+          .to(receiverId.socketId)
+
+          .emit("groupChatLeaveNotifyReceived", {
+            ...leaveMessage.toObject(),
+            user: data.currentUser,
+            chatId: data.chatId,
+            receiverId: receiverId.id,
+          });
+      }
+    });
+  });
+
+  //chat blocked notify
+
+   //singlechatDeletedNotify
+  socket.on("chatBlockedNotify", (data) => {
+    const receiverId = getSocketConnectedUser(data.receiverId);
+    if (receiverId) {
+      socket
+        .to(receiverId?.socketId)
+        .emit("chatBlockedNotifyReceived", data);
+    }
   });
   //@@@@@@ calling system end
   // Handle client disconnection

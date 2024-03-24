@@ -40,10 +40,8 @@ export interface IChat {
   users: Tuser[];
   unseenCount: number;
   createdAt: string;
-  chatBlockStatus: {
-    status: string;
-    blockedBy: Tuser[];
-  };
+  chatBlockedBy: Tuser[];
+  
 }
 
 export interface State {

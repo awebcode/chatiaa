@@ -10,7 +10,7 @@ const Main = () => {
   const { user: currentUser, messages, selectedChat } = useMessageState();
   useEffect(() => {
     socket.emit("join", { chatId: selectedChat?.chatId });
-  }, [selectedChat, socket]);
+  }, [selectedChat?.chatId, socket]); //selectedChat
 
   return (
     <div className="relative top-0 w-full h-full ">

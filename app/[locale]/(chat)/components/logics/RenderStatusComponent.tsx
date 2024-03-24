@@ -13,7 +13,7 @@ export const RenderStatus = (
 
   switch (message?.status) {
     case "seen":
-      message.sender._id === currentUser?._id && type === "onFriendListCard"
+      message?.sender?._id === currentUser?._id && type === "onFriendListCard"
         ? (statusDiv = (
             <div className="h-5 w-5 relative m-1">
               <Image
@@ -39,7 +39,7 @@ export const RenderStatus = (
             ) : null);
       break;
     case "delivered":
-      message.sender._id !== currentUser?._id && type === "onFriendListCard"
+      message.sender?._id !== currentUser?._id && type === "onFriendListCard"
         ? (statusDiv = (
             <div className="h-7 w-7 relative m-1 rounded-full bg-sky-500 flex items-center justify-center">
               <span className="text-gray-900 absolute text-[10px]">

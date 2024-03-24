@@ -13,7 +13,7 @@ export function MessagePreview({
   currentUser: Tuser;
 }) {
   const senderName =
-    chat?.latestMessage?.sender._id === currentUser._id
+    chat?.latestMessage?.sender?._id === currentUser?._id
       ? "You"
       : chat?.latestMessage?.sender?.name;
   let previewContent;
@@ -55,8 +55,8 @@ export function MessagePreview({
     default:
       if (chat?.latestMessage?.content) {
         previewContent =
-          chat?.latestMessage?.content.length > 15
-            ? chat?.latestMessage?.content.substring(0, 15) + "..."
+          chat?.latestMessage?.content.length > 25
+            ? chat?.latestMessage?.content.substring(0, 25) + "..."
             : chat?.latestMessage?.content;
       } else {
         previewContent = "Start a new conversation";

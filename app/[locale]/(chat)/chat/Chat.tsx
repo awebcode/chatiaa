@@ -7,7 +7,11 @@ import {
   ADD_EDITED_MESSAGE,
   ADD_REACTION_ON_MESSAGE,
   ADD_REPLY_MESSAGE,
+  BLOCK_CHAT,
+  DELETE_CHAT,
+  LEAVE_FROM_GROUP_CHAT,
   REMOVE_UNSENT_MESSAGE,
+  SET_CHATS,
   SET_MESSAGES,
   SET_TOTAL_MESSAGES_COUNT,
   UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND,
@@ -50,14 +54,23 @@ const Chat = () => {
   const currentUserRef = useRef<Tuser | null>(null); // Provide type annotation for Tuser or null
   const socketRef = useRef<Socket | null>(null); // Provide type annotation for socket, you can replace `any` with the specific type if available
   const onlineUsersRef = useRef<any>([]);
+  const userRef = useRef<Tuser | null>(null);
 
   useEffect(() => {
     totalMessagesCountRef.current = totalMessagesCount;
     selectedChatRef.current = selectedChat;
     currentUserRef.current = currentUser;
+    userRef.current = currentUser;
     socketRef.current = socket;
     onlineUsersRef.current = onlineUsers;
   }, [totalMessagesCount, selectedChat, currentUser, socket, onlineUsers]);
+  useEffect(() => {
+    // Emit "setup" event when the component mounts if currentUser is available
+    const user = JSON.parse(localStorage.getItem("currentUser") as any);
+    if (user) {
+      socket?.emit("setup", { id: user._id });
+    }
+  }, []);
   //update friend message when i'm online
   useEffect(() => {
     updateAllMessageStatusAsDelivered(currentUser?._id as any);
@@ -156,10 +169,10 @@ const Chat = () => {
   //handle_Remove_All_Unsent_Message
   const handle_Remove_All_Unsent_Message = useCallback((message: any) => {
     // Implementation for handling removeMessage event
-     dispatch({
-       type: REMOVE_UNSENT_MESSAGE,
-       payload: message,
-     });
+    dispatch({
+      type: REMOVE_UNSENT_MESSAGE,
+      payload: message,
+    });
   }, []);
 
   //handleSeenMessage
@@ -194,20 +207,40 @@ const Chat = () => {
 
   const groupCreatedNotifyHandler = useCallback((data: any) => {
     // Implementation goes here
+    dispatch({ type: SET_CHATS, payload: data.chat });
   }, []);
 
   const chatCreatedNotifyHandler = useCallback((data: any) => {
     // Implementation goes here
+    dispatch({ type: SET_CHATS, payload: data.chat });
   }, []);
   //after join when close the network
-  const chatDeletedNotifyReceivedHandler = useCallback((data: any) => {
+  const singleChatDeletedNotifyReceivedHandler = useCallback((data: any) => {
     // Implementation goes here
+    dispatch({ type: DELETE_CHAT, payload: data });
   }, []);
   //UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND
   const handleAllDeliveredAfterReconnect = useCallback((data: any) => {
     dispatch({ type: UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND, payload: data });
   }, []);
+  //groupChatLeaveNotifyReceivedHandler
+  const groupChatLeaveNotifyReceivedHandler = useCallback((data: any) => {
+    if (data.chatId === selectedChatRef.current?.chatId) {
+      dispatch({ type: SET_MESSAGES, payload: data });
+    }
 
+    dispatch({
+      type: LEAVE_FROM_GROUP_CHAT,
+      payload: { user: data.user, chatId: data.chatId },
+    });
+
+    dispatch({ type: UPDATE_LATEST_CHAT_MESSAGE, payload: data });
+  }, []);
+
+  //incoming block single chat
+  const chatBlockedNotifyReceivedHandler = useCallback((data: any) => {
+    dispatch({ type: BLOCK_CHAT, payload: data });
+  }, []);
   useEffect(() => {
     // Add event listeners
     socket.on("receiveMessage", handleSocketMessage);
@@ -219,8 +252,8 @@ const Chat = () => {
     socket.on("setup", handleOnlineUsers);
     socket.on("groupCreatedNotifyReceived", groupCreatedNotifyHandler);
     socket.on("chatCreatedNotifyReceived", chatCreatedNotifyHandler);
-    socket.on("chatDeletedNotifyReceived", chatDeletedNotifyReceivedHandler);
-    // Socket event listeners
+    socket.on("singleChatDeletedNotifyReceived", singleChatDeletedNotifyReceivedHandler);
+    // Socket event listeners//MESSAGE EVENTS
     socket.on("replyMessage", handleReplyMessage);
     socket.on("editMessage", handleEditMessage);
     socket.on("addReactionOnMessage", handleAddReactionOnMessage);
@@ -229,7 +262,12 @@ const Chat = () => {
       "receiveDeliveredAllMessageAfterReconnect",
       handleAllDeliveredAfterReconnect
     );
+    //GROUP EVENTS
+    socket.on("groupChatLeaveNotifyReceived", groupChatLeaveNotifyReceivedHandler);
 
+    //block single chat
+
+    socket.on("chatBlockedNotifyReceived",chatBlockedNotifyReceivedHandler)
     // Clean up event listeners when the component unmounts
     return () => {
       socket.off("setup", handleOnlineUsers);
@@ -241,28 +279,24 @@ const Chat = () => {
       socket.off("stopTyping", handleStopTyping);
       socket.off("groupCreatedNotifyReceived", groupCreatedNotifyHandler);
       socket.off("chatCreatedNotifyReceived", chatCreatedNotifyHandler);
-      socket.off("chatDeletedNotifyReceived", chatDeletedNotifyReceivedHandler);
+      socket.off(
+        "singleChatDeletedNotifyReceived",
+        singleChatDeletedNotifyReceivedHandler
+      );
       socket.off(
         "receiveDeliveredAllMessageAfterReconnect",
         handleAllDeliveredAfterReconnect
       );
-
+      socket.off("groupChatLeaveNotifyReceived", groupChatLeaveNotifyReceivedHandler);
       // Socket event listeners
       socket.off("replyMessage", handleReplyMessage);
       socket.off("editMessage", handleEditMessage);
       socket.off("addReactionOnMessage", handleAddReactionOnMessage);
       socket.off("remove_remove_All_unsentMessage", handle_Remove_All_Unsent_Message);
+    socket.off("chatBlockedNotifyReceived",chatBlockedNotifyReceivedHandler)
     };
   }, []); //
-  useEffect(() => {
-    // Emit "setup" event when the component mounts
-    if (currentUser) {
-      const setupData = {
-        id: currentUser?._id,
-      };
-      socket.emit("setup", setupData);
-    }
-  }, [currentUser, socket]);
+
   //  useEffect(() => {
   //    const timeoutId = setTimeout(() => {
   //      if (!currentUser) {

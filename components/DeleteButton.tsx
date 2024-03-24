@@ -14,25 +14,29 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 
 export default function DeleteButton({
+  btnClassName,
   buttonText,
   title,
   desc,
   onClick,
   navigatePath,
 }: {
-    buttonText: string;
+  btnClassName: string;
+  buttonText: string;
   title: string;
   desc: string;
-  onClick: () => Promise<void>;
+  onClick: () => Promise<void> | void;
   navigatePath: string;
 }) {
   const router = useRouter();
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="m-2  w-full">{buttonText}</Button>
+        <Button className={cn(`m-2  w-full`, btnClassName)}>{buttonText}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -48,11 +52,11 @@ export default function DeleteButton({
             className="bg-rose-500 hover:bg-rose-600"
             onClick={async () => {
               await onClick();
-              
+
               router.push(navigatePath);
             }}
           >
-            Delete
+            {buttonText || "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

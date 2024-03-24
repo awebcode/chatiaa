@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addRemoveEmojiReactions = exports.editMessage = exports.replyMessage = exports.updateChatStatusAsBlockOrUnblock = exports.updateMessageStatusAsUnsent = exports.updateMessageStatusAsRemove = exports.updateChatMessageAsDeliveredController = exports.updateAllMessageStatusSeen = exports.updateChatMessageController = exports.sendMessage = exports.getMessageReactions = exports.allMessages = void 0;
+exports.addRemoveEmojiReactions = exports.editMessage = exports.replyMessage = exports.updateMessageStatusAsUnsent = exports.updateMessageStatusAsRemove = exports.updateChatMessageAsDeliveredController = exports.updateAllMessageStatusSeen = exports.updateChatMessageController = exports.sendMessage = exports.getMessageReactions = exports.allMessages = void 0;
 const MessageModel_1 = require("../model/MessageModel");
 const UserModel_1 = require("../model/UserModel");
 const ChatModel_1 = require("../model/ChatModel");
@@ -389,52 +389,6 @@ const updateMessageStatusAsUnsent = (req, res, next) => __awaiter(void 0, void 0
     }
 });
 exports.updateMessageStatusAsUnsent = updateMessageStatusAsUnsent;
-//update Chat status as Blocked/Unblocked
-const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { chatId, status } = req.body;
-        if (!status || !chatId)
-            return next(new errorHandler_1.CustomErrorHandler("chat Id or status cannot be empty!", 400));
-        let updateQuery = {};
-        if (status === "block") {
-            updateQuery = {
-                $addToSet: {
-                    chatBlockStatus: {
-                        user: req.id,
-                        status: "blocked",
-                    },
-                },
-            };
-        }
-        else if (status === "unblock") {
-            updateQuery = {
-                $pull: {
-                    chatBlockStatus: {
-                        user: req.id,
-                    },
-                },
-            };
-        }
-        else {
-            return next(new errorHandler_1.CustomErrorHandler("Invalid status!", 400));
-        }
-        const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, updateQuery, { new: true });
-        res.status(200).json({
-            success: true,
-            status: getStatusForUser(updatedChat, req.id),
-            updatedBy: req.id,
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-});
-exports.updateChatStatusAsBlockOrUnblock = updateChatStatusAsBlockOrUnblock;
-// Helper function to get block status for a specific user
-function getStatusForUser(chat, userId) {
-    const userBlockStatus = chat.chatBlockStatus.find((status) => status.user.equals(userId));
-    return userBlockStatus ? userBlockStatus.status : "unblocked";
-}
 //reply Message
 const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

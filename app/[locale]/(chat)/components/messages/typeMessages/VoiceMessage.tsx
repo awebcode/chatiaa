@@ -95,7 +95,7 @@ export default function  ({
         >
           <div>
             <Image
-              src={message.sender.image}
+              src={message.sender?.image}
               height={60}
               width={60}
               loading="lazy"
@@ -139,12 +139,7 @@ export default function  ({
                 isUserOnline={isUserOnline}
               />
             </div>
-            <div className={"absolute -top-5 right-1 flex items-end gap-1"}>
-              <span className={"text-bubble-meta text-[11px] pt-1 min-w-fit"}>
-                {calculateTime(message.createdAt)}
-              </span>
-              <span className={"text-bubble-meta"}></span>
-            </div>
+            
           </div>
         </div>
       </div>

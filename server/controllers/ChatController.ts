@@ -36,7 +36,7 @@ export const accessChat = async (
   });
 
   if (isChat.length > 0) {
-    res.send(isChat[0]);
+    res.status(200).send({chatData:isChat[0]});
   } else {
     var chatData = {
       chatName: "sender",
@@ -46,11 +46,12 @@ export const accessChat = async (
 
     try {
       const createdChat = await Chat.create(chatData);
-      const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
+      let FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
         "users",
         "name email image lastActive"
       );
-      res.status(200).json(FullChat);
+     
+      res.status(201).json({ success: true, isNewChat: true, chatData: FullChat });
     } catch (error: any) {
       next(error);
     }
@@ -85,15 +86,9 @@ export const fetchChats = async (
       users: { $elemMatch: { $eq: req.id } },
     })
       .populate("users", "-password")
-      .populate("groupAdmin", "email name image lastActive")
+      .populate("groupAdmin", "email name image")
       .populate("latestMessage")
-      .populate({
-        path: "chatBlockStatus",
-        populate: {
-          path: "user",
-          select: "name image email lastActive",
-        },
-      })
+      .populate("chatBlockedBy", "name image email")
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(skip);
@@ -223,7 +218,7 @@ export const createGroupChat = async (
   next: NextFunction
 ) => {
   if (!req.body.users || !req.body.groupName) {
-    return next(new CustomErrorHandler("GroupName or users cannot be empty!", 400)) 
+    return next(new CustomErrorHandler("GroupName or users cannot be empty!", 400));
   }
 
   var users = req.body.users;
@@ -248,7 +243,7 @@ export const createGroupChat = async (
       .populate("users", "-password")
       .populate("groupAdmin", "-password");
 
-    res.status(200).json(fullGroupChat);
+    res.status(200).json(fullGroupChat );
   } catch (error: any) {
     console.log({ error });
     next(error);
@@ -418,18 +413,24 @@ export const addToGroup = async (req: Request, res: Response, next: NextFunction
 //delete single chat one to one chat
 
 export const deleteSingleChat = async (
-  req: Request,
+  req: Request |any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    if (!req.params.chatId || !(req as any).id) {
+    if (!req.params.chatId || !req.id) {
       return next(new CustomErrorHandler("ChatId Not found", 400));
     }
     const chat = await Chat.findById(req.params.chatId);
     await Message.deleteMany({ chat: req.params.chatId });
     await Chat.findByIdAndDelete(req.params.chatId);
-    res.json({ success: true, users: chat?.users });
+    res.json({
+      success: true,
+      chat: chat,
+      receiverId: chat?.users
+        .find((user) => user.toString() !== req.id)
+        ?._id.toString(),
+    });
   } catch (error) {
     next(error);
   }
@@ -521,6 +522,87 @@ export const removeFromAdmin = async (
     }
 
     res.json({ data: updatedChat });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//update Chat status as Blocked/Unblocked
+
+export const updateChatStatusAsBlockOrUnblock = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { chatId, status } = req.body;
+    if (!status || !chatId)
+      return next(new CustomErrorHandler("chat Id or status cannot be empty!", 400));
+
+    let updateQuery = {};
+
+    if (status === "block") {
+      updateQuery = {
+        $addToSet: {
+          chatBlockedBy: req.id,
+        },
+      };
+    } else if (status === "unblock") {
+      updateQuery = {
+        $pull: {
+          chatBlockedBy: req.id,
+        },
+      };
+    } else {
+      return next(new CustomErrorHandler("Invalid status!", 400));
+    }
+
+    const updatedChat = await Chat.findByIdAndUpdate(chatId, updateQuery, {
+      new: true,
+    }).populate("chatBlockedBy");
+    res.status(200).json({
+      chat:updatedChat,
+      chatId: updatedChat?._id,
+      receiverId: updatedChat?.users
+        .find((user) => user.toString() !== req.id)
+        ?._id.toString(),
+      success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//LeaveChat
+export const leaveFromChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { chatId, userId } = req.body;
+
+    const chat = await Chat.findById(chatId);
+
+    if (!chat) {
+      return next(new CustomErrorHandler("Chat not found!", 404));
+    }
+
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      {
+        $pull: { users: userId },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedChat) {
+      return next(new CustomErrorHandler("Chat not found!", 404));
+    }
+
+    res.json({ chat: updatedChat, userId });
   } catch (error) {
     next(error);
   }

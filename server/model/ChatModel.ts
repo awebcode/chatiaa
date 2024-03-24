@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
-const chatBlockStatusSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  status: { type: String, enum: ["blocked", "unblocked"] },
-});
+
 const chatModel = new mongoose.Schema(
   {
     chatName: { type: String, trim: true },
@@ -13,7 +10,7 @@ const chatModel = new mongoose.Schema(
       ref: "Message",
     },
     groupAdmin: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    chatBlockStatus: [chatBlockStatusSchema],
+    chatBlockedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

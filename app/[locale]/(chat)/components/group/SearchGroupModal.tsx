@@ -72,7 +72,7 @@ export default function SearchGroupModal() {
           createdAt: !chat.isGroupChat ? isFriend?.createdAt : "",
         } as any,
       };
-      socket.emit("groupCreatedNotify", { chatId: chat._id });
+      socket.emit("groupCreatedNotify", { chatId: chat._id,chat });
 
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
       dispatch({ type: SET_CHATS, payload: chatData });

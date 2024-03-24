@@ -7,7 +7,7 @@ import { getSenderFull } from "../logics/logics";
 import moment from "moment";
 import { Tuser } from "@/store/types";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { SET_SELECTED_CHAT } from "@/context/reducers/actions";
+import { SET_CHATS, SET_SELECTED_CHAT } from "@/context/reducers/actions";
 
 const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
   const dispatch = useMessageDispatch();
@@ -17,36 +17,42 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
   const mutaion = useMutation({
     mutationFn: (data) => accessChats(data),
     onSuccess: (chat) => {
-      const isFriend = getSenderFull(currentUser, chat.users);
+      const isFriend = getSenderFull(currentUser, chat.chatData?.users);
       const chatData = {
-        chatId: chat?._id,
-        latestMessage: chat?.latestMessage,
-        chatCreatedAt: chat?.createdAt,
+        chatId: chat?.chatData?._id,
+        latestMessage: chat?.chatData?.latestMessage,
+        chatCreatedAt: chat?.chatData?.createdAt,
 
-        groupChatName: chat?.chatName,
-        isGroupChat: chat?.isGroupChat,
-        groupAdmin: chat?.groupAdmin,
-        // status: chat?.chatStatus?.status,
-        // chatUpdatedBy: chat?.chatStatus?.updatedBy,
-        chatStatus: chat?.chatStatus,
-        users: chat.isGroupChat ? chat.users : null,
+        groupChatName: chat?.chatData?.chatName,
+        isGroupChat: chat?.chatData?.isGroupChat,
+        groupAdmin: chat?.chatData?.groupAdmin,
+        // status: chat?.chatData?.chatStatus?.status,
+        // chatUpdatedBy: chat?.chatData?.chatStatus?.updatedBy,
+        chatStatus: chat?.chatData?.chatStatus,
+        users: chat?.chatData?.isGroupChat ? chat?.chatData?.users : null,
         userInfo: {
-          name: !chat?.isGroupChat ? isFriend?.name : chat.chatName,
-          email: !chat?.isGroupChat ? isFriend?.email : "",
-          _id: !chat?.isGroupChat ? isFriend?._id : chat?._id,
-          image: !chat.isGroupChat ? isFriend?.image : "/vercel.svg",
-          lastActive: !chat.isGroupChat
-            ? getSenderFull(currentUser, chat.isGroupChat.users)?.lastActive
+          name: !chat?.chatData?.isGroupChat ? isFriend?.name : chat?.chatData?.chatName,
+          email: !chat?.chatData?.isGroupChat ? isFriend?.email : "",
+          _id: !chat?.chatData?.isGroupChat ? isFriend?._id : chat?.chatData?._id,
+          image: !chat?.chatData?.isGroupChat ? isFriend?.image : "/vercel.svg",
+          lastActive: !chat?.chatData?.isGroupChat
+            ? getSenderFull(currentUser, chat?.chatData?.isGroupChat.users)?.lastActive
             : "",
-          createdAt: !chat.isGroupChat ? isFriend?.createdAt : "",
+          createdAt: !chat?.chatData?.isGroupChat ? isFriend?.createdAt : "",
         } as any,
       };
       // setSelectedChat(chatData as any);
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
+      if (chat?.isNewChat) {
+        dispatch({ type: SET_CHATS, payload: chat.chatData });
 
-      socket.emit("chatCreatedNotify", { to: user?._id });
+        socket.emit("chatCreatedNotify", {
+          to: user?._id,
+          chat: chat.chatData,
+          chatId: chat.chatData?._id,
+        });
+      }
 
-      queryclient.invalidateQueries({ queryKey: ["users"] });
       document.getElementById("closeSheetDialog")?.click();
       // setIsOpen(false);
     },

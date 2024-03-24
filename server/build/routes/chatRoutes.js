@@ -16,4 +16,12 @@ chatRoute.route("/addtogroup").put(authMiddleware_1.default, ChatController_1.ad
 chatRoute.route("/makeAdmin").put(authMiddleware_1.default, ChatController_1.makeAdmin);
 chatRoute.route("/removeFromAdmin").put(authMiddleware_1.default, ChatController_1.removeFromAdmin);
 chatRoute.route("/deleteSingleChat/:chatId").delete(authMiddleware_1.default, ChatController_1.deleteSingleChat);
+//update messesage status as Block/Unblock
+chatRoute
+    .route("/updateChatStatusAsBlockOUnblock")
+    .put(authMiddleware_1.default, ChatController_1.updateChatStatusAsBlockOrUnblock);
+//leave from chat
+chatRoute
+    .route("/leaveChat")
+    .put(authMiddleware_1.default, ChatController_1.leaveFromChat);
 exports.default = chatRoute;

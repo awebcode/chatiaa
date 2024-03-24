@@ -45,7 +45,7 @@ function PdfMessage({
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
         <div
           className={`m-4 p-1 rounded-lg ${
-            message.sender._id === currentChatUser?.userInfo._id
+            message?.sender?._id === currentChatUser?.userInfo?._id
               ? "bg-incoming-background"
               : "bg-outgoing-background"
           }`}

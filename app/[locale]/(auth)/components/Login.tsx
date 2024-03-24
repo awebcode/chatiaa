@@ -36,8 +36,12 @@ const Login = () => {
         password: formData.get("password"),
         redirect: false,
       });
-      if (res?.error) return setError(res.error);
-      setloading(false);
+    
+
+      if (res?.error) {
+        setloading(false);
+        return setError(res.error)
+      };
       if (res?.ok) return router.push("/profile");
     } catch (error: any) {
       setError(error);

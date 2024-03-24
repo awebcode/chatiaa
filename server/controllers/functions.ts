@@ -33,6 +33,34 @@ export const sentSocketTextMessage = async (newMessage: TnewMessage) => {
   }
 };
 
+
+export const leaveFromGroupMessage = async (newMessage: { chatId: string, user: { _id: string; name:string,email:string,image:string}}) => {
+  try {
+    var data = {
+      sender: newMessage.user._id,
+      content: `${newMessage.user.name} Leave from the group`,
+      chat: newMessage.chatId,
+      type: "leave",
+      status: "leave",
+    };
+    let message: any;
+    message = await Message.create(data);
+
+    message = await message.populate("sender", "name image email lastActive");
+    message = await message.populate("chat");
+    // message = await message.populate("chat")
+    message = await User.populate(message, {
+      path: "sender chat.users",
+      select: "name image email lastActive",
+    });
+
+    await Chat.findByIdAndUpdate(newMessage.chatId, { latestMessage: message });
+    return message;
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
 //get file type
 
 export const getFileType = async (

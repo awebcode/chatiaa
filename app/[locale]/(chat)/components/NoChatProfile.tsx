@@ -6,8 +6,7 @@ import { useChatStore } from "@/store/useChat";
 import { useUserStore } from "@/store/useUser";
 import { IChat } from "@/context/reducers/interfaces";
 
-const NoChatProfile = ({ user }: { user: IChat }) => {
-  const { selectedChat } = useChatStore();
+const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
   const { onlineUsers } = useOnlineUsersStore();
   const { currentUser } = useUserStore();
   const isUserOnline = onlineUsers.some((u: any) =>
@@ -15,9 +14,8 @@ const NoChatProfile = ({ user }: { user: IChat }) => {
       ? selectedChat?.users.some(
           (user: any) => user._id === u.id && user._id !== currentUser?._id
         )
-      : selectedChat?.userId === u.id
+      : selectedChat?.userInfo?._id === u.id
   );
-
   return (
     <div>
       <div className="max-w-sm bg-gray-200 dark:bg-gray-800 mx-auto m-20 rounded-lg shadow-md p-4">
@@ -27,8 +25,8 @@ const NoChatProfile = ({ user }: { user: IChat }) => {
             height={80}
             width={80}
             className="rounded-full mx-auto h-full w-full"
-            src={user?.userInfo?.image}
-            alt={user?.userInfo?.name}
+            src={selectedChat?.userInfo?.image}
+            alt={selectedChat?.userInfo?.name}
           />
           <span
             className={`absolute bottom-0 right-0 rounded-full p-[7px] ${
@@ -37,13 +35,13 @@ const NoChatProfile = ({ user }: { user: IChat }) => {
           ></span>
         </div>
         <h2 className="text-center text-2xl font-semibold mt-3">
-          {user?.userInfo?.name}
+          {selectedChat?.userInfo?.name}
         </h2>
         <h2 className="text-center text-sm font-semibold mt-3">
-          {user?.userInfo?.email}
+          {selectedChat?.userInfo?.email}
         </h2>
         <h2 className="text-center text-sm font-semibold mt-3">
-          {moment(user?.userInfo?.createdAt).format("llll")}
+          {moment(selectedChat?.userInfo?.createdAt).format("llll")}
         </h2>
         <p className="text-center  mt-1">Software Engineer</p>
         <div className="flex text-[10px] md:text-x justify-center mt-5">
@@ -59,9 +57,9 @@ const NoChatProfile = ({ user }: { user: IChat }) => {
         </div>
         <div className="mt-3 text-center">
           <p className="text-[10px] md:text-xs mt-2">
-            {user?.userInfo?.name} is a software engineer with over 10 years of experience
-            in developing web and mobile applications. He is skilled in JavaScript, React,
-            and Node.js.
+            {selectedChat?.userInfo?.name} is a software engineer with over 10 years of
+            experience in developing web and mobile applications. He is skilled in
+            JavaScript, React, and Node.js.
           </p>
         </div>
       </div>

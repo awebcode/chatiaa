@@ -51,7 +51,7 @@ const TextMessage = ({
 
         <div
           className={`relative m-4 p-1 rounded  ${
-            message.sender._id === currentChatUser?.userInfo._id
+            message?.sender?._id === currentChatUser?.userInfo?._id
               ? "bg-incoming-background rounded-bl-3xl"
               : "bg-outgoing-background rounded-br-3xl"
           }`}

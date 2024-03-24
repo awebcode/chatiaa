@@ -11,6 +11,10 @@ import {
   UPDATE_LATEST_CHAT_MESSAGE,
   UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND,
   REMOVE_UNSENT_MESSAGE,
+  DELETE_CHAT,
+  LEAVE_CHAT,
+  BLOCK_CHAT,
+  LEAVE_FROM_GROUP_CHAT,
 } from "./actions";
 import { Action, State } from "./interfaces";
 import {
@@ -39,6 +43,7 @@ export const messageReducer = (state: State, action: Action): State => {
           updatedChats = action.payload.chats;
         }
       } else {
+        //when new chat created new chat
         updatedChats = [action.payload, ...state.chats];
       }
       return { ...state, chats: updatedChats, totalChats: action.payload.total };
@@ -91,7 +96,84 @@ export const messageReducer = (state: State, action: Action): State => {
         ...state,
         chats: newUpdatedChats,
       };
-
+    //delete and leave chat
+    case DELETE_CHAT:
+    case LEAVE_CHAT:
+      return {
+        ...state,
+        // Filter out the chat with the specified chatId
+        chats: state.chats.filter((chat) => chat._id !== action.payload.chatId),
+      };
+    //UPDATE_CHAT_STATUS
+    case UPDATE_CHAT_STATUS:
+      return {
+        ...state,
+        // Update chats array to replace the existing message with the edited one
+        chats: state.chats.map((chat) =>
+          chat._id === action.payload.chatId
+            ? {
+                ...chat,
+                latestMessage: {
+                  ...(chat.latestMessage as any),
+                  status: action.payload.status,
+                },
+              }
+            : chat
+        ),
+      };
+      ////BLOCK_CHAT
+    case BLOCK_CHAT:
+      return {
+        ...state,
+        // Update chats array to replace the existing message with the edited one
+        chats:state.chats.map((chat) =>
+          chat._id === action.payload.chatId
+            ? {
+                ...chat,
+                // Check if the user is already in the group admin array
+                chatBlockedBy: chat.chatBlockedBy.some((user) => user._id === action.payload.user._id)
+                  ? chat.chatBlockedBy.filter((user) => user._id !== action.payload.user._id) // If yes, remove them
+                  : [...chat.chatBlockedBy,action.payload.user],
+              }
+            : chat
+        ),
+        //update if current blocked chat is selected chat
+        selectedChat:
+          state.selectedChat && state.selectedChat.chatId === action.payload.chatId
+            ? {
+                ...state.selectedChat,
+                chatBlockedBy: state.selectedChat.chatBlockedBy.some(
+                  (user) => user._id === action.payload.user._id
+                )
+                  ? state.selectedChat.chatBlockedBy.filter(
+                      (user) => user._id !== action.payload.user._id
+                    )
+                  : [...state.selectedChat.chatBlockedBy, action.payload.user],
+              }
+            : null,
+      };
+    //LEAVE_FROM_GROUP_CHAT
+    case LEAVE_FROM_GROUP_CHAT:
+      return {
+        ...state,
+        // Update chats array to replace the existing message with the edited one
+        chats: state.chats.map((chat) =>
+          chat._id === action.payload.chatId
+            ? {
+                ...chat,
+                // Check if the user is already in the group admin array
+                users: chat.users.some((user) => user._id === action.payload.user._id)
+                  ? chat.users.filter((user) => user._id !== action.payload.user._id) // If yes, remove them
+                  : chat.users,
+              }
+            : chat
+        ),
+        //update if current leave chat is selected chat
+        selectedChat:
+          state.selectedChat && state.selectedChat.chatId === action.payload.chatId
+            ? null
+            : state.selectedChat,
+      };
     // set chats end
     //selected chat start
     case SET_SELECTED_CHAT:
@@ -112,6 +194,13 @@ export const messageReducer = (state: State, action: Action): State => {
         ...state,
         totalMessagesCount: action.payload,
       };
+    // clear messages
+    case CLEAR_MESSAGES: {
+       return {
+        ...state,
+        messages: [],
+      };
+    }
     //UPDATE MESSAGE STATUS
     case UPDATE_MESSAGE_STATUS:
       return {
@@ -133,14 +222,12 @@ export const messageReducer = (state: State, action: Action): State => {
         ...state,
         // Update messages array to replace the existing message with the edited one
         chats: state?.chats?.map((chat) =>
-          chat.latestMessage?.sender._id === action.payload.senderId
+          chat.latestMessage?.sender?._id === action.payload.senderId
             ? { ...chat, status: "delivered" }
             : chat
         ),
       };
-    case CLEAR_MESSAGES: {
-      return { ...state, messages: [] };
-    }
+   
 
     case ADD_REPLY_MESSAGE:
       return {

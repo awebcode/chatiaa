@@ -53,7 +53,7 @@ const FriendsCard: React.FC<{
         chatId: chat._id,
         messageId: chat.latestMessage?._id,
         status: "seen",
-        type:"seenAll"
+        type: "seenAll",
       };
       socket.emit("seenMessage", seenData);
     },
@@ -74,7 +74,7 @@ const FriendsCard: React.FC<{
       groupChatName: chat?.chatName,
       isGroupChat: chat?.isGroupChat,
       groupAdmin: chat?.groupAdmin,
-      chatStatus: chat?.chatStatus,
+      chatBlockedBy: chat?.chatBlockedBy,
       users: chat.isGroupChat ? chat.users : null,
       userInfo: {
         name: !chat?.isGroupChat ? isFriend?.name : chat.chatName,
@@ -195,10 +195,7 @@ const FriendsCard: React.FC<{
             <Modal
               open={open}
               setOpen={setOpen}
-              chatId={chat?._id}
-              status={chat?.chatStatus?.status}
-              updatedBy={chat?.chatStatus} //chat?.chatStatus?.updatedBy
-              currentUser={currentUser}
+              chatBlockedBy={chat.chatBlockedBy}
               chat={chat}
             />
           </div>

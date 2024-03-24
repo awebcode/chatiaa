@@ -15,11 +15,9 @@ export const getChats = async ({
 }: {
   pageParam: any;
   queryKey: any;
-  }) => {
+}) => {
   const { data } = await axios.get(
-    `${BaseUrl}/fetchChats?search=${
-      queryKey[1]
-    }&skip=${pageParam}&limit=${10}`,
+    `${BaseUrl}/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${10}`,
     {
       headers: { "Content-Type": "application/json" },
       withCredentials: true,
@@ -47,8 +45,8 @@ export const renameGroup = async (dataGroup: { chatId: string; chatName: string 
 };
 
 //remove
-export const removeFromGroup = async (removeData: { chatId:string,userId:string}) => {
-  const { data } = await axiosClient.put(`/removefromgroup`,removeData, {
+export const removeFromGroup = async (removeData: { chatId: string; userId: string }) => {
+  const { data } = await axiosClient.put(`/removefromgroup`, removeData, {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
@@ -57,23 +55,23 @@ export const removeFromGroup = async (removeData: { chatId:string,userId:string}
 
 //addTo group
 export const addToGroup = async (addData: any) => {
-  const { data } = await axiosClient.put(`/addTogroup/`,addData, {
+  const { data } = await axiosClient.put(`/addTogroup/`, addData, {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
   return data;
 };
 //make as admin
-export const makeAsAdmin = async (adminData: { chatId:string,userId:string}) => {
-  const { data } = await axiosClient.put(`/makeAdmin`,adminData, {
+export const makeAsAdmin = async (adminData: { chatId: string; userId: string }) => {
+  const { data } = await axiosClient.put(`/makeAdmin`, adminData, {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
   return data;
 };
 //remove from admin
-export const removeFromAdmin = async (removeData: { chatId:string,userId:string}) => {
-  const { data } = await axiosClient.put(`/removefromAdmin`,removeData, {
+export const removeFromAdmin = async (removeData: { chatId: string; userId: string }) => {
+  const { data } = await axiosClient.put(`/removefromAdmin`, removeData, {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
@@ -86,5 +84,18 @@ export const deleteSingleChat = async (id: string) => {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
+  return data;
+};
+
+//leave from group Chat
+export const leaveChat = async (chatId: string, userId: string) => {
+  const { data } = await axiosClient.put(
+    `/leaveChat`,
+    { chatId, userId },
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
   return data;
 };

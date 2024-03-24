@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.renameGroup = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
+exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.renameGroup = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
 const errorHandler_1 = require("../middlewares/errorHandler");
 const ChatModel_1 = require("../model/ChatModel");
 const UserModel_1 = require("../model/UserModel");
@@ -40,7 +40,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         select: "name image email lastActive",
     });
     if (isChat.length > 0) {
-        res.send(isChat[0]);
+        res.status(200).send({ chatData: isChat[0] });
     }
     else {
         var chatData = {
@@ -50,8 +50,8 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         };
         try {
             const createdChat = yield ChatModel_1.Chat.create(chatData);
-            const FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive");
-            res.status(200).json(FullChat);
+            let FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive");
+            res.status(201).json({ success: true, isNewChat: true, chatData: FullChat });
         }
         catch (error) {
             next(error);
@@ -82,15 +82,9 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             users: { $elemMatch: { $eq: req.id } },
         })
             .populate("users", "-password")
-            .populate("groupAdmin", "email name image lastActive")
+            .populate("groupAdmin", "email name image")
             .populate("latestMessage")
-            .populate({
-            path: "chatBlockStatus",
-            populate: {
-                path: "user",
-                select: "name image email lastActive",
-            },
-        })
+            .populate("chatBlockedBy", "name image email")
             .sort({ updatedAt: -1 })
             .limit(limit)
             .skip(skip);
@@ -348,6 +342,7 @@ const addToGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 exports.addToGroup = addToGroup;
 //delete single chat one to one chat
 const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         if (!req.params.chatId || !req.id) {
             return next(new errorHandler_1.CustomErrorHandler("ChatId Not found", 400));
@@ -355,7 +350,11 @@ const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         const chat = yield ChatModel_1.Chat.findById(req.params.chatId);
         yield MessageModel_1.Message.deleteMany({ chat: req.params.chatId });
         yield ChatModel_1.Chat.findByIdAndDelete(req.params.chatId);
-        res.json({ success: true, users: chat === null || chat === void 0 ? void 0 : chat.users });
+        res.json({
+            success: true,
+            chat: chat,
+            receiverId: (_b = chat === null || chat === void 0 ? void 0 : chat.users.find((user) => user.toString() !== req.id)) === null || _b === void 0 ? void 0 : _b._id.toString(),
+        });
     }
     catch (error) {
         next(error);
@@ -425,3 +424,66 @@ const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.removeFromAdmin = removeFromAdmin;
+//update Chat status as Blocked/Unblocked
+const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    try {
+        const { chatId, status } = req.body;
+        if (!status || !chatId)
+            return next(new errorHandler_1.CustomErrorHandler("chat Id or status cannot be empty!", 400));
+        let updateQuery = {};
+        if (status === "block") {
+            updateQuery = {
+                $addToSet: {
+                    chatBlockedBy: req.id,
+                },
+            };
+        }
+        else if (status === "unblock") {
+            updateQuery = {
+                $pull: {
+                    chatBlockedBy: req.id,
+                },
+            };
+        }
+        else {
+            return next(new errorHandler_1.CustomErrorHandler("Invalid status!", 400));
+        }
+        const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, updateQuery, {
+            new: true,
+        }).populate("chatBlockedBy");
+        res.status(200).json({
+            chat: updatedChat,
+            chatId: updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat._id,
+            receiverId: (_c = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.users.find((user) => user.toString() !== req.id)) === null || _c === void 0 ? void 0 : _c._id.toString(),
+            success: true,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.updateChatStatusAsBlockOrUnblock = updateChatStatusAsBlockOrUnblock;
+//LeaveChat
+const leaveFromChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { chatId, userId } = req.body;
+        const chat = yield ChatModel_1.Chat.findById(chatId);
+        if (!chat) {
+            return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
+        }
+        const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
+            $pull: { users: userId },
+        }, {
+            new: true,
+        });
+        if (!updatedChat) {
+            return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
+        }
+        res.json({ chat: updatedChat, userId });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.leaveFromChat = leaveFromChat;

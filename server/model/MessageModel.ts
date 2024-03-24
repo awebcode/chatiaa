@@ -27,12 +27,15 @@ const messageSchema = new mongoose.Schema(
         "seen",
         "unseen",
         "delivered",
+        "seen",
         "removed",
         "removeFromAll",
         "reBack",
         "unsent",
-        "block",
-        "unblock",
+       
+        // this two will call when leave or remove user from group
+        "removedByAdmin",
+        "leave"
       ],
       default: "unseen",
     },

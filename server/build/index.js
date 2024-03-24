@@ -98,7 +98,6 @@ exports.io.on("connection", (socket) => {
         });
         if (message.isGroupChat) {
             const chatUsers = yield ChatModel_1.Chat.findById(message.chatId);
-            // console.log({chatU})
             chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
                 const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
                 if (receiverId) {
@@ -168,22 +167,53 @@ exports.io.on("connection", (socket) => {
         chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
             const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
             if (receiverId) {
-                exports.io.to(data.chatId)
+                socket
+                    .to(data.chatId)
                     .to(receiverId.socketId)
-                    .emit("groupCreatedNotifyReceived", Object.assign(Object.assign({}, data.toObject()), { receiverId: receiverId.id }));
+                    .emit("groupCreatedNotifyReceived", data);
             }
         });
     }));
     //singleChat createdNitify
     socket.on("chatCreatedNotify", (data) => {
-        console.log({ chatCreatedNotify: data });
-        socket.to(data.to).emit("chatCreatedNotifyReceived");
+        socket.to(data.to).emit("chatCreatedNotifyReceived", data);
     });
-    //chatDeletedNotify
-    socket.on("chatDeletedNotify", (data) => {
-        data.forEach((userId) => {
-            socket.to(userId).emit("chatDeletedNotifyReceived");
+    //singlechatDeletedNotify
+    socket.on("singleChatDeletedNotify", (data) => {
+        const receiverId = (0, exports.getSocketConnectedUser)(data.receiverId);
+        if (receiverId) {
+            socket
+                .to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId)
+                .emit("singleChatDeletedNotifyReceived", { chatId: data.chatId });
+        }
+    });
+    //leave from group chat
+    socket.on("groupChatLeaveNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        const chatUsers = yield ChatModel_1.Chat.findById(data.chatId);
+        const leaveMessage = yield (0, functions_1.leaveFromGroupMessage)({
+            chatId: data.chatId,
+            user: data.currentUser,
         });
+        chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
+            const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
+            if (receiverId) {
+                //send it without who sent
+                socket
+                    .to(data.chatId)
+                    .to(receiverId.socketId)
+                    .emit("groupChatLeaveNotifyReceived", Object.assign(Object.assign({}, leaveMessage.toObject()), { user: data.currentUser, chatId: data.chatId, receiverId: receiverId.id }));
+            }
+        });
+    }));
+    //chat blocked notify
+    //singlechatDeletedNotify
+    socket.on("chatBlockedNotify", (data) => {
+        const receiverId = (0, exports.getSocketConnectedUser)(data.receiverId);
+        if (receiverId) {
+            socket
+                .to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId)
+                .emit("chatBlockedNotifyReceived", data);
+        }
     });
     //@@@@@@ calling system end
     // Handle client disconnection

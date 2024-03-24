@@ -110,7 +110,7 @@ export const getMessageReactions = async (
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
-    console.log(req.query)
+    console.log(req.query);
     const reactions = await Reaction.find(
       req.query.emoji === "all" || req.query.emoji === ""
         ? {
@@ -126,7 +126,7 @@ export const getMessageReactions = async (
       .limit(limit)
       .skip(skip)
       .exec();
-    res.json( reactions );
+    res.json(reactions);
   } catch (error) {
     console.error("Error getting message reactions:", error);
     next(error);
@@ -190,22 +190,21 @@ export const sendMessage = async (
 
         // Send message to client
         if (chat?.isGroupChat) {
-          
-           chat?.users.forEach((user) => {
-             const receiverId = getSocketConnectedUser(user);
-             if (receiverId) {
-               io.to(chat?._id.toString())
-                 .to(receiverId.socketId)
-                 .emit("receiveMessage", {
-                   ...message.toObject(),
-                   receiverId: receiverId.id,
-                 });
-             }
-           });
+          chat?.users.forEach((user) => {
+            const receiverId = getSocketConnectedUser(user);
+            if (receiverId) {
+              io.to(chat?._id.toString())
+                .to(receiverId.socketId)
+                .emit("receiveMessage", {
+                  ...message.toObject(),
+                  receiverId: receiverId.id,
+                });
+            }
+          });
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
-            .emit("receiveMessage", {...message,receiverId });
+            .emit("receiveMessage", { ...message, receiverId });
         }
         return message;
       });
@@ -232,17 +231,17 @@ export const sendMessage = async (
       // Update latest message for the chat
       const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
       if (chat?.isGroupChat) {
-         chat?.users.forEach((user) => {
-           const receiverId = getSocketConnectedUser(user);
-           if (receiverId) {
-             io.to(chat?._id.toString())
-               .to(receiverId.socketId)
-               .emit("receiveMessage", {
-                 ...message.toObject(),
-                 receiverId: receiverId.id,
-               });
-           }
-         });
+        chat?.users.forEach((user) => {
+          const receiverId = getSocketConnectedUser(user);
+          if (receiverId) {
+            io.to(chat?._id.toString())
+              .to(receiverId.socketId)
+              .emit("receiveMessage", {
+                ...message.toObject(),
+                receiverId: receiverId.id,
+              });
+          }
+        });
       } else {
         io.to(chat?._id.toString() as any)
           .to(receiverId)
@@ -467,57 +466,7 @@ export const updateMessageStatusAsUnsent = async (
   }
 };
 
-//update Chat status as Blocked/Unblocked
 
-export const updateChatStatusAsBlockOrUnblock = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { chatId, status } = req.body;
-    if (!status || !chatId)
-      return next(new CustomErrorHandler("chat Id or status cannot be empty!", 400));
-
-    let updateQuery = {};
-
-    if (status === "block") {
-      updateQuery = {
-        $addToSet: {
-          chatBlockStatus: {
-            user: req.id,
-            status: "blocked",
-          },
-        },
-      };
-    } else if (status === "unblock") {
-      updateQuery = {
-        $pull: {
-          chatBlockStatus: {
-            user: req.id,
-          },
-        },
-      };
-    } else {
-      return next(new CustomErrorHandler("Invalid status!", 400));
-    }
-
-    const updatedChat = await Chat.findByIdAndUpdate(chatId, updateQuery, { new: true });
-
-    res.status(200).json({
-      success: true,
-      status: getStatusForUser(updatedChat, req.id),
-      updatedBy: req.id,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-// Helper function to get block status for a specific user
-function getStatusForUser(chat:any, userId:any) {
-  const userBlockStatus = chat.chatBlockStatus.find((status:any) => status.user.equals(userId));
-  return userBlockStatus ? userBlockStatus.status : "unblocked";
-}
 //reply Message
 
 export const replyMessage = async (
@@ -592,17 +541,17 @@ export const replyMessage = async (
 
         // Send message to client
         if (chat?.isGroupChat) {
-           chat?.users.forEach((user) => {
-             const receiverId = getSocketConnectedUser(user);
-             if (receiverId) {
-               io.to(chat?._id.toString())
-                 .to(receiverId.socketId)
-                 .emit("replyMessage", {
-                   ...message.toObject(),
-                   receiverId: receiverId.id,
-                 });
-             }
-           });
+          chat?.users.forEach((user) => {
+            const receiverId = getSocketConnectedUser(user);
+            if (receiverId) {
+              io.to(chat?._id.toString())
+                .to(receiverId.socketId)
+                .emit("replyMessage", {
+                  ...message.toObject(),
+                  receiverId: receiverId.id,
+                });
+            }
+          });
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
@@ -682,7 +631,7 @@ export const editMessage = async (
     if (!messageId)
       return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
     const isLastMessage = await Chat.findOne({ _id: chatId, latestMessage: messageId });
-   
+
     const prevMessage: any = await Message.findById(messageId);
     //delete Previous Image
     if (prevMessage.file?.public_Id) {
@@ -748,11 +697,10 @@ export const editMessage = async (
                 });
             }
           });
-         
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
-            .emit("editMessage", {...editedChat,receiverId});
+            .emit("editMessage", { ...editedChat, receiverId });
         }
         return editedChat;
       });
@@ -807,7 +755,7 @@ export const editMessage = async (
     } else {
       io.to(chat?._id.toString() as any)
         .to(receiverId)
-        .emit("editMessage", {...editedChat,receiverId});
+        .emit("editMessage", { ...editedChat, receiverId });
     }
     res.status(200).json({ success: true, editedChat });
   } catch (error) {
@@ -845,17 +793,17 @@ export const addRemoveEmojiReactions = async (
           ).populate("reactBy", "name email image");
           // Send message to client
           if (chat?.isGroupChat) {
-             chat?.users.forEach((user) => {
-               const receiverId = getSocketConnectedUser(user);
-               if (receiverId) {
-                 io.to(chat?._id.toString())
-                   .to(receiverId.socketId)
-                   .emit("addReactionOnMessage", {
-                     reaction,
-                     type: "update",
-                   });
-               }
-             });
+            chat?.users.forEach((user) => {
+              const receiverId = getSocketConnectedUser(user);
+              if (receiverId) {
+                io.to(chat?._id.toString())
+                  .to(receiverId.socketId)
+                  .emit("addReactionOnMessage", {
+                    reaction,
+                    type: "update",
+                  });
+              }
+            });
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
@@ -874,19 +822,17 @@ export const addRemoveEmojiReactions = async (
 
           // Send message to client
           if (chat?.isGroupChat) {
-           
-
-             chat?.users.forEach((user) => {
-               const receiverId = getSocketConnectedUser(user);
-               if (receiverId) {
-                 io.to(chat?._id.toString())
-                   .to(receiverId.socketId)
-                   .emit("addReactionOnMessage", {
-                     reaction,
-                     type: "add",
-                   });
-               }
-             });
+            chat?.users.forEach((user) => {
+              const receiverId = getSocketConnectedUser(user);
+              if (receiverId) {
+                io.to(chat?._id.toString())
+                  .to(receiverId.socketId)
+                  .emit("addReactionOnMessage", {
+                    reaction,
+                    type: "add",
+                  });
+              }
+            });
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
