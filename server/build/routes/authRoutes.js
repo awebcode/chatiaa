@@ -13,6 +13,7 @@ authRoute.post("/register", uploadMiddleware_1.default.single("image"), authCont
 // Login route
 authRoute.post("/login", authControllers_1.login);
 authRoute.get("/getUser", authMiddleware_1.default, authControllers_1.getUser);
+authRoute.get("/getProfile/:userId", authMiddleware_1.default, authControllers_1.getProfile);
 authRoute.get("/getUsers", authMiddleware_1.default, authControllers_1.allUsers);
 authRoute.post("/logout", authControllers_1.logout);
 authRoute.delete("/deleteUser", authMiddleware_1.default, authControllers_1.deleteUser);

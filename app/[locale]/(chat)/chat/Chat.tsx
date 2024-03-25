@@ -44,7 +44,8 @@ const Chat = () => {
   const dispatch = useMessageDispatch();
   const router = useRouter();
   const { startTyping, stopTyping } = useTypingStore();
-  const { addOnlineUser, onlineUsers } = useOnlineUsersStore();
+  const { addOnlineUser, removeOnlineUser, onlineUsers, setInitOnlineUsers } =
+    useOnlineUsersStore();
   const totalMessagesCountRef = useRef<number>(0); // Provide type annotation for number
   const selectedChatRef = useRef<IChat | null>(null); // Provide type annotation for IChat or null
   const currentUserRef = useRef<Tuser | null>(null); // Provide type annotation for Tuser or null
@@ -66,7 +67,6 @@ const Chat = () => {
     if (user) {
       socket?.emit("setup", { id: user._id });
     }
-  
   }, []);
   //update friend message when i'm online
   useEffect(() => {
@@ -187,22 +187,41 @@ const Chat = () => {
   }, []);
 
   const handleTyping = useCallback((data: any) => {
-    // if (data.receiverId === currentUser?._id) {
-    startTyping(data.senderId, data.receiverId, data.chatId, data.content, data.userInfo);
-    // }
+    const typingData = {
+      senderId: data.senderId,
+      chatId: data.chatId,
+      content: data.content,
+      userInfo: data.userInfo,
+    };
+    startTyping(typingData);
   }, []);
   const handleStopTyping = useCallback((data: any) => {
     // if (data.receiverId === currentUser?._id) {
-    stopTyping();
+    stopTyping(data.senderId, data.chatId);
     // }
   }, []);
-
-  const handleOnlineUsers = useCallback((users: any) => {
-    if (users) {
-      addOnlineUser(users);
+  //handleAlreadyConnectedOnlineUsers
+  const handleAlreadyConnectedOnlineUsers = useCallback(
+    (users: { id: string; socketId: string }[]) => {
+      if (users) {
+        setInitOnlineUsers(users);
+      }
+    },
+    []
+  );
+  //handleOnlineUsers
+  const handleOnlineUsers = useCallback((user: { id: string; socketId: string }) => {
+    if (user) {
+      addOnlineUser(user);
     }
   }, []);
-
+  //handleLeaveOnlineUsers
+  const handleLeaveOnlineUsers = useCallback((user: { id: string; socketId: string }) => {
+    if (user) {
+      console.log({leaveOnlineUser:user})
+      removeOnlineUser(user);
+    }
+  }, []);
   const groupCreatedNotifyHandler = useCallback((data: any) => {
     // Implementation goes here
     dispatch({ type: SET_CHATS, payload: data.chat });
@@ -246,8 +265,11 @@ const Chat = () => {
     socket.on("receiveSeenMessage", handleSeenMessage);
     socket.on("typing", handleTyping);
     socket.on("stopTyping", handleStopTyping);
-
-    socket.on("setup", handleOnlineUsers);
+    //add/remove online users
+    socket.on("alreadyConnectedOnlineUsers", handleAlreadyConnectedOnlineUsers);
+    socket.on("addOnlineUsers", handleOnlineUsers);
+    socket.on("leaveOnlineUsers", handleLeaveOnlineUsers);
+    //add/remove online users
     socket.on("groupCreatedNotifyReceived", groupCreatedNotifyHandler);
     socket.on("chatCreatedNotifyReceived", chatCreatedNotifyHandler);
     socket.on("singleChatDeletedNotifyReceived", singleChatDeletedNotifyReceivedHandler);
@@ -268,7 +290,9 @@ const Chat = () => {
     socket.on("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
     // Clean up event listeners when the component unmounts
     return () => {
-      socket.off("setup", handleOnlineUsers);
+      socket.off("addOnlineUsers", handleOnlineUsers);
+      socket.off("leaveOnlineUsers", handleLeaveOnlineUsers);
+      socket.on("alreadyConnectedOnlineUsers", handleAlreadyConnectedOnlineUsers);
       socket.off("disconnect");
       socket.off("receiveMessage", handleSocketMessage);
       socket.off("receiveSeenMessage", handleSeenMessage);
@@ -295,14 +319,6 @@ const Chat = () => {
     };
   }, []); //
 
-  //  useEffect(() => {
-  //    const timeoutId = setTimeout(() => {
-  //      if (!currentUser) {
-  //        router.push("/login");
-  //      }
-  //    }, 2000);
-  //    return () => clearTimeout(timeoutId);
-  //  }, [router, currentUser]);
   return <></>;
 };
 

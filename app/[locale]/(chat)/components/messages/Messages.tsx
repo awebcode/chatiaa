@@ -1,7 +1,7 @@
 "use client";
 
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { findLastSeenMessageIndex } from "../logics/logics";
 import dynamic from "next/dynamic";
 
@@ -11,22 +11,13 @@ import { FaArrowDown } from "react-icons/fa";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useMediaQuery } from "@uidotdev/usehooks";
-import { axiosClient } from "@/config/AxiosConfig";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
-import { useTypingStore } from "@/store/useTyping";
 import { BaseUrl } from "@/config/BaseUrl";
-import { useShallow } from 'zustand/react/shallow'
+import { useSocketContext } from "@/context/SocketContextProvider";
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
-  const {
-    isTyping,
-    content: typingContent,
-    chatId: typingChatId,
-    userInfo: typingUserInfo,
-  } = useTypingStore();
-
  
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -51,43 +42,7 @@ export default function Messages() {
     }, 1500);
     return () => clearTimeout(tid);
   }, [isIncomingMessage]);
-  //   const mountref=useRef(true)
-  //   useEffect(() => {
-  //  console.log(mountref.current,selectedChat,page);
-  //     const fetchData = async () => {
-  //       try {
-  //         setLoading(true);
-  //         await new Promise(resolve => setTimeout(resolve, 3000));
-  //         const res = await fetch(
-  //           `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
-  //           {
-  //             credentials: "include",
-  //             // cache: "reload",
-  //           }
-  //         );
-  //         const data = await res.json();
-  //         console.log({res:data})
 
-  //         if (messages.length < 10) {
-
-  //           dispatch({ type: SET_MESSAGES, payload: data.messages });
-  //           dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
-  //         }
-
-  //         setLoading(false);
-  //       } catch (error) {
-  //         setLoading(false);
-  //       }
-  //     };
-
-  //     if (mountref.current&&selectedChat && page === 1) {
-  //       fetchData();
-  //     }
-
-  //     return () => {
-  //       mountref.current = false; // Setting mounted flag to false on component unmount
-  //     };
-  //   }, [selectedChat,page]);
   useEffect(() => {
     let isMounted = true;
 
@@ -207,6 +162,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
+ 
   console.log("called", messages);
   return (
     <div
@@ -232,20 +188,21 @@ export default function Messages() {
           // </div>
           ""
         }
-        style={{ display: "flex", flexDirection: "column-reverse", height: "100%" }}
+        style={{
+          display: "flex",
+          flexDirection: "column-reverse",
+          overflow: "auto",
+          height: "100%",
+        }}
         inverse={true}
         scrollableTarget="CustomscrollableTarget"
-        scrollThreshold={1}
+        scrollThreshold={0.6}
       >
         <div className="flex flex-col-reverse gap-3 m-2 p-2">
           <div id="messageEndTarget" ref={messageEndRef}></div>
-          {isTyping && typingContent && typingChatId === selectedChat?.chatId && (
-            <TypingIndicator
-              user={typingUserInfo}
-              isTyping={isTyping}
-              onFriendListCard={false}
-            />
-          )}
+          {/* typing indicator */}
+
+            <TypingIndicator onFriendListCard={false} />
           {loading ? (
             <div className="flex justify-center items-center mt-6">
               <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>

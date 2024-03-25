@@ -79,6 +79,24 @@ export const fetchUser = async () => {
 
   return await res.json();
 };
+//get profile
+export const getProfile = async (userId:string) => {
+  const res = await fetch(`${BaseUrl}/getProfile/${userId}`, {
+    credentials: "include",
+    next: { tags: ["profile"] },
+    headers: {
+      Cookie: `authToken=${
+        cookies().get(
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.session-token"
+            : "next-auth.session-token"
+        )?.value
+      };`,
+    },
+  });
+
+  return await res.json();
+};
 
 //deleteUser
 

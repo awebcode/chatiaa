@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import dynamic from "next/dynamic";
-const Time = dynamic(() => import("../../messages/typeMessages/Time"));
+const Time = dynamic(() => import("../../../messages/typeMessages/Time"));
 // Import RepliedMessage dynamically
 // styles
 
@@ -22,11 +22,7 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
-export default function ({
-  message,
-}: {
-  message: IMessage;
-}) {
+export default function ({ message }: { message: IMessage }) {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -106,8 +102,6 @@ export default function ({
               <span className="text-sm font-medium">
                 {playing ? currentTime : totalTime}
               </span>
-              
-            
             </div>
           </div>
         </div>

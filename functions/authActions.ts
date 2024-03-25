@@ -48,7 +48,15 @@ export const logoutUser = async () => {
   });
   return res.data;
 };
+//get profile
+export const getProfile = async (userId: string) => {
+  const { data } = await axiosClient.get(`/getProfile/${userId}`, {
+    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
+  });
 
+  return data;
+};
 //fetchClientUser
 
 export const fetchClientUser = async () => {

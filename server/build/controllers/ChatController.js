@@ -501,20 +501,20 @@ const getUsersInAChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     const skip = parseInt(req.query.skip) || 0;
     const search = req.query.search;
     try {
-        let query = {
-            _id: req.params.chatId,
-            users: { $elemMatch: { $eq: req.id } },
-        };
-        if (search) {
-            query["$or"] = [
-                { "users.name": { $regex: search, $options: "i" } },
-                { "users.email": { $regex: search, $options: "i" } },
-            ];
-        }
-        const users = yield ChatModel_1.Chat.find(query).limit(limit).skip(skip);
-        const chat = yield ChatModel_1.Chat.findOne({ _id: req.params.chatId });
+        const chat = yield ChatModel_1.Chat.findById({ _id: req.params.chatId });
+        let findChatQuery = yield ChatModel_1.Chat.findOne({ _id: req.params.chatId }).populate({
+            path: "users",
+            select: "-password",
+            match: {
+                $or: [
+                    { name: { $regex: new RegExp(search, "i") } },
+                    { email: { $regex: new RegExp(search, "i") } },
+                ],
+            },
+            options: { limit, skip },
+        });
         const total = chat ? chat.users.length : 0;
-        res.send({ users, total, limit });
+        res.send({ users: findChatQuery ? findChatQuery.users : [], total, limit });
     }
     catch (error) {
         next(error);

@@ -13,8 +13,10 @@ import { MdCall, MdDelete, MdVideoCall } from "react-icons/md";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
+import { useRouter } from "@/navigation";
 
 const Card = ({ user }: { user: Tuser }) => {
+  const router=useRouter()
   const { onlineUsers } = useOnlineUsersStore();
   const { selectedChat, user: currentUser } = useMessageState();
   const { theme } = useTheme();
@@ -22,7 +24,7 @@ const Card = ({ user }: { user: Tuser }) => {
   const isUserOnline = onlineUsers.some((u: any) =>
     selectedChat?.isGroupChat
       ? selectedChat?.users.some(
-          (user: any) => user._id === u.id && user._id !== currentUser?._id
+          (user: any) => user._id === u.id && user?._id !== currentUser?._id
         )
       : selectedChat?.userInfo?._id === u.id
   );
@@ -34,8 +36,7 @@ const Card = ({ user }: { user: Tuser }) => {
     {
       name: "View profile",
       icon: <RiProfileLine />,
-      action: () => console.log("View profile clicked"),
-      isHidden: selectedChat?.isGroupChat,
+      action: () => router.push(user?._id===currentUser?._id?"/profile":`/user/profile/${user?._id}`),
     },
     {
       name: "Audio call",
@@ -51,7 +52,7 @@ const Card = ({ user }: { user: Tuser }) => {
     },
 
     {
-      name: <span className="text-rose-500">Remove from group</span>,
+      name: <span className="text-rose-500">Remove</span>,
       icon: <MdDelete className="text-rose-500" />,
       action: () => {
         if (confirm("Are you sure?")) {
@@ -59,7 +60,7 @@ const Card = ({ user }: { user: Tuser }) => {
         }
       },
       isHidden: selectedChat?.groupAdmin
-        ? selectedChat?.groupAdmin.some((admin: any) => admin._id === currentUser?._id)
+        ? selectedChat?.groupAdmin.some((admin: any) => admin?._id === currentUser?._id)
         : false,
     },
     {
@@ -70,32 +71,32 @@ const Card = ({ user }: { user: Tuser }) => {
           leaveMutation.mutateAsync();
         }
       },
-      isHidden: currentUser?._id === user._id ? false : true,
+      isHidden: currentUser?._id === user?._id ? false : true,
     },
   ];
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between p-2">
       <div className="flex items-center justify-start gap-2">
-        <div className="relative  p-[2px] h-6 w-6 md:h-8 md:w-8 ring md:ring-2 ring-violet-500 rounded-full">
+        <div className="relative  p-[2px] h-6 w-6 md:h-8 md:w-8 border md:border-2 border-violet-500 rounded-full">
           <Image
             height={35}
             width={35}
             className="rounded-full object-fill h-full w-full"
             alt={user?.name as any}
-            src={user.image as any}
+            src={user?.image as any}
             loading="lazy"
           />
 
           <span
-            className={`absolute bottom-0 -right-1 rounded-full  p-[6px] ${
+            className={`absolute bottom-0 -right-1 rounded-full  p-[4px] ${
               isUserOnline ? "bg-green-500" : "bg-rose-500"
             }`}
           ></span>
         </div>
         <div>
           <h2 className="text-gray-200 fon-medium text-xs">{user?.name}</h2>
-          <p className="text-muted">{user?.email}</p>
+          <p className=" text-gray-400 text-[10px]">{user?.email}</p>
         </div>
       </div>
 

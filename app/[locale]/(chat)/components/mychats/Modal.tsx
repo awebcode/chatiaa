@@ -15,6 +15,8 @@ import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-
 import { PopoverContent } from "@/components/ui/popover";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
+import { useRouter } from "@/navigation";
+import { getSenderFull } from "../logics/logics";
 
 const Modal = ({
   chatBlockedBy,
@@ -22,12 +24,14 @@ const Modal = ({
 }: {
   chatBlockedBy: Tuser[];
   chat: IChat;
-}) => {
+  }) => {
+   const router=useRouter()
   const {theme}=useTheme()
   const blockMutation = useBlockMutation();
   const { user: currentUser } = useMessageState();
   const leaveMutation = useLeaveChatMutation(chat._id as any, currentUser?._id as any);
   const deleteSignleChatMutation = useDeleteSingleChatMutation(chat._id as any, false);
+  const isFriend=getSenderFull(currentUser,chat?.users)
   const blockData = {
     chatId: chat._id,
     status: chatBlockedBy?.some((user) => user?._id === currentUser?._id)
@@ -50,7 +54,7 @@ const Modal = ({
     {
       name: "View profile",
       icon: <RiProfileLine />,
-      action: () => console.log("View profile clicked"),
+      action: () => router.push(isFriend?`/user/profile/${isFriend?._id}`:"/profile"),
       isHidden: chat?.isGroupChat,
     },
     {

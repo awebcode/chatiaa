@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { useMessageState } from "@/context/MessageContext";
-import { getFilesInChat } from "@/server/controllers/ChatController";
+import { getFilesInChat } from "@/functions/chatActions";
 import { TabsTrigger } from "@radix-ui/react-tabs";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";

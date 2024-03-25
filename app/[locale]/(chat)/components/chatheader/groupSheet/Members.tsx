@@ -57,7 +57,7 @@ const Members = () => {
           endMessage={
             users &&
             users?.length > 0 &&
-            searchTerm.trim() !== "" && (
+             (
               <p className="text-green-400">
                 <b>all users here!</b>
               </p>
@@ -70,7 +70,7 @@ const Members = () => {
             <div className="flex flex-col gap-3">
               {users && users?.length > 0
                 ? users?.map((user: any) => {
-                    return <Card user={user} key={user._id} />;
+                    return <Card user={user} key={user?._id} />;
                   })
                 : !isLoading &&
                   !isFetching && (

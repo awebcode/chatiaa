@@ -18,15 +18,15 @@ const Main = () => {
       {/* chat header */}
       <div className="z-50  overflow-hidden">
         {" "}
-        <ChatHeader />
+        {selectedChat && <ChatHeader />}
       </div>
       {/* Message */}
       <div className="absolute py-4 bottom-20 w-full z-10">
-        <Messages />
+        {selectedChat && <Messages />}
       </div>
       {/* Inpute */}
       <div className="w-full absolute bottom-0 z-50">
-        <Input />
+        {selectedChat && <Input />}
       </div>
     </div>
   );

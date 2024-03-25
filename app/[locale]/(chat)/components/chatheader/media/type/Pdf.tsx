@@ -2,7 +2,7 @@ import { IMessage } from "@/context/reducers/interfaces";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React from "react";
-const Time = dynamic(() => import("../../messages/typeMessages/Time"));
+const Time = dynamic(() => import("../../../messages/typeMessages/Time"));
 
 const Pdf = ({ message }: { message: IMessage }) => {
   const senderImage = message.sender?.image;

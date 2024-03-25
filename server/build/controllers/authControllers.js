@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allUsers = exports.getUser = exports.login = exports.register = exports.deleteUser = exports.logout = void 0;
+exports.allUsers = exports.getUser = exports.login = exports.register = exports.deleteUser = exports.logout = exports.getProfile = void 0;
 const cloudinary_1 = require("cloudinary");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -114,6 +114,23 @@ const getUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getUser = getUser;
+//get profile
+const getProfile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Access the authenticated user from the request
+        const user = yield UserModel_1.User.findOne({ _id: req.params.userId });
+        if (!user) {
+            return next(new errorHandler_1.CustomErrorHandler("User does not exists", 401));
+        }
+        // You can fetch additional user details from your database or any other source
+        // For demonstration purposes, we are returning the basic user information
+        res.status(200).json(user);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getProfile = getProfile;
 const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const limit = parseInt(req.query.limit) || 4;
     const skip = parseInt(req.query.skip) || 0;

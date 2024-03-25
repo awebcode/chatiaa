@@ -18,6 +18,7 @@ import { leaveFromGroupMessage, sentSocketTextMessage } from "./controllers/func
 import { Chat } from "./model/ChatModel";
 import { Types } from "mongoose";
 import { Message } from "./model/MessageModel";
+import { emitEventToGroupUsers } from "./common/groupSocket";
 const app = express();
 // app.use(uploadMiddleware.array("files"));
 
@@ -47,11 +48,11 @@ app.use("/api/v1", chatRoute);
 
 app.use("/api/v1", messageRoute);
 
-type TUser = {
+type TsocketUsers = {
   id: string;
   socketId: string;
 };
-let users: TUser[] = [];
+let users: TsocketUsers[] = [];
 
 const checkOnlineUsers = (id: string, socketId: string) => {
   if (!users.some((user) => user.id === id)) {
@@ -79,14 +80,33 @@ const removeUser = async (socketId: string) => {
 };
 
 export const getSocketConnectedUser = (id: string | Types.ObjectId) => {
-  return users.find((user) => user.id === id);
+  return users.find((user) => user.id === id || user.socketId === id);
 };
 // WebSocket server logic
 io.on("connection", (socket: Socket) => {
-  socket.on("setup", (userData) => {
+  socket.on("setup", async (userData) => {
     socket.join(userData.id);
     checkOnlineUsers(userData.id, socket.id);
-    io.emit("setup", users);
+    //store connected users
+    let alreadyConnectedOnlineUsers:TsocketUsers[]=[]
+    //only send online users notify there who connected with new connected user
+    const chats = await Chat.find({ users: { $elemMatch: { $eq: userData.id } } });
+    chats?.forEach((chatUsers) => {
+      chatUsers?.users.forEach((userId: any) => {
+        const receiverId = getSocketConnectedUser(userId.toString());
+        if (receiverId) {
+          const { id, socketId } = receiverId;
+          alreadyConnectedOnlineUsers.push({id,socketId})
+          io
+            .to(id)
+            .emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
+        }
+      });
+    });
+    //send to new connected users
+    socket.emit("alreadyConnectedOnlineUsers", alreadyConnectedOnlineUsers);
+
+    // io.emit("setup", users);
     console.log("Client connected");
   });
   socket.on("join", (data: any) => {
@@ -103,18 +123,7 @@ io.on("connection", (socket: Socket) => {
       content: message.content,
     });
     if (message.isGroupChat) {
-      const chatUsers = await Chat.findById(message.chatId);
-      chatUsers?.users.forEach((user) => {
-        const receiverId = getSocketConnectedUser(user.toString());
-        if (receiverId) {
-          io.to(message.groupChatId)
-            .to(receiverId.socketId)
-            .emit("receiveMessage", {
-              ...data.toObject(),
-              receiverId: message.receiverId,
-            });
-        }
-      });
+      await emitEventToGroupUsers(io, "receiveMessage", message.chatId, data);
 
       //  socket.emit("receiveMessage", message);
     } else {
@@ -138,7 +147,12 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("remove_remove_All_unsentMessage", async (message: any) => {
     if (message.groupChat) {
-      io.to(message.chatId).emit("remove_remove_All_unsentMessage", message);
+      await emitEventToGroupUsers(
+        socket,
+        "remove_remove_All_unsentMessage",
+        message.chatId,
+        message
+      );
     } else {
       io.to(message.receiverId).emit("remove_remove_All_unsentMessage", message);
     }
@@ -159,36 +173,26 @@ io.on("connection", (socket: Socket) => {
     io.emit("receiveDeliveredAllMessageAfterReconnect", message);
   });
   // Handle typing
-  socket.on("startTyping", (data: any) => {
+  socket.on("startTyping", async (data: any) => {
     if (data.isGroupChat) {
-      socket.to(data.groupChatId).emit("typing", data);
+      await emitEventToGroupUsers(socket, "typing", data.groupChatId, data);
     } else {
-      socket.in(data.receiverId).emit("typing", data);
+      socket.to(data.receiverId).emit("typing", data);
     }
   });
   // Handle stop typing
-  socket.on("stopTyping", (data: any) => {
+  socket.on("stopTyping", async (data: any) => {
     if (data.isGroupChat) {
-      socket.to(data.groupChatId).emit("stopTyping", data);
+      await emitEventToGroupUsers(socket, "stopTyping", data.groupChatId, data);
     } else {
-      socket.in(data.receiverId).emit("stopTyping", data);
+      socket.to(data.receiverId).emit("stopTyping", data);
     }
   });
 
   //groupCreatedNotify
 
   socket.on("groupCreatedNotify", async (data) => {
-    const chatUsers = await Chat.findById(data.chatId);
-    chatUsers?.users.forEach((user) => {
-      const receiverId = getSocketConnectedUser(user.toString());
-      if (receiverId) {
-        socket
-          .to(data.chatId)
-          .to(receiverId.socketId)
-
-          .emit("groupCreatedNotifyReceived", data);
-      }
-    });
+    await emitEventToGroupUsers(socket, "groupCreatedNotifyReceived", data.chatId, data);
   });
   //singleChat createdNitify
   socket.on("chatCreatedNotify", (data) => {
@@ -206,46 +210,55 @@ io.on("connection", (socket: Socket) => {
 
   //leave from group chat
   socket.on("groupChatLeaveNotify", async (data) => {
-    const chatUsers = await Chat.findById(data.chatId);
     const leaveMessage = await leaveFromGroupMessage({
       chatId: data.chatId,
       user: data.currentUser,
     });
-    chatUsers?.users.forEach((user) => {
-      const receiverId = getSocketConnectedUser(user.toString());
-      if (receiverId) {
-        //send it without who sent
-        socket
-          .to(data.chatId)
-          .to(receiverId.socketId)
-
-          .emit("groupChatLeaveNotifyReceived", {
-            ...leaveMessage.toObject(),
-            user: data.currentUser,
-            chatId: data.chatId,
-            receiverId: receiverId.id,
-          });
-      }
-    });
+    const leaveData = {
+      ...leaveMessage.toObject(),
+      user: data.currentUser,
+      chatId: data.chatId,
+    };
+    await emitEventToGroupUsers(
+      socket,
+      "groupChatLeaveNotifyReceived",
+      data.chatId,
+      leaveData
+    );
   });
 
   //chat blocked notify
 
-   //singlechatDeletedNotify
+  //singlechatDeletedNotify
   socket.on("chatBlockedNotify", (data) => {
     const receiverId = getSocketConnectedUser(data.receiverId);
     if (receiverId) {
-      socket
-        .to(receiverId?.socketId)
-        .emit("chatBlockedNotifyReceived", data);
+      socket.to(receiverId?.socketId).emit("chatBlockedNotifyReceived", data);
     }
   });
   //@@@@@@ calling system end
   // Handle client disconnection
   socket.on("disconnect", async (data) => {
-    await removeUser(socket.id);
     // Emit the updated users array after a user disconnects
-    io.emit("setup", users);
+    //only send online users notify there who connected with me
+    const leaveId = getSocketConnectedUser(socket.id);
+    if(leaveId){
+      socket.leave(leaveId.id);
+    }
+
+    const chats = await Chat.find({ users: { $elemMatch: { $eq: leaveId?.id } } });
+    chats?.forEach((chatUsers) => {
+      chatUsers?.users.forEach((userId: any) => {
+        const receiverId = getSocketConnectedUser(userId.toString());
+        if (receiverId) {
+          const { id, socketId } = receiverId;
+           io.to(socketId).emit("leaveOnlineUsers", { id: leaveId?.id, socketId: socket.id });
+        }
+      });
+    });
+    //remove from users array
+    await removeUser(socket.id);
+
     console.log("Client disconnected");
   });
 });

@@ -112,8 +112,25 @@ const getUser: any = async (req: CustomRequest, res: Response, next: NextFunctio
     next(error);
   }
 };
+//get profile
+export const getProfile: any = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    // Access the authenticated user from the request
 
+    const user = await User.findOne({ _id: req.params.userId });
 
+    if (!user) {
+      return next(new CustomErrorHandler("User does not exists", 401));
+    }
+
+    // You can fetch additional user details from your database or any other source
+    // For demonstration purposes, we are returning the basic user information
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
 const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunction) => {
   const limit = parseInt(req.query.limit) || 4;
   const skip = parseInt(req.query.skip) || 0;

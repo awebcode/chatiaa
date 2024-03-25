@@ -624,24 +624,24 @@ export const getUsersInAChat = async (
   const search = req.query.search;
 
   try {
-    let query: any = {
-      _id: req.params.chatId,
-      users: { $elemMatch: { $eq: req.id } },
-    };
+    const chat = await Chat.findById({ _id: req.params.chatId });
 
-    if (search) {
-      query["$or"] = [
-        { "users.name": { $regex: search, $options: "i" } },
-        { "users.email": { $regex: search, $options: "i" } },
-      ];
-    }
+    let findChatQuery = await Chat.findOne({ _id: req.params.chatId }).populate({
+      path: "users",
+      select: "-password",
+      match: {
+        $or: [
+          { name: { $regex: new RegExp(search, "i") } },
+          { email: { $regex: new RegExp(search, "i") } },
+        ],
+      },
+      options: { limit, skip },
+    });
+   
 
-    const users = await Chat.find(query).limit(limit).skip(skip);
-
-    const chat = await Chat.findOne({ _id: req.params.chatId });
     const total = chat ? chat.users.length : 0;
 
-    res.send({ users, total, limit });
+    res.send({ users: findChatQuery?findChatQuery.users:[], total, limit });
   } catch (error) {
     next(error);
   }

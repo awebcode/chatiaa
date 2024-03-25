@@ -34,12 +34,7 @@ const FriendsCard: React.FC<{
   const { socket } = useSocketContext();
   const { user: currentUser, selectedChat } = useMessageState();
   const { onlineUsers } = useOnlineUsersStore();
-  const {
-    isTyping,
-    content: typingContent,
-    chatId: typingChatId,
-    userInfo: typingUserInfo,
-  } = useTypingStore();
+  const { typingUsers } = useTypingStore();
   const updateStatusMutation = useMutation({
     mutationKey: ["messages"],
     mutationFn: (chatId: string) => updateAllMessageStatusAsSeen(chatId),
@@ -68,7 +63,7 @@ const FriendsCard: React.FC<{
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
       chatId: chat?._id,
-       chatName: chat?.chatName,
+      chatName: chat?.chatName,
       latestMessage: chat?.latestMessage,
       createdAt: chat?.latestMessage?.createdAt,
       chatCreatedAt: chat?.createdAt,
@@ -110,7 +105,6 @@ const FriendsCard: React.FC<{
       ? chat.users.some((user: any) => user._id === u.id)
       : getSenderFull(currentUser, chat.users)?._id === u.id
   );
-
 
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
@@ -156,12 +150,33 @@ const FriendsCard: React.FC<{
                   : ""
               }`}
             >
-              {isTyping && typingContent && typingChatId === chat?._id ? (
-                <TypingIndicator
-                  user={typingUserInfo}
-                  isTyping={isTyping}
-                  onFriendListCard={true}
-                />
+              {typingUsers.some((typeuser) => typeuser.chatId === chat?._id) ? (
+                <>
+                  {
+                    // Filter typing users for the current chat
+                    typingUsers
+                      .filter((typeuser) => typeuser.chatId === chat?._id)
+                      .map((typeuser, index, array) => (
+                        <React.Fragment key={index}>
+                          {index === 0 ? (
+                            <>
+                              {/* Show the name of the first typing user */}
+                              {typeuser.userInfo.name}
+                              {/* If there are more than one typing users, show the count */}
+                              {array.length > 1 ? (
+                                <span>{` and ${
+                                  array.length - 1
+                                } more are typing...`}</span>
+                              ) : (
+                                // If there's only one typing user, show "is typing..."
+                                <span> is typing...</span>
+                              )}
+                            </>
+                          ) : null}
+                        </React.Fragment>
+                      ))
+                  }
+                </>
               ) : (
                 <MessagePreview chat={chat} currentUser={currentUser as any} />
               )}
@@ -171,14 +186,7 @@ const FriendsCard: React.FC<{
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
             </span>
-            {/* {!isUserOnline && !chat.isGroupChat ? (
-              <span className="text-[9px]">
-                LastActive:{" "}
-                {moment(getSenderFull(currentUser, chat.users)?.lastActive).format("lll")}
-              </span>
-            ) : (
-              ""
-            )} */}
+          
           </div>
         </div>
         <div className="flex gap-5 items-center ">
@@ -193,15 +201,9 @@ const FriendsCard: React.FC<{
           <Popover>
             <div className="relative">
               <PopoverTrigger className="border-none outline-none">
-                <BsThreeDots
-                  className="h-6 w-6 "
-                />
+                <BsThreeDots className="h-6 w-6 " />
               </PopoverTrigger>
-              <Modal
-               
-                chatBlockedBy={chat.chatBlockedBy}
-                chat={chat}
-              />
+              <Modal chatBlockedBy={chat.chatBlockedBy} chat={chat} />
             </div>
           </Popover>
         </div>

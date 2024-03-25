@@ -30,6 +30,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 (0, dotenv_1.config)();
 const functions_1 = require("./controllers/functions");
 const ChatModel_1 = require("./model/ChatModel");
+const groupSocket_1 = require("./common/groupSocket");
 const app = (0, express_1.default)();
 // app.use(uploadMiddleware.array("files"));
 app.use(express_1.default.json({ limit: "100mb" }));
@@ -73,17 +74,35 @@ const removeUser = (socketId) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 const getSocketConnectedUser = (id) => {
-    return users.find((user) => user.id === id);
+    return users.find((user) => user.id === id || user.socketId === id);
 };
 exports.getSocketConnectedUser = getSocketConnectedUser;
 // WebSocket server logic
 exports.io.on("connection", (socket) => {
-    socket.on("setup", (userData) => {
+    socket.on("setup", (userData) => __awaiter(void 0, void 0, void 0, function* () {
         socket.join(userData.id);
         checkOnlineUsers(userData.id, socket.id);
-        exports.io.emit("setup", users);
+        //store connected users
+        let alreadyConnectedOnlineUsers = [];
+        //only send online users notify there who connected with new connected user
+        const chats = yield ChatModel_1.Chat.find({ users: { $elemMatch: { $eq: userData.id } } });
+        chats === null || chats === void 0 ? void 0 : chats.forEach((chatUsers) => {
+            chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((userId) => {
+                const receiverId = (0, exports.getSocketConnectedUser)(userId.toString());
+                if (receiverId) {
+                    const { id, socketId } = receiverId;
+                    alreadyConnectedOnlineUsers.push({ id, socketId });
+                    exports.io
+                        .to(id)
+                        .emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
+                }
+            });
+        });
+        //send to new connected users
+        socket.emit("alreadyConnectedOnlineUsers", alreadyConnectedOnlineUsers);
+        // io.emit("setup", users);
         console.log("Client connected");
-    });
+    }));
     socket.on("join", (data) => {
         socket.join(data.chatId);
         exports.io.emit("join", data.chatId);
@@ -97,15 +116,7 @@ exports.io.on("connection", (socket) => {
             content: message.content,
         });
         if (message.isGroupChat) {
-            const chatUsers = yield ChatModel_1.Chat.findById(message.chatId);
-            chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
-                const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
-                if (receiverId) {
-                    exports.io.to(message.groupChatId)
-                        .to(receiverId.socketId)
-                        .emit("receiveMessage", Object.assign(Object.assign({}, data.toObject()), { receiverId: message.receiverId }));
-                }
-            });
+            yield (0, groupSocket_1.emitEventToGroupUsers)(exports.io, "receiveMessage", message.chatId, data);
             //  socket.emit("receiveMessage", message);
         }
         else {
@@ -124,7 +135,7 @@ exports.io.on("connection", (socket) => {
     //remove_remove_All_unsentMessage
     socket.on("remove_remove_All_unsentMessage", (message) => __awaiter(void 0, void 0, void 0, function* () {
         if (message.groupChat) {
-            exports.io.to(message.chatId).emit("remove_remove_All_unsentMessage", message);
+            yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "remove_remove_All_unsentMessage", message.chatId, message);
         }
         else {
             exports.io.to(message.receiverId).emit("remove_remove_All_unsentMessage", message);
@@ -144,35 +155,26 @@ exports.io.on("connection", (socket) => {
         exports.io.emit("receiveDeliveredAllMessageAfterReconnect", message);
     });
     // Handle typing
-    socket.on("startTyping", (data) => {
+    socket.on("startTyping", (data) => __awaiter(void 0, void 0, void 0, function* () {
         if (data.isGroupChat) {
-            socket.to(data.groupChatId).emit("typing", data);
+            yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "typing", data.groupChatId, data);
         }
         else {
-            socket.in(data.receiverId).emit("typing", data);
+            socket.to(data.receiverId).emit("typing", data);
         }
-    });
+    }));
     // Handle stop typing
-    socket.on("stopTyping", (data) => {
+    socket.on("stopTyping", (data) => __awaiter(void 0, void 0, void 0, function* () {
         if (data.isGroupChat) {
-            socket.to(data.groupChatId).emit("stopTyping", data);
+            yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "stopTyping", data.groupChatId, data);
         }
         else {
-            socket.in(data.receiverId).emit("stopTyping", data);
+            socket.to(data.receiverId).emit("stopTyping", data);
         }
-    });
+    }));
     //groupCreatedNotify
     socket.on("groupCreatedNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        const chatUsers = yield ChatModel_1.Chat.findById(data.chatId);
-        chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
-            const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
-            if (receiverId) {
-                socket
-                    .to(data.chatId)
-                    .to(receiverId.socketId)
-                    .emit("groupCreatedNotifyReceived", data);
-            }
-        });
+        yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "groupCreatedNotifyReceived", data.chatId, data);
     }));
     //singleChat createdNitify
     socket.on("chatCreatedNotify", (data) => {
@@ -189,38 +191,42 @@ exports.io.on("connection", (socket) => {
     });
     //leave from group chat
     socket.on("groupChatLeaveNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        const chatUsers = yield ChatModel_1.Chat.findById(data.chatId);
         const leaveMessage = yield (0, functions_1.leaveFromGroupMessage)({
             chatId: data.chatId,
             user: data.currentUser,
         });
-        chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((user) => {
-            const receiverId = (0, exports.getSocketConnectedUser)(user.toString());
-            if (receiverId) {
-                //send it without who sent
-                socket
-                    .to(data.chatId)
-                    .to(receiverId.socketId)
-                    .emit("groupChatLeaveNotifyReceived", Object.assign(Object.assign({}, leaveMessage.toObject()), { user: data.currentUser, chatId: data.chatId, receiverId: receiverId.id }));
-            }
-        });
+        const leaveData = Object.assign(Object.assign({}, leaveMessage.toObject()), { user: data.currentUser, chatId: data.chatId });
+        yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "groupChatLeaveNotifyReceived", data.chatId, leaveData);
     }));
     //chat blocked notify
     //singlechatDeletedNotify
     socket.on("chatBlockedNotify", (data) => {
         const receiverId = (0, exports.getSocketConnectedUser)(data.receiverId);
         if (receiverId) {
-            socket
-                .to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId)
-                .emit("chatBlockedNotifyReceived", data);
+            socket.to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId).emit("chatBlockedNotifyReceived", data);
         }
     });
     //@@@@@@ calling system end
     // Handle client disconnection
     socket.on("disconnect", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        yield removeUser(socket.id);
         // Emit the updated users array after a user disconnects
-        exports.io.emit("setup", users);
+        //only send online users notify there who connected with me
+        const leaveId = (0, exports.getSocketConnectedUser)(socket.id);
+        if (leaveId) {
+            socket.leave(leaveId.id);
+        }
+        const chats = yield ChatModel_1.Chat.find({ users: { $elemMatch: { $eq: leaveId === null || leaveId === void 0 ? void 0 : leaveId.id } } });
+        chats === null || chats === void 0 ? void 0 : chats.forEach((chatUsers) => {
+            chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((userId) => {
+                const receiverId = (0, exports.getSocketConnectedUser)(userId.toString());
+                if (receiverId) {
+                    const { id, socketId } = receiverId;
+                    exports.io.to(socketId).emit("leaveOnlineUsers", { id: leaveId === null || leaveId === void 0 ? void 0 : leaveId.id, socketId: socket.id });
+                }
+            });
+        });
+        //remove from users array
+        yield removeUser(socket.id);
         console.log("Client disconnected");
     }));
 });

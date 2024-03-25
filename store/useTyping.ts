@@ -1,38 +1,44 @@
 import { create } from "zustand";
 import { Tuser } from "./types";
 
+interface TypingState {
+  senderId: string;
+  chatId: string;
+  content: string;
+  userInfo: Tuser;
+}
+
 interface TypingStore {
-  isTyping: boolean;
-  senderId: string | null;
-  chatId: string | null;
-  receiverId: string | null;
-  content: string | null;
-  userInfo: Tuser|null;
-  startTyping: (
-    senderId: string,
-    receiverId: string,
-    chatId: string,
-    content: string,
-    userInfo: Tuser
-  ) => void;
-  stopTyping: () => void;
+  typingUsers: TypingState[];
+  startTyping: (typingState: TypingState) => void;
+  stopTyping: (senderId: string, chatId: string) => void;
 }
 
 export const useTypingStore = create<TypingStore>((set) => ({
-  isTyping: false,
-  senderId: null,
-  chatId: null,
-  receiverId: null,
-  content: null,
-  userInfo: null,
-  startTyping: (senderId, receiverId, chatId, content, userInfo) =>
-    set({ isTyping: true, senderId, receiverId, chatId, content, userInfo }),
-  stopTyping: () =>
-    set({
-      isTyping: false,
-      senderId: null,
-      receiverId: null,
-      chatId: null,
-      content: null,
+  typingUsers: [],
+  startTyping: (typingState) =>
+    set((state) => {
+      // Check if the user is already typing
+      const userExists = state.typingUsers.some(
+        (typingUser) =>
+          typingUser.senderId === typingState.senderId &&
+          typingUser.chatId === typingState.chatId
+      );
+
+      if (userExists) {
+        // User already exists, return the current state without any modification
+        return state;
+      }
+
+      // User doesn't exist, add the new typing state to the array
+      return {
+        typingUsers: [typingState, ...state.typingUsers],
+      };
     }),
+  stopTyping: (senderId, chatId) =>
+    set((state) => ({
+      typingUsers: state.typingUsers.filter(
+        (typingState) => typingState.senderId !== senderId
+      ),
+    })),
 }));
