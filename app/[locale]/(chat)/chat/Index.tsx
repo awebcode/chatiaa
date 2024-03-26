@@ -1,15 +1,21 @@
 "use client";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
+import { SET_USER } from "@/context/reducers/actions";
+import { Tuser } from "@/store/types";
 import dynamic from "next/dynamic";
-import React from "react";
-const LeftSide = dynamic(() => import("../components/LeftSide"));
-const Main = dynamic(() => import("../components/Main"));
-const EmptyChat = dynamic(() => import("../components/Empty"));
-// import LeftSide from "../components/LeftSide";
-// import Main from "../components/Main";
-// import EmptyChat from "../components/Empty";
-const Index = () => {
+import React, { useEffect } from "react";
+// const LeftSide = dynamic(() => import("../components/LeftSide"),{loading:()=><h1>Loader</h1>});
+// const Main = dynamic(() => import("../components/Main"));
+// const EmptyChat = dynamic(() => import("../components/Empty"));
+import LeftSide from "../components/LeftSide";
+import Main from "../components/Main";
+import EmptyChat from "../components/Empty";
+const Index = ({user}:{user:Tuser}) => {
   const { selectedChat } = useMessageState();
+   const dispatch = useMessageDispatch();
+   useEffect(() => {
+     dispatch({ type: SET_USER, payload: user });
+   }, [user]);
   return (
     <div className="">
       <div className="  flexBetween gap-2 overflow-hidden">

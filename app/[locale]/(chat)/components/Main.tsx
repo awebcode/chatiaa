@@ -1,16 +1,17 @@
 import dynamic from "next/dynamic";
-import React, { useEffect } from "react";
+import React, { memo, useEffect } from "react";
 const ChatHeader = dynamic(() => import("./chatheader/ChatHeader"));
 const Input = dynamic(() => import("./Input/Input"));
 const Messages = dynamic(() => import("./messages/Messages"));
 import { useSocketContext } from "@/context/SocketContextProvider";
-import { useMessageState } from "@/context/MessageContext";
+import {  useMessageState } from "@/context/MessageContext";
 const Main = () => {
-  const { socket } = useSocketContext();
   const { user: currentUser, messages, selectedChat } = useMessageState();
+ 
+ 
+  const { socket } = useSocketContext();
   useEffect(() => {
     socket.emit("join", { chatId: selectedChat?.chatId });
-  
   }, [selectedChat?.chatId, socket]); //selectedChat
 
   return (
@@ -18,18 +19,19 @@ const Main = () => {
       {/* chat header */}
       <div className="z-50  overflow-hidden">
         {" "}
-        {selectedChat && <ChatHeader />}
+        <ChatHeader />
       </div>
       {/* Message */}
       <div className="absolute py-4 bottom-20 w-full z-10">
-        {selectedChat && <Messages />}
+        <Messages />
       </div>
       {/* Inpute */}
       <div className="w-full absolute bottom-0 z-50">
-        {selectedChat && <Input />}
+        {" "}
+        <Input />
       </div>
     </div>
   );
 };
 
-export default Main;
+export default memo(Main);

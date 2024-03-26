@@ -1,4 +1,4 @@
-import { createContext, Dispatch } from "react";
+import {  Dispatch } from "react";
 import {
   SET_SELECTED_CHAT,
   SET_MESSAGES,
@@ -15,6 +15,10 @@ import {
   LEAVE_CHAT,
   BLOCK_CHAT,
   LEAVE_FROM_GROUP_CHAT,
+  REMOVE_ADMIN_FROM_GROUP_CHAT,
+  MAKE_AS_ADMIN_TO_GROUP_CHAT,
+  REMOVE_USER_FROM_GROUP,
+  SET_GROUP_USERS_ON_FETCHING,
 } from "./actions";
 import { Action, State } from "./interfaces";
 import {
@@ -22,6 +26,7 @@ import {
   ADD_EDITED_MESSAGE,
   ADD_REACTION_ON_MESSAGE,
 } from "./actions";
+import { createContext } from 'use-context-selector';
 export const MessageStateContext = createContext<State | undefined>(undefined);
 export const MessageDispatchContext = createContext<Dispatch<Action> | undefined>(
   undefined
@@ -121,19 +126,23 @@ export const messageReducer = (state: State, action: Action): State => {
             : chat
         ),
       };
-      ////BLOCK_CHAT
+    ////BLOCK_CHAT
     case BLOCK_CHAT:
       return {
         ...state,
         // Update chats array to replace the existing message with the edited one
-        chats:state.chats.map((chat) =>
+        chats: state.chats.map((chat) =>
           chat._id === action.payload.chatId
             ? {
                 ...chat,
                 // Check if the user is already in the group admin array
-                chatBlockedBy: chat.chatBlockedBy.some((user) => user._id === action.payload.user._id)
-                  ? chat.chatBlockedBy.filter((user) => user._id !== action.payload.user._id) // If yes, remove them
-                  : [...chat.chatBlockedBy,action.payload.user],
+                chatBlockedBy: chat.chatBlockedBy.some(
+                  (user) => user._id === action.payload.user._id
+                )
+                  ? chat.chatBlockedBy.filter(
+                      (user) => user._id !== action.payload.user._id
+                    ) // If yes, remove them
+                  : [...chat.chatBlockedBy, action.payload.user],
               }
             : chat
         ),
@@ -162,9 +171,7 @@ export const messageReducer = (state: State, action: Action): State => {
             ? {
                 ...chat,
                 // Check if the user is already in the group admin array
-                users: chat.users.some((user) => user._id === action.payload.user._id)
-                  ? chat.users.filter((user) => user._id !== action.payload.user._id) // If yes, remove them
-                  : chat.users,
+                users: chat.users.filter((user) => user._id !== action.payload.user._id), // If yes, remove them
               }
             : chat
         ),
@@ -172,6 +179,99 @@ export const messageReducer = (state: State, action: Action): State => {
         selectedChat:
           state.selectedChat && state.selectedChat.chatId === action.payload.chatId
             ? null
+            : state.selectedChat,
+      };
+    //MAKE_AS_ADMIN_TO_GROUP_CHAT
+    case MAKE_AS_ADMIN_TO_GROUP_CHAT:
+      return {
+        ...state,
+        chats: state.chats.map((chat) => {
+          if (chat._id === action.payload.chatId) {
+            return {
+              ...chat,
+              groupAdmin: chat.groupAdmin
+                ? chat.groupAdmin.some((user) => user._id === action.payload.user._id)
+                  ? chat.groupAdmin
+                  : [...chat.groupAdmin, action.payload.user]
+                : chat.groupAdmin,
+            };
+          }
+          return chat;
+        }),
+        selectedChat:
+          state.selectedChat && state.selectedChat.groupAdmin
+            ? {
+                ...state.selectedChat,
+                groupAdmin: state.selectedChat.groupAdmin.some(
+                  (user) => user._id === action.payload.user._id
+                )
+                  ? state.selectedChat.groupAdmin
+                  : [...state.selectedChat.groupAdmin, action.payload.user],
+              }
+            : state.selectedChat,
+      };
+    //REMOVE_ADMIN_FROM_GROUP_CHAT
+    case REMOVE_ADMIN_FROM_GROUP_CHAT:
+      return {
+        ...state,
+        chats: state.chats.map((chat) => {
+          if (chat._id === action.payload.chatId) {
+            const updatedGroupAdmin = (chat.groupAdmin || []).filter(
+              (user) => user._id !== action.payload.user._id
+            );
+            return {
+              ...chat,
+              groupAdmin: updatedGroupAdmin.length ? updatedGroupAdmin : undefined,
+            };
+          }
+          return chat;
+        }),
+        selectedChat: state.selectedChat
+          ? {
+              ...state.selectedChat,
+              groupAdmin: (state.selectedChat.groupAdmin || []).filter(
+                (u) => u._id !== action.payload.user._id
+              ),
+            }
+          : state.selectedChat,
+       
+      };
+    //REMOVE_USER_FROM_GROUP_CHAT AS A ADMIN
+    case REMOVE_USER_FROM_GROUP:
+      return {
+        ...state,
+        chats: state.chats.map((chat) => {
+          if (chat._id === action.payload.chatId) {
+            const updatedGroupUsers = (chat.users || []).filter(
+              (user) => user._id !== action.payload.user._id
+            );
+            return {
+              ...chat,
+              users: updatedGroupUsers,
+            };
+          }
+          return chat;
+        }),
+        selectedChat:
+          state.selectedChat 
+            ? {
+                ...state.selectedChat,
+                users: (state.selectedChat.users || []).filter(
+                  (u) => u._id !== action.payload.user._id
+                ),
+              }
+            : state.selectedChat,
+      };
+    //SET_GROUP_USERS_ON_FETCHING
+    case SET_GROUP_USERS_ON_FETCHING:
+      return {
+        ...state,
+        selectedChat:
+          state.selectedChat && state.selectedChat.chatId === action.payload.chatId
+            ? {
+                ...state.selectedChat,
+                users: action.payload.users,
+              }
             : state.selectedChat,
       };
     // set chats end
@@ -196,7 +296,7 @@ export const messageReducer = (state: State, action: Action): State => {
       };
     // clear messages
     case CLEAR_MESSAGES: {
-       return {
+      return {
         ...state,
         messages: [],
       };
@@ -227,7 +327,6 @@ export const messageReducer = (state: State, action: Action): State => {
             : chat
         ),
       };
-   
 
     case ADD_REPLY_MESSAGE:
       return {

@@ -91,10 +91,14 @@ exports.io.on("connection", (socket) => {
                 const receiverId = (0, exports.getSocketConnectedUser)(userId.toString());
                 if (receiverId) {
                     const { id, socketId } = receiverId;
-                    alreadyConnectedOnlineUsers.push({ id, socketId });
-                    exports.io
-                        .to(id)
-                        .emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
+                    const existsConn = alreadyConnectedOnlineUsers.find((conn) => conn.id === id);
+                    if (existsConn) {
+                        return;
+                    }
+                    else {
+                        alreadyConnectedOnlineUsers.push({ id, socketId });
+                    }
+                    exports.io.to(id).emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
                 }
             });
         });
@@ -123,7 +127,7 @@ exports.io.on("connection", (socket) => {
             //all connected clients in room
             exports.io.to(message.chatId)
                 .to(message.receiverId)
-                .emit("receiveMessage", Object.assign(Object.assign({}, data.toObject()), { receiverId: message.receiverId }));
+                .emit("receiveMessage", Object.assign(Object.assign({}, data), { receiverId: message.receiverId }));
         }
     }));
     //ReplyMessage
@@ -191,9 +195,10 @@ exports.io.on("connection", (socket) => {
     });
     //leave from group chat
     socket.on("groupChatLeaveNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        const leaveMessage = yield (0, functions_1.leaveFromGroupMessage)({
+        const leaveMessage = yield (0, functions_1.sentGroupNotifyMessage)({
             chatId: data.chatId,
             user: data.currentUser,
+            message: `${data.currentUser.name} Leave from the group`,
         });
         const leaveData = Object.assign(Object.assign({}, leaveMessage.toObject()), { user: data.currentUser, chatId: data.chatId });
         yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "groupChatLeaveNotifyReceived", data.chatId, leaveData);
@@ -206,6 +211,49 @@ exports.io.on("connection", (socket) => {
             socket.to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId).emit("chatBlockedNotifyReceived", data);
         }
     });
+    //group events
+    // userRemoveFromGroupNotify
+    socket.on("userRemoveFromGroupNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        const userRemoveMessage = yield (0, functions_1.sentGroupNotifyMessage)({
+            chatId: data.chatId,
+            user: data.currentUser._id,
+            message: `${data.currentUser.name} remove ${data.user.name}  from the group`,
+        });
+        const userRemoveData = {
+            message: Object.assign({}, userRemoveMessage.toObject()),
+            user: data.user,
+            chatId: data.chatId,
+        };
+        yield (0, groupSocket_1.emitEventToGroupUsers)(exports.io, "userRemoveFromGroupNotifyReceived", data.chatId, userRemoveData);
+    }));
+    // makeAdminToGroupNotify
+    socket.on("makeAdminToGroupNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        const makeAdminMessage = yield (0, functions_1.sentGroupNotifyMessage)({
+            chatId: data.chatId,
+            user: data.currentUser._id,
+            message: `${data.currentUser.name} added ${data.user.name} as  group admin`,
+        });
+        const makeAdminData = {
+            message: Object.assign({}, makeAdminMessage.toObject()),
+            user: data.user,
+            chatId: data.chatId,
+        };
+        yield (0, groupSocket_1.emitEventToGroupUsers)(exports.io, "makeAdminToGroupNotifyReceived", data.chatId, makeAdminData);
+    }));
+    // adminRemoveFromGroupNotify
+    socket.on("adminRemoveFromGroupNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        const adminRemoveMessage = yield (0, functions_1.sentGroupNotifyMessage)({
+            chatId: data.chatId,
+            user: data.currentUser._id,
+            message: `${data.currentUser.name} removed ${data.user.name} from  group admin`,
+        });
+        const adminRemoveData = {
+            message: Object.assign({}, adminRemoveMessage.toObject()),
+            user: data.user,
+            chatId: data.chatId,
+        };
+        yield (0, groupSocket_1.emitEventToGroupUsers)(exports.io, "adminRemoveFromGroupNotifyReceived", data.chatId, adminRemoveData);
+    }));
     //@@@@@@ calling system end
     // Handle client disconnection
     socket.on("disconnect", (data) => __awaiter(void 0, void 0, void 0, function* () {
@@ -221,7 +269,10 @@ exports.io.on("connection", (socket) => {
                 const receiverId = (0, exports.getSocketConnectedUser)(userId.toString());
                 if (receiverId) {
                     const { id, socketId } = receiverId;
-                    exports.io.to(socketId).emit("leaveOnlineUsers", { id: leaveId === null || leaveId === void 0 ? void 0 : leaveId.id, socketId: socket.id });
+                    exports.io.to(socketId).emit("leaveOnlineUsers", {
+                        id: leaveId === null || leaveId === void 0 ? void 0 : leaveId.id,
+                        socketId: socket.id,
+                    });
                 }
             });
         });

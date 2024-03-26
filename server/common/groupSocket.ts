@@ -17,12 +17,11 @@ export const emitEventToGroupUsers = async (
     const receiverId = getSocketConnectedUser(userId.toString());
     if (receiverId) {
       const { id, socketId } = receiverId;
-      io.to(chatId)
-        .to(socketId)
-        .emit(event, {
-          ...data,
-          receiverId: id,
-        });
+      //.to(chatId)
+      io.to(socketId).emit(event, {
+        ...data,
+        receiverId: id,
+      });
     }
   });
 };

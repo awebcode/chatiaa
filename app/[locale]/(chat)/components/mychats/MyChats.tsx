@@ -1,16 +1,13 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { useInfiniteQuery } from "@tanstack/react-query";
 
 import dynamic from "next/dynamic";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 const FriendsCard = dynamic(() => import("./FriendCard"));
-import { getChats } from "@/functions/chatActions";
 
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import ChatLoading from "../ChatLoading";
-import { ChatSkeleton } from "./ChatSkeleton";
 import SkeletonContainer from "./SkeletonContainer";
 import { BaseUrl } from "@/config/BaseUrl";
 import { SET_CHATS } from "@/context/reducers/actions";
@@ -75,7 +72,6 @@ const MyFriends = () => {
           }
         );
         const data = await res.json();
-        console.log({data})
         dispatch({ type: SET_CHATS, payload: { chats: data.chats, total: data.total,onScrollingData:"true" } });
       } catch (error) {
         console.log({ error });
@@ -126,7 +122,7 @@ const MyFriends = () => {
     //   messageEndRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
-  console.log({chats});
+  // console.log({chats});
   
   return (
     <>

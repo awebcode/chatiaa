@@ -19,9 +19,8 @@ const emitEventToGroupUsers = (io, event, chatId, data) => __awaiter(void 0, voi
         const receiverId = (0, __1.getSocketConnectedUser)(userId.toString());
         if (receiverId) {
             const { id, socketId } = receiverId;
-            io.to(chatId)
-                .to(socketId)
-                .emit(event, Object.assign(Object.assign({}, data), { receiverId: id }));
+            //.to(chatId)
+            io.to(socketId).emit(event, Object.assign(Object.assign({}, data), { receiverId: id }));
         }
     });
 });

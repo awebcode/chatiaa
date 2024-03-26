@@ -7,7 +7,7 @@ import { useTypingStore } from "@/store/useTyping";
 
 const TypingIndicator = ({ onFriendListCard }: { onFriendListCard: boolean }) => {
   const { socket } = useSocketContext();
-  const { selectedChat } = useMessageState();
+  const { selectedChat,user:currentUser } = useMessageState();
   const { typingUsers } = useTypingStore();
 
   const [additionalTypingUsers, setAdditionalTypingUsers] = useState<number>(0);
@@ -52,7 +52,11 @@ const TypingIndicator = ({ onFriendListCard }: { onFriendListCard: boolean }) =>
           <span className="text-gray-500">{`${additionalTypingUsers} more are typing`}</span>
         </div>
       )}
-      {typingUsers.some((user) => user.chatId === selectedChat?.chatId) && (
+      {typingUsers.some(
+        (user) =>
+          user.chatId === selectedChat?.chatId &&
+         user.userInfo._id !== currentUser?._id
+      ) && (
         <div className="typingIndicatorContainer inline">
           <div className="typingIndicatorBubble">
             <div className="typingIndicatorBubbleDot"></div>

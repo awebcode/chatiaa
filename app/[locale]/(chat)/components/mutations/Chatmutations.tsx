@@ -9,16 +9,18 @@ import {
 import { updateChatStatusAsBlockOUnblock } from "@/functions/messageActions";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@/navigation";
 import { toast } from "react-toastify";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import {
   BLOCK_CHAT,
   DELETE_CHAT,
   LEAVE_CHAT,
+  MAKE_AS_ADMIN_TO_GROUP_CHAT,
+  REMOVE_ADMIN_FROM_GROUP_CHAT,
+  REMOVE_USER_FROM_GROUP,
   SET_SELECTED_CHAT,
-  UPDATE_CHAT_STATUS,
 } from "@/context/reducers/actions";
+import { Tuser } from "@/store/types";
 
 export const useBlockMutation = () => {
   const { selectedChat, user } = useMessageState();
@@ -35,7 +37,7 @@ export const useBlockMutation = () => {
       socket.emit("chatBlockedNotify", {
         receiverId: data.receiverId,
         chatId: data.chatId,
-        user
+        user,
       });
     },
   });
@@ -43,7 +45,7 @@ export const useBlockMutation = () => {
 
 export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => {
   const { socket } = useSocketContext();
-  const { selectedChat } = useMessageState();
+   const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   return useMutation({
     mutationFn: () => deleteSingleChat(chatId),
@@ -71,7 +73,7 @@ export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => 
 //leave chat
 export const useLeaveChatMutation = (chatId: string, userId: string) => {
   const { socket } = useSocketContext();
-  const { selectedChat,user:currentUser } = useMessageState();
+  const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   return useMutation({
     mutationFn: () => leaveChat(chatId, userId),
@@ -93,70 +95,74 @@ export const useLeaveChatMutation = (chatId: string, userId: string) => {
     },
   });
 };
-///remove from greoup or leave group
 
-export const useRemoveFromGroup = () => {
-  const queryClient = useQueryClient();
-  const { selectedChat } = useMessageState();
+///remove user from group
+
+export const useUserRemoveFromGroup = (chatId: string, user:Tuser) => {
+   const { selectedChat, user: currentUser } = useMessageState();
+  const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
-  const Router = useRouter();
   return useMutation({
-    mutationFn: (removeData: { chatId: string; userId: string }) =>
-      removeFromGroup(removeData),
+    mutationFn: () => removeFromGroup({ chatId, userId:user._id }),
     onSuccess: (data) => {
       // Assuming selectedChat is stored in a global state using setSelectedChat
       // If not, modify this part accordingly
       dispatch({
-        type: SET_SELECTED_CHAT,
-        payload: { ...selectedChat, users: data.data.users },
+        type: REMOVE_USER_FROM_GROUP,
+        payload: { chatId, user },
       });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
 
-      if (data.isAdminLeave) {
-        Router.push("/Chat");
-      }
+       socket.emit("userRemoveFromGroupNotify", {
+         chatId,
+         user,
+         currentUser,
+       });
     },
   });
 };
 
-///make admin
+///make admin to group
 
-export const useMakeAdmin = () => {
-  const queryClient = useQueryClient();
-  const { selectedChat } = useMessageState();
+export const useMakeAdmin = (chatId: string, user: Tuser) => {
+   const { selectedChat, user: currentUser } = useMessageState();
+  const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
   return useMutation({
-    mutationFn: (addData: { chatId: string; userId: string }) => makeAsAdmin(addData),
+    mutationFn: () => makeAsAdmin({ chatId, userId: user._id }),
     onSuccess: (data) => {
-      console.log({ makeAdmin: data.data });
-      // Assuming selectedChat is stored in a global state using setSelectedChat
-      // If not, modify this part accordingly
       dispatch({
-        type: SET_SELECTED_CHAT,
-        payload: { ...selectedChat, groupAdmin: data.data.groupAdmin },
+        type: MAKE_AS_ADMIN_TO_GROUP_CHAT,
+        payload: { chatId, user },
       });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+        socket.emit("makeAdminToGroupNotify", {
+          chatId,
+          user,
+          currentUser,
+        });
     },
   });
 };
 
-///remove from admin
+///remove  admin from group
 
-export const useRemoveFromAdmin = () => {
-  const queryClient = useQueryClient();
-  const { selectedChat } = useMessageState();
+export const useRemoveAdminFromGroup = (chatId: string, user: Tuser) => {
+   const { selectedChat, user: currentUser } = useMessageState();
+  const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
   return useMutation({
-    mutationFn: (removeData: { chatId: string; userId: string }) =>
-      removeFromAdmin(removeData),
+    mutationFn: () => removeFromAdmin({ chatId, userId: user._id }),
     onSuccess: (data) => {
       // Assuming selectedChat is stored in a global state using setSelectedChat
       // If not, modify this part accordingly
       dispatch({
-        type: SET_SELECTED_CHAT,
-        payload: { ...selectedChat, groupAdmin: data.data.groupAdmin },
+        type: REMOVE_ADMIN_FROM_GROUP_CHAT,
+        payload: { chatId, user },
       });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+        socket.emit("adminRemoveFromGroupNotify", {
+          chatId,
+          user,
+          currentUser,
+        });
     },
   });
 };

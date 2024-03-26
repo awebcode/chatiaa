@@ -27,21 +27,25 @@ export const sentSocketTextMessage = async (newMessage: TnewMessage) => {
     });
 
     await Chat.findByIdAndUpdate(newMessage.chat, { latestMessage: message });
-    return message;
+    return message._doc;
   } catch (error) {
     console.log({ error });
   }
 };
 
 
-export const leaveFromGroupMessage = async (newMessage: { chatId: string, user: { _id: string; name:string,email:string,image:string}}) => {
+export const sentGroupNotifyMessage = async (newMessage: {
+  chatId: string;
+  user: { _id: string; name: string; email: string; image: string };
+  message:string
+}) => {
   try {
     var data = {
       sender: newMessage.user._id,
-      content: `${newMessage.user.name} Leave from the group`,
+      content: newMessage?.message,
       chat: newMessage.chatId,
-      type: "leave",
-      status: "leave",
+      type: "notify",
+      status: "notify",
     };
     let message: any;
     message = await Message.create(data);

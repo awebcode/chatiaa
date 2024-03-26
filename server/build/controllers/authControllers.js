@@ -144,6 +144,7 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 ],
             }
             : {};
+        console.log(req.query);
         //when search for find group users then check only find users who exist in my chat
         const usersQuery = req.query.onGroupSearch === "true"
             ? {
@@ -154,13 +155,10 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 },
                 $and: [
                     { _id: { $ne: req.id } },
-                    Object.assign({}, keyword),
                 ],
             }
             : {
-                $and: [
-                    { _id: { $ne: req.id } },
-                ],
+                $and: [{ _id: { $ne: req.id } }, Object.assign({}, keyword)],
             };
         const users = yield UserModel_1.User.find(usersQuery).limit(limit).skip(skip);
         const total = yield UserModel_1.User.countDocuments(usersQuery);

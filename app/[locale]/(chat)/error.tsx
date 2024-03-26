@@ -25,18 +25,16 @@ const error = ({
               <h1 className="relative text-3xl md:text-5xl tracking-tighter-less text-shadow font-sans font-bold">
                 Internal Server Error
               </h1>
-              <span className="absolute top-0 -ml-12 text-gray-300 font-semibold">
-                Oops!
-              </span>
+              <p className="text-gray-100 mt-2 mb-6 font-medium">
+                {JSON.stringify(error)}
+              </p>
             </div>
-            <h5 className="text-gray-300 font-semibold -mr-10 -mt-3">Page not found</h5>
-            <p className="text-gray-100 mt-2 mb-6 font-medium">
-              We are sorry, but the page you requested was not found ${JSON.stringify(error)}
-            </p>
-            <Button size={"lg"} onClick={reset}>Reset</Button>
+
+            <Button size={"lg"} onClick={reset}>
+              Reset
+            </Button>
             <Link
               href="/"
-              
               className="bg-green-400 px-5 py-3 text-sm shadow-sm font-medium tracking-wider text-gray-50 rounded-full hover:shadow-lg"
             >
               Go to Home

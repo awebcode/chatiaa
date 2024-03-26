@@ -6,7 +6,6 @@ import {
   useBlockMutation,
   useDeleteSingleChatMutation,
   useLeaveChatMutation,
-  useRemoveFromGroup,
 } from "../mutations/Chatmutations";
 import { useMessageState } from "@/context/MessageContext";
 import { Tuser } from "@/store/types";
@@ -79,7 +78,7 @@ const Modal = ({
     {
       name: chatBlockedBy?.some((user) => user?._id === currentUser?._id) ? (
         <span className="text-blue-500">Unblock</span>
-      ) : chatBlockedBy.length > 0 &&
+      ) : chatBlockedBy?.length > 0 &&
         chatBlockedBy?.some((user) => user?._id !== currentUser?._id) ? (
         <span className="text-rose-600">{chatBlockedBy[0].name} Blocked you</span>
       ) : (

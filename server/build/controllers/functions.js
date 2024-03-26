@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFileType = exports.leaveFromGroupMessage = exports.sentSocketTextMessage = void 0;
+exports.getFileType = exports.sentGroupNotifyMessage = exports.sentSocketTextMessage = void 0;
 const ChatModel_1 = require("../model/ChatModel");
 const MessageModel_1 = require("../model/MessageModel");
 const UserModel_1 = require("../model/UserModel");
@@ -31,21 +31,21 @@ const sentSocketTextMessage = (newMessage) => __awaiter(void 0, void 0, void 0, 
             select: "name image email lastActive",
         });
         yield ChatModel_1.Chat.findByIdAndUpdate(newMessage.chat, { latestMessage: message });
-        return message;
+        return message._doc;
     }
     catch (error) {
         console.log({ error });
     }
 });
 exports.sentSocketTextMessage = sentSocketTextMessage;
-const leaveFromGroupMessage = (newMessage) => __awaiter(void 0, void 0, void 0, function* () {
+const sentGroupNotifyMessage = (newMessage) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         var data = {
             sender: newMessage.user._id,
-            content: `${newMessage.user.name} Leave from the group`,
+            content: newMessage === null || newMessage === void 0 ? void 0 : newMessage.message,
             chat: newMessage.chatId,
-            type: "leave",
-            status: "leave",
+            type: "notify",
+            status: "notify",
         };
         let message;
         message = yield MessageModel_1.Message.create(data);
@@ -63,7 +63,7 @@ const leaveFromGroupMessage = (newMessage) => __awaiter(void 0, void 0, void 0, 
         console.log({ error });
     }
 });
-exports.leaveFromGroupMessage = leaveFromGroupMessage;
+exports.sentGroupNotifyMessage = sentGroupNotifyMessage;
 //get file type
 const getFileType = (file) => __awaiter(void 0, void 0, void 0, function* () {
     try {

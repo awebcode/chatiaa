@@ -2,41 +2,70 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useMessageState } from "@/context/MessageContext";
 import { Tuser } from "@/store/types";
 import Image from "next/image";
-import React from "react";
+import React, { useMemo } from "react";
 import { BsBoxArrowLeft, BsThreeDots } from "react-icons/bs";
 import {
   useDeleteSingleChatMutation,
   useLeaveChatMutation,
+  useMakeAdmin,
+  useRemoveAdminFromGroup,
+  useUserRemoveFromGroup,
 } from "../../mutations/Chatmutations";
 import { RiProfileLine } from "react-icons/ri";
-import { MdCall, MdDelete, MdVideoCall } from "react-icons/md";
+import {
+  MdAdminPanelSettings,
+  MdCall,
+  MdDelete,
+  MdOutlineAdminPanelSettings,
+  MdVideoCall,
+} from "react-icons/md";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useRouter } from "@/navigation";
 
 const Card = ({ user }: { user: Tuser }) => {
-  const router=useRouter()
+  const router = useRouter();
   const { onlineUsers } = useOnlineUsersStore();
   const { selectedChat, user: currentUser } = useMessageState();
   const { theme } = useTheme();
   //check if user online or not
-  const isUserOnline = onlineUsers.some((u: any) =>
-    selectedChat?.isGroupChat
-      ? selectedChat?.users.some(
-          (user: any) => user._id === u.id && user?._id !== currentUser?._id
-        )
-      : selectedChat?.userInfo?._id === u.id
-  );
+  const isUserOnline = onlineUsers.some((u: any) => user?._id === u.id);
+  //make mutaion
+  const makeAdminMutation = useMakeAdmin(selectedChat?.chatId as any, user);
+  //leave mutaion
   const leaveMutation = useLeaveChatMutation(
     selectedChat?.chatId as any,
     currentUser?._id as any
   );
+  //removeUserFromGroup mutaion
+  const removeUserFromGroupMutation = useUserRemoveFromGroup(
+    selectedChat?.chatId as any,
+    user
+  );
+  //remove admin from group
+  const removeAdminFromGroupMutation = useRemoveAdminFromGroup(
+    selectedChat?.chatId as any,
+    user
+  );
+
+  const isCurrentUserGroupAdmin = useMemo(() => {
+    return selectedChat?.groupAdmin?.some(
+      (admin: any) => admin?._id === currentUser?._id
+    );
+  }, [selectedChat?.groupAdmin, currentUser?._id]);
+
+  const isTargetUserInGroupAdmin = useMemo(() => {
+    return selectedChat?.groupAdmin?.some((admin: any) => admin?._id === user?._id);
+  }, [selectedChat?.groupAdmin, user?._id]);
   const items = [
     {
       name: "View profile",
       icon: <RiProfileLine />,
-      action: () => router.push(user?._id===currentUser?._id?"/profile":`/user/profile/${user?._id}`),
+      action: () =>
+        router.push(
+          user?._id === currentUser?._id ? "/profile" : `/user/profile/${user?._id}`
+        ),
     },
     {
       name: "Audio call",
@@ -50,18 +79,37 @@ const Card = ({ user }: { user: Tuser }) => {
       action: () => console.log("Video call clicked"),
       isHidden: false,
     },
-
     {
-      name: <span className="text-rose-500">Remove</span>,
+      name: <span className="">Make as admin</span>,
+      icon: <MdOutlineAdminPanelSettings className="" />,
+      action: () => {
+        makeAdminMutation.mutateAsync();
+      },
+      isHidden:   !isCurrentUserGroupAdmin || isTargetUserInGroupAdmin,
+    },
+    {
+      name:
+        selectedChat?.groupAdmin &&
+        selectedChat?.groupAdmin.some((admin: any) => admin?._id === user?._id) ? (
+          <span className="text-rose-500">Remove from admin</span>
+        ) : (
+          <span className="text-rose-500">Remove</span>
+        ),
       icon: <MdDelete className="text-rose-500" />,
       action: () => {
         if (confirm("Are you sure?")) {
+          selectedChat?.groupAdmin &&
+          selectedChat?.groupAdmin.some((admin: any) => admin?._id === user?._id)
+            ? removeAdminFromGroupMutation.mutateAsync() //remove admin
+            : removeUserFromGroupMutation.mutateAsync(); //remove user
           //  deleteSignleChatMutation.mutateAsync();
         }
       },
       isHidden: selectedChat?.groupAdmin
         ? selectedChat?.groupAdmin.some((admin: any) => admin?._id === currentUser?._id)
-        : false,
+          ? false
+          : true
+        : true,
     },
     {
       name: <span className="text-rose-500">Leave</span>,
@@ -74,7 +122,6 @@ const Card = ({ user }: { user: Tuser }) => {
       isHidden: currentUser?._id === user?._id ? false : true,
     },
   ];
-
   return (
     <div className="flex items-center justify-between p-2">
       <div className="flex items-center justify-start gap-2">

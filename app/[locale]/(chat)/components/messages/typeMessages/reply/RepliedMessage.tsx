@@ -16,21 +16,21 @@ const RepliedMessage = ({
 }) => {
   return (
     <div>
-      {message.isReply ? (
+      {message && message.isReply ? (
         <>
           <div className="p-1  border-l-2 border-violet-600 rounded shadow-md cursor-pointer">
             {" "}
             <span className="text-blue-400 block text-sm">
               {" "}
-              {message.isReply.repliedBy._id === currentUser?._id
+              {message.isReply.repliedBy?._id === currentUser?._id
                 ? "You"
-                : message.isReply.repliedBy.name}
+                : message.isReply.repliedBy?.name}
             </span>
-            {message.isReply.messageId.type === "text" &&
-            message.isReply.messageId.status === "removed" &&
-            message.isReply.messageId.removedBy._id === currentUser._id ? (
+            {message.isReply.messageId?.type === "text" &&
+            message.isReply.messageId?.status === "removed" &&
+            message.isReply.messageId.removedBy?._id === currentUser?._id ? (
               "Removed"
-            ) : message.isReply.messageId.content ? (
+            ) : message.isReply.messageId?.content ? (
               <span
                 className={
                   "break-all text-xs font-thin text-gray-700 dark:text-gray-200 "
@@ -40,9 +40,9 @@ const RepliedMessage = ({
                   ? message.isReply.messageId?.content
                   : message.isReply.messageId?.content.slice(0, 65) + "..."}
               </span>
-            ) : message.isReply.messageId.type === "image" ? (
-              message.isReply.messageId.status === "removed" &&
-              message.isReply.messageId.removedBy._id === currentUser._id ? (
+            ) : message.isReply.messageId?.type === "image" ? (
+              message.isReply.messageId?.status === "removed" &&
+              message.isReply.messageId?.removedBy?._id === currentUser?._id ? (
                 "Removed"
               ) : (
                 <div className="flex justify-between gap-2 items-center">
@@ -52,7 +52,7 @@ const RepliedMessage = ({
                   </span>
                   <div className="h-10 w-10 ">
                     <Image
-                      src={message.isReply.messageId.file.url}
+                      src={message.isReply.messageId.file?.url}
                       height={1000}
                       width={1000}
                       alt="image"
@@ -62,9 +62,9 @@ const RepliedMessage = ({
                   </div>
                 </div>
               )
-            ) : message.isReply.messageId.type === "audio" ? (
-              message.isReply.messageId.status === "removed" &&
-              message.isReply.messageId.removedBy._id === currentUser._id ? (
+            ) : message.isReply.messageId?.type === "audio" ? (
+              message.isReply.messageId?.status === "removed" &&
+              message.isReply.messageId.removedBy?._id === currentUser?._id ? (
                 "Removed"
               ) : (
                 <div className="flex justify-between items-center">
@@ -74,9 +74,9 @@ const RepliedMessage = ({
                   </span>
                 </div>
               )
-            ) : message.isReply.messageId.type === "video" ? (
-              message.isReply.messageId.status === "removed" &&
-              message.isReply.messageId.removedBy._id === currentUser._id ? (
+            ) : message.isReply.messageId?.type === "video" ? (
+              message.isReply.messageId?.status === "removed" &&
+              message.isReply.messageId.removedBy?._id === currentUser?._id ? (
                 "Removed"
               ) : (
                 <div className="flex justify-between items-center">
@@ -86,9 +86,9 @@ const RepliedMessage = ({
                   </span>
                 </div>
               )
-            ) : message.isReply.messageId.type === "application" ? (
-              message.isReply.messageId.status === "removed" &&
-              message.isReply.messageId.removedBy._id === currentUser._id ? (
+            ) : message.isReply.messageId?.type === "application" ? (
+              message.isReply.messageId?.status === "removed" &&
+              message.isReply.messageId.removedBy?._id === currentUser?._id ? (
                 "Removed"
               ) : (
                 <div className="flex justify-between items-center">
@@ -105,7 +105,7 @@ const RepliedMessage = ({
           <span
             className={"break-all text-sm font-thin text-gray-700 dark:text-gray-200"}
           >
-            {message.status === "removed" && message.removedBy._id === currentUser._id
+            {message.status === "removed" && message.removedBy?._id === currentUser?._id
               ? "Removed"
               : message.content}
           </span>
@@ -114,7 +114,7 @@ const RepliedMessage = ({
         <span
           className={"break-all text-sm font-medium text-gray-700 dark:text-gray-200"}
         >
-          {message.status === "removed" && message.removedBy._id === currentUser._id
+          {message?.status === "removed" && message.removedBy?._id === currentUser?._id
             ? "Removed"
             : message.content}
         </span>

@@ -14,7 +14,7 @@ import messageRoute from "./routes/messageRoutes";
 import { User } from "./model/UserModel";
 import cookieParser from "cookie-parser";
 config();
-import { leaveFromGroupMessage, sentSocketTextMessage } from "./controllers/functions";
+import { sentGroupNotifyMessage, sentSocketTextMessage } from "./controllers/functions";
 import { Chat } from "./model/ChatModel";
 import { Types } from "mongoose";
 import { Message } from "./model/MessageModel";
@@ -88,7 +88,7 @@ io.on("connection", (socket: Socket) => {
     socket.join(userData.id);
     checkOnlineUsers(userData.id, socket.id);
     //store connected users
-    let alreadyConnectedOnlineUsers:TsocketUsers[]=[]
+    let alreadyConnectedOnlineUsers: TsocketUsers[] = [];
     //only send online users notify there who connected with new connected user
     const chats = await Chat.find({ users: { $elemMatch: { $eq: userData.id } } });
     chats?.forEach((chatUsers) => {
@@ -96,10 +96,13 @@ io.on("connection", (socket: Socket) => {
         const receiverId = getSocketConnectedUser(userId.toString());
         if (receiverId) {
           const { id, socketId } = receiverId;
-          alreadyConnectedOnlineUsers.push({id,socketId})
-          io
-            .to(id)
-            .emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
+          const existsConn = alreadyConnectedOnlineUsers.find((conn) => conn.id === id);
+          if (existsConn) {
+            return;
+          } else {
+            alreadyConnectedOnlineUsers.push({ id, socketId });
+          }
+          io.to(id).emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
         }
       });
     });
@@ -130,7 +133,7 @@ io.on("connection", (socket: Socket) => {
       //all connected clients in room
       io.to(message.chatId)
         .to(message.receiverId)
-        .emit("receiveMessage", { ...data.toObject(), receiverId: message.receiverId });
+        .emit("receiveMessage", { ...data, receiverId: message.receiverId });
     }
   });
 
@@ -210,9 +213,10 @@ io.on("connection", (socket: Socket) => {
 
   //leave from group chat
   socket.on("groupChatLeaveNotify", async (data) => {
-    const leaveMessage = await leaveFromGroupMessage({
+    const leaveMessage = await sentGroupNotifyMessage({
       chatId: data.chatId,
       user: data.currentUser,
+      message: `${data.currentUser.name} Leave from the group`,
     });
     const leaveData = {
       ...leaveMessage.toObject(),
@@ -236,13 +240,72 @@ io.on("connection", (socket: Socket) => {
       socket.to(receiverId?.socketId).emit("chatBlockedNotifyReceived", data);
     }
   });
+
+  //group events
+  // userRemoveFromGroupNotify
+  socket.on("userRemoveFromGroupNotify", async (data: any) => {
+    const userRemoveMessage = await sentGroupNotifyMessage({
+      chatId: data.chatId,
+      user: data.currentUser._id,
+      message: `${data.currentUser.name} remove ${data.user.name}  from the group`,
+    });
+    const userRemoveData = {
+      message: { ...userRemoveMessage.toObject() },
+      user: data.user,
+      chatId: data.chatId,
+    };
+    await emitEventToGroupUsers(
+      io,
+      "userRemoveFromGroupNotifyReceived",
+      data.chatId,
+      userRemoveData
+    );
+  });
+  // makeAdminToGroupNotify
+  socket.on("makeAdminToGroupNotify", async (data: any) => {
+    const makeAdminMessage = await sentGroupNotifyMessage({
+      chatId: data.chatId,
+      user: data.currentUser._id,
+      message: `${data.currentUser.name} added ${data.user.name} as  group admin`,
+    });
+    const makeAdminData = {
+      message: { ...makeAdminMessage.toObject() },
+      user: data.user,
+      chatId: data.chatId,
+    };
+    await emitEventToGroupUsers(
+      io,
+      "makeAdminToGroupNotifyReceived",
+      data.chatId,
+      makeAdminData
+    );
+  });
+  // adminRemoveFromGroupNotify
+  socket.on("adminRemoveFromGroupNotify", async (data: any) => {
+    const adminRemoveMessage = await sentGroupNotifyMessage({
+      chatId: data.chatId,
+      user: data.currentUser._id,
+      message: `${data.currentUser.name} removed ${data.user.name} from  group admin`,
+    });
+    const adminRemoveData = {
+      message: { ...adminRemoveMessage.toObject() },
+      user: data.user,
+      chatId: data.chatId,
+    };
+    await emitEventToGroupUsers(
+      io,
+      "adminRemoveFromGroupNotifyReceived",
+      data.chatId,
+      adminRemoveData
+    );
+  });
   //@@@@@@ calling system end
   // Handle client disconnection
   socket.on("disconnect", async (data) => {
     // Emit the updated users array after a user disconnects
     //only send online users notify there who connected with me
     const leaveId = getSocketConnectedUser(socket.id);
-    if(leaveId){
+    if (leaveId) {
       socket.leave(leaveId.id);
     }
 
@@ -252,7 +315,10 @@ io.on("connection", (socket: Socket) => {
         const receiverId = getSocketConnectedUser(userId.toString());
         if (receiverId) {
           const { id, socketId } = receiverId;
-           io.to(socketId).emit("leaveOnlineUsers", { id: leaveId?.id, socketId: socket.id });
+          io.to(socketId).emit("leaveOnlineUsers", {
+            id: leaveId?.id,
+            socketId: socket.id,
+          });
         }
       });
     });

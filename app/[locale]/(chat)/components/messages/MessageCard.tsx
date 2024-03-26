@@ -3,7 +3,7 @@ import { IMessage } from "@/context/reducers/interfaces";
 import React from "react";
 import dynamic from "next/dynamic";
 import { ChatSkeleton } from "../mychats/ChatSkeleton";
-import LeaveRemoveMessage from "./typeMessages/LeaveRemoveMessage";
+import NotifyMessage from "./typeMessages/NotifyRemoveMessage";
 
 const TextMessage = dynamic(() => import("./typeMessages/TextMessage"), {
   // loading:()=><ChatSkeleton/>,
@@ -93,8 +93,8 @@ const MessageCard = ({
         </div>
       </div>{" "}
       {/* group types */}
-      {message.type === "leave" && (
-        <LeaveRemoveMessage
+      {message.type === "notify" && (
+        <NotifyMessage
           message={message}
           isCurrentUserMessage={isCurrentUserMessage}
           isLastSeenMessage={isLastSeenMessage}

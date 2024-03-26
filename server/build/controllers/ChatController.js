@@ -264,10 +264,6 @@ const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         if (!chat) {
             return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
         }
-        const isAdmin = chat.groupAdmin.some((adminId) => adminId.equals(req.id));
-        // if (!isAdmin) {
-        //   return next(new CustomErrorHandler("You are not the group admin!", 403));
-        // }
         const removedUser = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
             $pull: { users: userId, groupAdmin: userId },
         }, {
@@ -403,7 +399,7 @@ const makeAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.makeAdmin = makeAdmin;
-//removeFromAdmin
+//remove from group admin
 const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { chatId, userId } = req.body;
@@ -415,16 +411,42 @@ const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         if (!isAdmin) {
             return next(new errorHandler_1.CustomErrorHandler("You are not the group admin!", 403));
         }
+        // Remove the user from the groupAdmin array
         const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
             $pull: { groupAdmin: userId },
         }, {
             new: true,
-        })
-            .populate("users", "-password")
-            .populate("groupAdmin", "-password");
+        });
         if (!updatedChat) {
             return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
         }
+        // Check if there are no remaining admins
+        if (updatedChat.groupAdmin.length === 0) {
+            // Select two random users from the chat's users array, excluding the leaving admin
+            const usersCount = updatedChat.users.length;
+            const leavingAdminIndex = updatedChat.users.findIndex(user => user._id.equals(userId));
+            const randomAdmins = [];
+            if (usersCount > 0) {
+                // Select two random users as admins, excluding the leaving admin
+                for (let i = 0; i < 2; i++) {
+                    let randomIndex;
+                    do {
+                        randomIndex = Math.floor(Math.random() * usersCount);
+                    } while (randomIndex === leavingAdminIndex); // Ensure the leaving admin is not selected
+                    randomAdmins.push(updatedChat.users[randomIndex]._id);
+                }
+            }
+            // Update the groupAdmin field with the new admins
+            yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
+                $addToSet: { groupAdmin: { $each: randomAdmins } },
+            }, {
+                new: true,
+            });
+            // Send response indicating new group admins
+            res.json({ newGroupAdmins: randomAdmins, data: updatedChat });
+            return;
+        }
+        // Send response indicating successful removal
         res.json({ data: updatedChat });
     }
     catch (error) {
@@ -536,7 +558,10 @@ const getFilesInChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         else {
             query.type = filter;
         }
-        const files = yield MessageModel_1.Message.find(query).limit(limit).skip(skip);
+        const files = yield MessageModel_1.Message.find(query)
+            .sort({ updatedAt: -1 })
+            .limit(limit)
+            .skip(skip);
         const total = yield MessageModel_1.Message.countDocuments(query);
         res.send({ files, total, limit });
     }

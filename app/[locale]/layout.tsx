@@ -11,6 +11,7 @@ import SocketContextProvider from "@/context/SocketContextProvider";
 import NextAuthProvider from "@/providers/NextAuthProvider";
 import Navbar from "@/components/Navbar";
 import { ReactQueryClientProvider } from "@/providers/QueryProvider";
+import { MessageContextProvider } from "@/context/MessageContext";
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
   title: "Messengaria - Connect and Chat",
@@ -97,7 +98,9 @@ export default async function LocaleLayout({
               <NextThemeProvider>
                 <NextIntlClientProvider locale={locale} messages={languages}>
                   <Navbar />
-                  {children} {/* <IntlPolyfills /> */}
+                  <MessageContextProvider>
+                    {children} {/* <IntlPolyfills /> */}
+                  </MessageContextProvider>
                   <ToastProvider />
                 </NextIntlClientProvider>
               </NextThemeProvider>

@@ -144,6 +144,7 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
           ],
         }
       : {};
+      console.log(req.query)
     //when search for find group users then check only find users who exist in my chat
     const usersQuery =
       req.query.onGroupSearch === "true"
@@ -155,15 +156,11 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
             },
             $and: [
               { _id: { $ne: req.id } },
-              { ...keyword }, // Include the keyword fields here
             ],
           }
         : {
-         
-          $and: [
-            { _id: { $ne: req.id } },
-          ],
-        };
+            $and: [{ _id: { $ne: req.id } }, { ...keyword }],
+          };
     const users = await User.find(usersQuery).limit(limit).skip(skip);
     const total = await User.countDocuments(usersQuery);
     res.send({ users, total, limit });

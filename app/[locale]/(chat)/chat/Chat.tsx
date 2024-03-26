@@ -10,7 +10,10 @@ import {
   BLOCK_CHAT,
   DELETE_CHAT,
   LEAVE_FROM_GROUP_CHAT,
+  MAKE_AS_ADMIN_TO_GROUP_CHAT,
+  REMOVE_ADMIN_FROM_GROUP_CHAT,
   REMOVE_UNSENT_MESSAGE,
+  REMOVE_USER_FROM_GROUP,
   SET_CHATS,
   SET_MESSAGES,
   SET_TOTAL_MESSAGES_COUNT,
@@ -42,6 +45,7 @@ const Chat = () => {
     totalMessagesCount,
   } = useMessageState();
   const dispatch = useMessageDispatch();
+
   const router = useRouter();
   const { startTyping, stopTyping } = useTypingStore();
   const { addOnlineUser, removeOnlineUser, onlineUsers, setInitOnlineUsers } =
@@ -63,11 +67,11 @@ const Chat = () => {
   }, [totalMessagesCount, selectedChat, currentUser, socket, onlineUsers]);
   useEffect(() => {
     // Emit "setup" event when the component mounts if currentUser is available
-    const user = JSON.parse(localStorage.getItem("currentUser") as any);
-    if (user) {
-      socket?.emit("setup", { id: user._id });
+    // const user = JSON.parse(localStorage.getItem("currentUser") as any);
+    if (currentUser) {
+      socket?.emit("setup", { id: currentUser._id });
     }
-  }, []);
+  }, [currentUser]);
   //update friend message when i'm online
   useEffect(() => {
     updateAllMessageStatusAsDelivered(currentUser?._id as any);
@@ -218,7 +222,7 @@ const Chat = () => {
   //handleLeaveOnlineUsers
   const handleLeaveOnlineUsers = useCallback((user: { id: string; socketId: string }) => {
     if (user) {
-      console.log({leaveOnlineUser:user})
+      console.log({ leaveOnlineUser: user });
       removeOnlineUser(user);
     }
   }, []);
@@ -258,6 +262,39 @@ const Chat = () => {
   const chatBlockedNotifyReceivedHandler = useCallback((data: any) => {
     dispatch({ type: BLOCK_CHAT, payload: data });
   }, []);
+  //userRemoveFromGroupNotify
+  const handleUserRemoveFromGroupNotify = useCallback((data: any) => {
+    dispatch({ type: SET_MESSAGES, payload: data.message });
+    dispatch({
+      type: UPDATE_LATEST_CHAT_MESSAGE,
+      payload: data.message,
+    });
+    // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
+    // dispatch({ type: REMOVE_USER_FROM_GROUP, payload: data });
+
+    // console.log({ handleUserRemoveFromGroupNotify: data });
+  }, []);
+  //userRemoveFromGroupNotify
+  const handleMakeAdminToGroupNotify = useCallback((data: any) => {
+    dispatch({ type: SET_MESSAGES, payload: data.message });
+    dispatch({
+      type: UPDATE_LATEST_CHAT_MESSAGE,
+      payload: data.message,
+    });
+      // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
+    // dispatch({ type: MAKE_AS_ADMIN_TO_GROUP_CHAT, payload: data });
+    // console.log({ handleMakeAdminToGroupNotify: data.message });
+  }, []);
+  //adminRemoveFromGroupNotify
+  const handleAdminRemoveFromGroupNotify = useCallback((data: any) => {
+    dispatch({ type: SET_MESSAGES, payload: data.message });
+    dispatch({
+      type: UPDATE_LATEST_CHAT_MESSAGE,
+      payload: data.message,
+    });
+      // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
+    // dispatch({ type: REMOVE_ADMIN_FROM_GROUP_CHAT, payload: data });
+  }, []);
   useEffect(() => {
     // Add event listeners
     socket.on("receiveMessage", handleSocketMessage);
@@ -284,23 +321,24 @@ const Chat = () => {
     );
     //GROUP EVENTS
     socket.on("groupChatLeaveNotifyReceived", groupChatLeaveNotifyReceivedHandler);
-
+    socket.on("userRemoveFromGroupNotifyReceived", handleUserRemoveFromGroupNotify);
+    socket.on("makeAdminToGroupNotifyReceived", handleMakeAdminToGroupNotify);
+    socket.on("adminRemoveFromGroupNotifyReceived", handleAdminRemoveFromGroupNotify);
     //block single chat
 
     socket.on("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
     // Clean up event listeners when the component unmounts
     return () => {
+      //online events
       socket.off("addOnlineUsers", handleOnlineUsers);
       socket.off("leaveOnlineUsers", handleLeaveOnlineUsers);
       socket.on("alreadyConnectedOnlineUsers", handleAlreadyConnectedOnlineUsers);
-      socket.off("disconnect");
+      //message and typing events
       socket.off("receiveMessage", handleSocketMessage);
       socket.off("receiveSeenMessage", handleSeenMessage);
       socket.off("receiveDeliveredMessage", handleDeliverMessage);
       socket.off("typing", handleTyping);
       socket.off("stopTyping", handleStopTyping);
-      socket.off("groupCreatedNotifyReceived", groupCreatedNotifyHandler);
-      socket.off("chatCreatedNotifyReceived", chatCreatedNotifyHandler);
       socket.off(
         "singleChatDeletedNotifyReceived",
         singleChatDeletedNotifyReceivedHandler
@@ -309,13 +347,20 @@ const Chat = () => {
         "receiveDeliveredAllMessageAfterReconnect",
         handleAllDeliveredAfterReconnect
       );
-      socket.off("groupChatLeaveNotifyReceived", groupChatLeaveNotifyReceivedHandler);
-      // Socket event listeners
+      // message event listeners
       socket.off("replyMessage", handleReplyMessage);
       socket.off("editMessage", handleEditMessage);
       socket.off("addReactionOnMessage", handleAddReactionOnMessage);
       socket.off("remove_remove_All_unsentMessage", handle_Remove_All_Unsent_Message);
       socket.off("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
+      //group events
+      socket.off("groupCreatedNotifyReceived", groupCreatedNotifyHandler);
+      socket.off("chatCreatedNotifyReceived", chatCreatedNotifyHandler);
+
+      socket.off("userRemoveFromGroupNotifyReceived", handleUserRemoveFromGroupNotify);
+      socket.off("makeAdminToGroupNotifyReceived", handleMakeAdminToGroupNotify);
+      socket.off("adminRemoveFromGroupNotifyReceived", handleAdminRemoveFromGroupNotify);
+      socket.off("groupChatLeaveNotifyReceived", groupChatLeaveNotifyReceivedHandler);
     };
   }, []); //
 

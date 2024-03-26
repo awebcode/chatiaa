@@ -17,7 +17,7 @@ const Time = ({
         isCurrentUserMessage ? "float-right mr-6 " : "ml-4 float-left"
       }   gap-1`}
     >
-      <span className={"text-bubble-meta text-[11px] pt-1 min-w-fit"}>
+      <span className={"text-gray-400 dark:text-bubble-meta text-[11px] pt-1 min-w-fit"}>
         <p className="text-[10px] md:text-xs ">
           {message.isEdit ? (
             <span className="font-bold mr-1">Edited</span>
@@ -38,7 +38,7 @@ const Time = ({
         </p>
         {/* {calculateTime(message.createdAt)} */}
       </span>
-      <span className={"text-bubble-meta"}></span>
+      <span className={"text-gray-600 dark:text-bubble-meta"}></span>
     </div>
   );
 };

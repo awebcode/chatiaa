@@ -1,7 +1,7 @@
 "use client";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import { useClickAway } from "@uidotdev/usehooks";
@@ -15,6 +15,7 @@ import {
   SET_MESSAGES,
   SET_SELECTED_CHAT,
 } from "@/context/reducers/actions";
+import { useTypingStore } from "@/store/useTyping";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"));
 const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"));
 
@@ -23,6 +24,7 @@ const ChatHeader = () => {
   const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   const { onlineUsers } = useOnlineUsersStore();
+   const { typingUsers } = useTypingStore();
   const [open, setOpen] = useState(false);
   const [openVideoCall, setOpenVideoCall] = useState(false);
    const isUserOnline = onlineUsers.some((u: any) =>
@@ -42,6 +44,7 @@ const ChatHeader = () => {
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
   };
+  console.log({selectedChat,onlineUsers})
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
       <div className="flex items-center gap-2">
@@ -75,24 +78,55 @@ const ChatHeader = () => {
               <h3 className="text-xs md:text-sm font-bold ">
                 {selectedChat.userInfo.name}
               </h3>
-              <span className="text-[10px] ">
-                {isUserOnline ? (
-                  <span className="text-green-500">Online</span>
-                ) : (!isUserOnline &&
-                    !selectedChat.isGroupChat &&
-                    selectedChat?.userInfo?.lastActive) ||
-                  selectedChat?.userInfo?.createdAt ? (
-                  <span className="text-[9px]">
-                    <span className="mr-1">active</span>
-                    {moment(
-                      (selectedChat?.userInfo?.lastActive as any) ||
-                        selectedChat?.userInfo?.createdAt
-                    ).fromNow()}
-                  </span>
-                ) : (
-                  <span className="text-rose-500">Offline</span>
-                )}
-              </span>
+              {typingUsers.some(
+                (typeuser) => typeuser.chatId === selectedChat?.chatId && typeuser.userInfo._id!==currentUser?._id
+              ) ? (
+                <>
+                  {
+                    // Filter typing users for the current chat
+                    typingUsers
+                      .filter((typeuser) => typeuser.chatId === selectedChat?.chatId)
+                      .map((typeuser, index, array) => (
+                        <React.Fragment key={index}>
+                          {index === 0 ? (
+                            <span className="text-[10px] animate-pulse">
+                              {/* Show the name of the first typing user */}
+                              {typeuser.userInfo.name}
+                              {/* If there are more than one typing users, show the count */}
+                              {array.length > 1 ? (
+                                <span>{` and ${
+                                  array.length - 1
+                                } more are typing...`}</span>
+                              ) : (
+                                // If there's only one typing user, show "is typing..."
+                                <span> is typing...</span>
+                              )}
+                            </span>
+                          ) : null}
+                        </React.Fragment>
+                      ))
+                  }
+                </>
+              ) : (
+                <span className="text-[10px] ">
+                  {isUserOnline ? (
+                    <span className="text-green-500">Online</span>
+                  ) : (!isUserOnline &&
+                      !selectedChat.isGroupChat &&
+                      selectedChat?.userInfo?.lastActive) ||
+                    selectedChat?.userInfo?.createdAt ? (
+                    <span className="text-[9px]">
+                      <span className="mr-1">active</span>
+                      {moment(
+                        (selectedChat?.userInfo?.lastActive as any) ||
+                          selectedChat?.userInfo?.createdAt
+                      ).fromNow()}
+                    </span>
+                  ) : (
+                    <span className="text-rose-500">Offline</span>
+                  )}
+                </span>
+              )}
             </div>
           </>
         )}

@@ -162,8 +162,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
- 
-  console.log("called", messages);
+  console.log({messages:"render"})
   return (
     <div
       id="CustomscrollableTarget"

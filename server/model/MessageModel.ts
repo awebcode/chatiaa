@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const messageSchema = new mongoose.Schema(
   {
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    content: { type: String, trim: true,default:"" },
+    content: { type: String, trim: true, default: "" },
     type: { type: String, required: true },
     file: { public_Id: String, url: String },
     chat: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
@@ -32,10 +32,10 @@ const messageSchema = new mongoose.Schema(
         "removeFromAll",
         "reBack",
         "unsent",
-       
+
         // this two will call when leave or remove user from group
         "removedByAdmin",
-        "leave"
+        "notify",
       ],
       default: "unseen",
     },

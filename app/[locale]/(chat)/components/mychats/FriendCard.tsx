@@ -85,9 +85,9 @@ const FriendsCard: React.FC<{
 
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
 
-    if (chat.isGroupChat) {
-      socket.emit("setup", { id: chat?._id } as any);
-    }
+    // if (chat.isGroupChat) {
+    //   socket.emit("setup", { id: chat?._id } as any);
+    // }
     socket.emit("join", {
       chatId: chat?._id,
     });
@@ -150,7 +150,11 @@ const FriendsCard: React.FC<{
                   : ""
               }`}
             >
-              {typingUsers.some((typeuser) => typeuser.chatId === chat?._id) ? (
+              {typingUsers.some(
+                (typeuser) =>
+                  typeuser.chatId === chat?._id &&
+                  typeuser.userInfo._id !== currentUser?._id
+              ) ? (
                 <>
                   {
                     // Filter typing users for the current chat
@@ -186,7 +190,6 @@ const FriendsCard: React.FC<{
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
             </span>
-          
           </div>
         </div>
         <div className="flex gap-5 items-center ">

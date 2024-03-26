@@ -306,11 +306,7 @@ export const removeFromGroup = async (
       return next(new CustomErrorHandler("Chat not found!", 404));
     }
 
-    const isAdmin = chat.groupAdmin.some((adminId) => adminId.equals(req.id));
-
-    // if (!isAdmin) {
-    //   return next(new CustomErrorHandler("You are not the group admin!", 403));
-    // }
+    
 
     const removedUser = await Chat.findByIdAndUpdate(
       chatId,
@@ -489,8 +485,7 @@ export const makeAdmin = async (
     next(error);
   }
 };
-
-//removeFromAdmin
+//remove from group admin
 export const removeFromAdmin = async (
   req: Request | any,
   res: Response,
@@ -511,6 +506,7 @@ export const removeFromAdmin = async (
       return next(new CustomErrorHandler("You are not the group admin!", 403));
     }
 
+    // Remove the user from the groupAdmin array
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
@@ -519,14 +515,48 @@ export const removeFromAdmin = async (
       {
         new: true,
       }
-    )
-      .populate("users", "-password")
-      .populate("groupAdmin", "-password");
+    );
 
     if (!updatedChat) {
       return next(new CustomErrorHandler("Chat not found!", 404));
     }
 
+    // Check if there are no remaining admins
+    if (updatedChat.groupAdmin.length === 0) {
+      // Select two random users from the chat's users array, excluding the leaving admin
+      const usersCount = updatedChat.users.length;
+      const leavingAdminIndex = updatedChat.users.findIndex(user => user._id.equals(userId));
+      const randomAdmins = [];
+
+      if (usersCount > 0) {
+        // Select two random users as admins, excluding the leaving admin
+        for (let i = 0; i < 2; i++) {
+          let randomIndex;
+          do {
+            randomIndex = Math.floor(Math.random() * usersCount);
+          } while (randomIndex === leavingAdminIndex); // Ensure the leaving admin is not selected
+          randomAdmins.push(updatedChat.users[randomIndex]._id);
+        }
+      }
+
+      // Update the groupAdmin field with the new admins
+      await Chat.findByIdAndUpdate(
+        chatId,
+        {
+          $addToSet: { groupAdmin: { $each: randomAdmins } },
+        },
+        {
+          new: true,
+        }
+      );
+
+      // Send response indicating new group admins
+      res.json({ newGroupAdmins: randomAdmins, data: updatedChat });
+
+      return;
+    }
+
+    // Send response indicating successful removal
     res.json({ data: updatedChat });
   } catch (error) {
     next(error);
@@ -637,11 +667,10 @@ export const getUsersInAChat = async (
       },
       options: { limit, skip },
     });
-   
 
     const total = chat ? chat.users.length : 0;
 
-    res.send({ users: findChatQuery?findChatQuery.users:[], total, limit });
+    res.send({ users: findChatQuery ? findChatQuery.users : [], total, limit });
   } catch (error) {
     next(error);
   }
@@ -669,7 +698,10 @@ export const getFilesInChat = async (
       query.type = filter;
     }
 
-    const files = await Message.find(query).limit(limit).skip(skip);
+    const files = await Message.find(query)
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .skip(skip);
     const total = await Message.countDocuments(query);
     res.send({ files, total, limit });
   } catch (error) {

@@ -28,7 +28,7 @@ const error = ({
              
             </div>
             <p className="text-gray-100 mt-2 mb-6 font-medium">
-              We are sorry, but the page you requested was not found $
+              We are sorry, but the page you requested was not found 
               {JSON.stringify(error)}
             </p>
             <Button size={"lg"} onClick={reset}>
