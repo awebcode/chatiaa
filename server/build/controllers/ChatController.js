@@ -20,6 +20,7 @@ const ChatModel_1 = require("../model/ChatModel");
 const UserModel_1 = require("../model/UserModel");
 const MessageModel_1 = require("../model/MessageModel");
 const mongoose_1 = __importDefault(require("mongoose"));
+const seenByInfo_1 = require("../common/seenByInfo");
 //@access          Protected
 const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
@@ -73,7 +74,6 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             }
             : {};
         const unseenCount = yield unseenMessagesCounts(limit, skip, keyword, req.id);
-        // console.log({unseenCount})
         // Count the total documents matching the keyword
         const totalDocs = yield ChatModel_1.Chat.countDocuments({
             users: { $elemMatch: { $eq: req.id } },
@@ -86,8 +86,8 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         })
             .populate({
             path: "users",
-            select: "-password",
-            options: { limit: 5 }, // Set limit to Infinity to populate all documents
+            select: "name email image",
+            options: { limit: 10 }, // Set limit to Infinity to populate all documents
         })
             .populate("groupAdmin", "email name image")
             .populate("latestMessage")
@@ -106,22 +106,69 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))) || chat.chatName.match(new RegExp(keyword.$or[0].name.$regex, "i")) // Add chatName filtering condition
             );
         }
-        const filteredChatsWithUnseenCount = filteredChats.map((chat) => {
+        // const filteredChatsWithUnseenCount = filteredChats.map((chat: any) => {
+        //   const correspondingUnseenCount = unseenCount.find(
+        //     (count: any) => count._id.toString() === chat._id.toString()
+        //   );
+        //   //seenBy
+        //   //  const { seenBy, isLatestMessageSeen, totalseenBy } = await getSeenByInfo(
+        //   //    chat._id,
+        //   //    chat?.latestMessage?._id,
+        //   //    req.id
+        //   //  );
+        //   return {
+        //     ...chat.toObject(),
+        //     // latestMessage: {
+        //     //   ...chat.latestMessage,
+        //     //   isSeen: !!isLatestMessageSeen,
+        //     //   totalseenBy,
+        //     //   seenBy,
+        //     // },
+        //     unseenCount: correspondingUnseenCount
+        //       ? correspondingUnseenCount.unseenMessagesCount
+        //       : 0,
+        //   };
+        // });
+        // Use Promise.all to handle all asynchronous operations concurrently
+        const filteredChatsWithUnseenCountPromises = filteredChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a, _b;
             const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
-            return Object.assign(Object.assign({}, chat.toObject()), { unseenCount: correspondingUnseenCount
-                    ? correspondingUnseenCount.unseenMessagesCount
-                    : 0 });
-        });
+            try {
+                const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_a = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _a === void 0 ? void 0 : _a._id, req.id);
+                // Construct updated chat object with awaited results
+                return Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), unseenCount: correspondingUnseenCount
+                        ? correspondingUnseenCount.unseenMessagesCount
+                        : 0 });
+            }
+            catch (error) {
+                // Handle errors if necessary
+                console.error("Error:", error);
+                return null; // Return null or any other default value if needed
+            }
+        }));
+        // Wait for all promises to resolve using Promise.all
+        const resolvedFilteredChatsWithUnseenCount = yield Promise.all(filteredChatsWithUnseenCountPromises);
         // Modify populatedChats to include unseenCount for each chat
-        const populatedChatsWithUnseenCount = populatedChats.map((chat) => {
+        const populatedChatsWithUnseenCount = yield Promise.all(populatedChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
+            var _c, _d;
             const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
-            return Object.assign(Object.assign({}, chat.toObject()), { unseenCount: correspondingUnseenCount
-                    ? correspondingUnseenCount.unseenMessagesCount
-                    : 0 });
-        });
+            try {
+                const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_c = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _c === void 0 ? void 0 : _c._id, req.id);
+                // Construct updated chat object with awaited results
+                const updatedChat = Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_d = chat.latestMessage) === null || _d === void 0 ? void 0 : _d._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), unseenCount: correspondingUnseenCount
+                        ? correspondingUnseenCount.unseenMessagesCount
+                        : 0 });
+                return updatedChat;
+            }
+            catch (error) {
+                // Handle errors if necessary
+                console.error("Error:", error);
+                return null; // Return null or any other default value if needed
+            }
+        })));
         res.status(200).send({
             chats: filteredChats.length > 0
-                ? filteredChatsWithUnseenCount
+                ? resolvedFilteredChatsWithUnseenCount
                 : req.query.search
                     ? []
                     : populatedChatsWithUnseenCount,
@@ -257,7 +304,7 @@ exports.renameGroup = renameGroup;
 // @route   PUT /api/chat/groupremove or leave user when leave user reassign new random admin
 // @access  Protected
 const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _e;
     try {
         const { chatId, userId } = req.body;
         const chat = yield ChatModel_1.Chat.findById(chatId);
@@ -288,7 +335,7 @@ const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                 }
                 else {
                     // If no random user is found, make the first user in the list the admin
-                    newGroupAdmins.push((_a = removedUser.users[0]) === null || _a === void 0 ? void 0 : _a._id);
+                    newGroupAdmins.push((_e = removedUser.users[0]) === null || _e === void 0 ? void 0 : _e._id);
                 }
             }
             // Update the groupAdmin field with the new admins
@@ -346,7 +393,7 @@ const addToGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 exports.addToGroup = addToGroup;
 //delete single chat one to one chat
 const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _f;
     try {
         if (!req.params.chatId || !req.id) {
             return next(new errorHandler_1.CustomErrorHandler("ChatId Not found", 400));
@@ -357,7 +404,7 @@ const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         res.json({
             success: true,
             chat: chat,
-            receiverId: (_b = chat === null || chat === void 0 ? void 0 : chat.users.find((user) => user.toString() !== req.id)) === null || _b === void 0 ? void 0 : _b._id.toString(),
+            receiverId: (_f = chat === null || chat === void 0 ? void 0 : chat.users.find((user) => user.toString() !== req.id)) === null || _f === void 0 ? void 0 : _f._id.toString(),
         });
     }
     catch (error) {
@@ -424,7 +471,7 @@ const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         if (updatedChat.groupAdmin.length === 0) {
             // Select two random users from the chat's users array, excluding the leaving admin
             const usersCount = updatedChat.users.length;
-            const leavingAdminIndex = updatedChat.users.findIndex(user => user._id.equals(userId));
+            const leavingAdminIndex = updatedChat.users.findIndex((user) => user._id.equals(userId));
             const randomAdmins = [];
             if (usersCount > 0) {
                 // Select two random users as admins, excluding the leaving admin
@@ -456,7 +503,7 @@ const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 exports.removeFromAdmin = removeFromAdmin;
 //update Chat status as Blocked/Unblocked
 const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _g;
     try {
         const { chatId, status } = req.body;
         if (!status || !chatId)
@@ -485,7 +532,7 @@ const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, v
         res.status(200).json({
             chat: updatedChat,
             chatId: updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat._id,
-            receiverId: (_c = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.users.find((user) => user.toString() !== req.id)) === null || _c === void 0 ? void 0 : _c._id.toString(),
+            receiverId: (_g = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.users.find((user) => user.toString() !== req.id)) === null || _g === void 0 ? void 0 : _g._id.toString(),
             success: true,
         });
     }

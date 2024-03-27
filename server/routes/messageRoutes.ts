@@ -15,6 +15,7 @@ import {
   updateMessageStatusAsUnsent,
 } from "../controllers/messageController";
 import uploadMiddleware from "../middlewares/uploadMiddleware";
+import { pushSeenBy } from "../controllers/seenByCtrl";
 
 
 const messageRoute = express.Router();
@@ -63,4 +64,9 @@ messageRoute
 //addRemoveEmojiReactions
 
 messageRoute.post("/addRemoveEmojiReactions", authMiddleware, addRemoveEmojiReactions);
+
+//pushseenBy
+
+messageRoute.put("/pushGroupSeenByInMessage", authMiddleware, pushSeenBy);
+
 export default messageRoute;

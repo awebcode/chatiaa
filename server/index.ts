@@ -299,6 +299,26 @@ io.on("connection", (socket: Socket) => {
       adminRemoveData
     );
   });
+
+  // Handle seenPushGroupMessage
+  socket.on("seenPushGroupMessage", async (data: any) => {
+    await emitEventToGroupUsers(
+      socket,
+      "seenPushGroupMessageReceived",
+      data.chatId,
+      data
+    );
+  });
+  
+  //deliveredGroupMessageReceived
+   socket.on("deliveredGroupMessage", async (data: any) => {
+     await emitEventToGroupUsers(
+       socket,
+       "deliveredGroupMessageReceived",
+       data.chatId,
+       data
+     );
+   });
   //@@@@@@ calling system end
   // Handle client disconnection
   socket.on("disconnect", async (data) => {

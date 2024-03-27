@@ -159,3 +159,12 @@ export const addRemoveEmojiReactions = async (reactionData: any) => {
   });
   return data;
 };
+
+//push group seen by user
+export const pushgroupSeenBy = async (body: { chatId: string; messageId: string }) => {
+  const { data } = await axiosClient.put(`/pushGroupSeenByInMessage`, body, {
+    headers: { "Content-Type": "application/json" },
+    withCredentials: true,
+  });
+  return data;
+};

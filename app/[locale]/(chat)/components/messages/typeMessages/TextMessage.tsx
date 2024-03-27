@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { ChatSkeleton } from "../../mychats/ChatSkeleton";
 import moment from "moment";
 import Time from "./Time";
+import SeenBy from "./SeenBy";
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
   loading: () => <ChatSkeleton />,
   ssr: false,
@@ -76,6 +77,10 @@ const TextMessage = ({
                 isUserOnline={isUserOnline}
                 isCurrentUserMessage={isCurrentUserMessage}
               />
+              {/* Seen by lists */}
+              {message?.seenBy?.length > 0 && (
+                <SeenBy message={message} currentUser={currentUser as any} />
+              )}
             </div>
           </div>
         </div>

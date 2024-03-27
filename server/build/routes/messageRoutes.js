@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const authMiddleware_1 = __importDefault(require("../middlewares/authMiddleware"));
 const messageController_1 = require("../controllers/messageController");
 const uploadMiddleware_1 = __importDefault(require("../middlewares/uploadMiddleware"));
+const seenByCtrl_1 = require("../controllers/seenByCtrl");
 const messageRoute = express_1.default.Router();
 messageRoute.route("/allmessages/:chatId").get(authMiddleware_1.default, messageController_1.allMessages);
 messageRoute
@@ -43,4 +44,6 @@ messageRoute
     .post(authMiddleware_1.default, uploadMiddleware_1.default.array("files"), messageController_1.replyMessage);
 //addRemoveEmojiReactions
 messageRoute.post("/addRemoveEmojiReactions", authMiddleware_1.default, messageController_1.addRemoveEmojiReactions);
+//pushseenBy
+messageRoute.put("/pushGroupSeenByInMessage", authMiddleware_1.default, seenByCtrl_1.pushSeenBy);
 exports.default = messageRoute;

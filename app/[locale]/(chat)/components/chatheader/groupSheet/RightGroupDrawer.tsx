@@ -61,7 +61,7 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
           {/* Description */}
 
           <div>
-            <p className="text-xs p-2 rounded text-gray-200 bg-gray-300">
+            <p className="text-xs p-2 rounded text-gray-200 border ">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur numquam
               corrupti voluptas placeat saepe !
             </p>

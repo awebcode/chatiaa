@@ -8,8 +8,8 @@ export interface IMessage {
     url: string;
     public_id: string;
   };
-  createdAt: string ;
-  updatedAt: string ;
+  createdAt: string;
+  updatedAt: string;
   isReply: {
     messageId: IMessage;
     repliedBy: Tuser;
@@ -25,12 +25,16 @@ export interface IMessage {
   type: string;
   status: string;
   removedBy: Tuser;
+  // who seen message and there counts
+  seenBy: Tuser[];
+  totalseenBy: number;
+  isSeen: boolean;
 }
 
 export interface IChat {
   _id: string;
   chatId?: string;
-  latestMessage?: IMessage;
+  latestMessage?: IMessage ;
   isGroupChat: boolean;
   groupChatName: string;
   chatName: string;
@@ -41,7 +45,6 @@ export interface IChat {
   unseenCount: number;
   createdAt: string;
   chatBlockedBy: Tuser[];
-  
 }
 
 export interface State {

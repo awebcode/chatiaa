@@ -254,6 +254,14 @@ exports.io.on("connection", (socket) => {
         };
         yield (0, groupSocket_1.emitEventToGroupUsers)(exports.io, "adminRemoveFromGroupNotifyReceived", data.chatId, adminRemoveData);
     }));
+    // Handle seenPushGroupMessage
+    socket.on("seenPushGroupMessage", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "seenPushGroupMessageReceived", data.chatId, data);
+    }));
+    //deliveredGroupMessageReceived
+    socket.on("deliveredGroupMessage", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "deliveredGroupMessageReceived", data.chatId, data);
+    }));
     //@@@@@@ calling system end
     // Handle client disconnection
     socket.on("disconnect", (data) => __awaiter(void 0, void 0, void 0, function* () {

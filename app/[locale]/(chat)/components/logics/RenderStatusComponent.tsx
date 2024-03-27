@@ -1,8 +1,10 @@
 import Image from "next/image";
 import { IoIosCheckmarkCircle, IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { useMessageState } from "@/context/MessageContext";
+import { IChat, IMessage } from "@/context/reducers/interfaces";
 export const RenderStatus = (
-  message: any,
+  chat:IChat,
+  message: IMessage,
   type: any,
   unseenCount: any,
   isLastSeenMessage: any

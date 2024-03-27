@@ -7,7 +7,12 @@ import moment from "moment";
 import { useTypingStore } from "@/store/useTyping";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useSocketContext } from "@/context/SocketContextProvider";
-import { updateAllMessageStatusAsSeen } from "@/functions/messageActions";
+import {
+  pushgroupSeenBy,
+  updateAllMessageStatusAsDelivered,
+  updateAllMessageStatusAsSeen,
+  updateMessageStatus,
+} from "@/functions/messageActions";
 import { getSender, getSenderFull } from "../logics/logics";
 import { BsThreeDots } from "react-icons/bs";
 import { useClickAway } from "@uidotdev/usehooks";
@@ -17,6 +22,7 @@ import { RenderStatus } from "../logics/RenderStatusComponent";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import {
   CLEAR_MESSAGES,
+  SEEN_PUSH_USER_GROUP_MESSAGE,
   SET_SELECTED_CHAT,
   UPDATE_CHAT_STATUS,
 } from "@/context/reducers/actions";
@@ -24,6 +30,7 @@ import { MessagePreview } from "./PreviewMessage";
 import { IChat } from "@/context/reducers/interfaces";
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
+import SeenBy from "./status/SeenBy";
 const Modal = dynamic(() => import("./Modal"));
 const TypingIndicator = dynamic(() => import("../TypingIndicator"));
 
@@ -35,6 +42,12 @@ const FriendsCard: React.FC<{
   const { user: currentUser, selectedChat } = useMessageState();
   const { onlineUsers } = useOnlineUsersStore();
   const { typingUsers } = useTypingStore();
+  //pushSeenByMutation
+  const pushSeenByMutation = useMutation({
+    mutationKey: ["group"],
+    mutationFn: (body: { chatId: string; messageId: string }) => pushgroupSeenBy(body),
+  });
+
   const updateStatusMutation = useMutation({
     mutationKey: ["messages"],
     mutationFn: (chatId: string) => updateAllMessageStatusAsSeen(chatId),
@@ -58,7 +71,7 @@ const FriendsCard: React.FC<{
   const handleClick = (chatId: string) => {
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
-    dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
+   
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
@@ -92,11 +105,48 @@ const FriendsCard: React.FC<{
       chatId: chat?._id,
     });
 
+    //push group message seen by in message or latest message
     if (
-      chat?.latestMessage?.status === "unseen" ||
-      chat?.latestMessage?.status === "delivered"
+      chat?.isGroupChat &&
+      !chat?.latestMessage?.isSeen &&
+      chat?.latestMessage?.sender._id !== currentUser?._id
     ) {
-      updateStatusMutation.mutate(chatId);
+      //&& !chat?.latestMessage?.isSeen
+      const pushData = {
+        chatId: chat?._id,
+        messageId: chat?.latestMessage?._id,
+        user: currentUser,
+        currentUser,
+        status: "seen",
+      };
+
+      //emit event to server
+      socket.emit("seenPushGroupMessage", pushData);
+      //update sender side
+      dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
+      //send to db
+      pushSeenByMutation.mutate({
+        chatId: chat?._id,
+        messageId: chat?.latestMessage?._id as any,
+      });
+      console.log("pushseen friend card");
+      //update message status as seen
+      if (chat?.latestMessage?.status !== "seen") {
+        updateMessageStatus({ chatId: chat?._id, status: "seen" }).catch(console.error);
+      }
+      dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
+      // updateStatusMutation.mutate(chatId);
+      updateAllMessageStatusAsSeen(chatId).catch(console.error);
+      // Proceed with other code
+
+      //emit seenby socket here
+    } else if (
+      !chat?.isGroupChat &&
+      (chat?.latestMessage?.status === "unseen" ||
+        chat?.latestMessage?.status === "delivered")
+    ) {
+       dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
+       updateStatusMutation.mutate(chatId);
     }
     // queryclient.invalidateQueries({ queryKey: ["messages", chatId] });
   };
@@ -105,7 +155,7 @@ const FriendsCard: React.FC<{
       ? chat.users.some((user: any) => user._id === u.id)
       : getSenderFull(currentUser, chat.users)?._id === u.id
   );
-
+  // console.log({ chat });
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
@@ -120,7 +170,7 @@ const FriendsCard: React.FC<{
               className="rounded-full  h-full w-full"
               alt={
                 !chat.isGroupChat
-                  ? getSenderFull(currentUser, chat.users).image
+                  ? getSenderFull(currentUser, chat.users)?.image
                   : chat.chatName
               }
               src={
@@ -194,12 +244,18 @@ const FriendsCard: React.FC<{
         </div>
         <div className="flex gap-5 items-center ">
           {/* Chat status */}
-          {RenderStatus(
-            chat?.latestMessage,
-            "onFriendListCard",
-            chat?.unseenCount,
-            false
+          {chat?.isGroupChat ? (
+            <SeenBy chat={chat as any} currentUser={currentUser as any} />
+          ) : (
+            RenderStatus(
+              chat,
+              chat?.latestMessage as any,
+              "onFriendListCard",
+              chat?.unseenCount,
+              false
+            )
           )}
+          {}
           {/* Right chat dropdown */}
           <Popover>
             <div className="relative">

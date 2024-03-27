@@ -12,6 +12,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 import { getSocketConnectedUser, io } from "../index";
 import { getFileType } from "./functions";
+import { MessageSeenBy } from "../model/seenByModel";
 //@access          Protected
 export const allMessages = async (
   req: Request | any,
@@ -66,11 +67,30 @@ export const allMessages = async (
           .populate({
             path: "reactBy",
             select: "name image email",
+            options:{limit:10}
           })
           .sort({ updatedAt: -1 })
           .exec();
-
-        return { ...message.toObject(), reactions, reactionsGroup, totalReactions };
+         //seenBy
+         const seenBy = await MessageSeenBy.find({ messageId: message._id })
+           .populate({
+             path: "userId",
+             select: "name image email",
+             options: { limit: 10 },
+           })
+           .sort({ updatedAt: -1 })
+           .exec();
+        //total seen by
+         const totalseenBy = await MessageSeenBy.countDocuments({ messageId: message._id })
+          
+        return {
+          ...message.toObject(),
+          reactions,
+          reactionsGroup,
+          totalReactions,
+          seenBy:seenBy,
+          totalseenBy,
+        };
       })
     );
     //find reactions here and pass with every message
@@ -258,7 +278,7 @@ export const sendMessage = async (
   }
 };
 
-//update status
+//update message status
 export const updateChatMessageController = async (
   req: Request | any,
   res: Response,

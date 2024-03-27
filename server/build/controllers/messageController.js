@@ -25,6 +25,7 @@ const fs_1 = __importDefault(require("fs"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const index_1 = require("../index");
 const functions_1 = require("./functions");
+const seenByModel_1 = require("../model/seenByModel");
 //@access          Protected
 const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -69,10 +70,24 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 .populate({
                 path: "reactBy",
                 select: "name image email",
+                options: { limit: 10 }
             })
                 .sort({ updatedAt: -1 })
                 .exec();
-            return Object.assign(Object.assign({}, message.toObject()), { reactions, reactionsGroup, totalReactions });
+            //seenBy
+            const seenBy = yield seenByModel_1.MessageSeenBy.find({ messageId: message._id })
+                .populate({
+                path: "userId",
+                select: "name image email",
+                options: { limit: 10 },
+            })
+                .sort({ updatedAt: -1 })
+                .exec();
+            //total seen by
+            const totalseenBy = yield seenByModel_1.MessageSeenBy.countDocuments({ messageId: message._id });
+            return Object.assign(Object.assign({}, message.toObject()), { reactions,
+                reactionsGroup,
+                totalReactions, seenBy: seenBy, totalseenBy });
         })));
         //find reactions here and pass with every message
         //@
@@ -239,7 +254,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.sendMessage = sendMessage;
-//update status
+//update message status
 const updateChatMessageController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {

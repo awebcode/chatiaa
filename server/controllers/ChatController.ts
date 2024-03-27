@@ -7,6 +7,8 @@ import { Chat } from "../model/ChatModel";
 import { User } from "../model/UserModel";
 import { Message } from "../model/MessageModel";
 import mongoose from "mongoose";
+import { MessageSeenBy } from "../model/seenByModel";
+import { getSeenByInfo } from "../common/seenByInfo";
 
 //@access          Protected
 export const accessChat = async (
@@ -76,7 +78,6 @@ export const fetchChats = async (
         }
       : {};
     const unseenCount: any = await unseenMessagesCounts(limit, skip, keyword, req.id);
-    // console.log({unseenCount})
     // Count the total documents matching the keyword
     const totalDocs = await Chat.countDocuments({
       users: { $elemMatch: { $eq: req.id } },
@@ -90,8 +91,8 @@ export const fetchChats = async (
     })
       .populate({
         path: "users",
-        select: "-password",
-        options: { limit: 5 }, // Set limit to Infinity to populate all documents
+        select: "name email image",
+        options: { limit: 10 }, // Set limit to Infinity to populate all documents
       })
       .populate("groupAdmin", "email name image")
       .populate("latestMessage")
@@ -116,34 +117,106 @@ export const fetchChats = async (
       );
     }
 
-    const filteredChatsWithUnseenCount = filteredChats.map((chat: any) => {
+    // const filteredChatsWithUnseenCount = filteredChats.map((chat: any) => {
+    //   const correspondingUnseenCount = unseenCount.find(
+    //     (count: any) => count._id.toString() === chat._id.toString()
+    //   );
+    //   //seenBy
+    //   //  const { seenBy, isLatestMessageSeen, totalseenBy } = await getSeenByInfo(
+    //   //    chat._id,
+    //   //    chat?.latestMessage?._id,
+    //   //    req.id
+    //   //  );
+    //   return {
+    //     ...chat.toObject(),
+    //     // latestMessage: {
+    //     //   ...chat.latestMessage,
+    //     //   isSeen: !!isLatestMessageSeen,
+    //     //   totalseenBy,
+    //     //   seenBy,
+    //     // },
+    //     unseenCount: correspondingUnseenCount
+    //       ? correspondingUnseenCount.unseenMessagesCount
+    //       : 0,
+    //   };
+    // });
+    // Use Promise.all to handle all asynchronous operations concurrently
+    const filteredChatsWithUnseenCountPromises = filteredChats.map(async (chat: any) => {
       const correspondingUnseenCount = unseenCount.find(
         (count: any) => count._id.toString() === chat._id.toString()
       );
-      return {
-        ...chat.toObject(),
-        unseenCount: correspondingUnseenCount
-          ? correspondingUnseenCount.unseenMessagesCount
-          : 0,
-      };
-    });
 
-    // Modify populatedChats to include unseenCount for each chat
-    const populatedChatsWithUnseenCount = populatedChats.map((chat: any) => {
-      const correspondingUnseenCount = unseenCount.find(
-        (count: any) => count._id.toString() === chat._id.toString()
-      );
-      return {
-        ...chat.toObject(),
-        unseenCount: correspondingUnseenCount
-          ? correspondingUnseenCount.unseenMessagesCount
-          : 0,
-      };
+      try {
+        const { seenBy, isLatestMessageSeen, totalSeenCount } = await getSeenByInfo(
+          chat._id,
+          chat?.latestMessage?._id,
+          req.id
+        );
+
+        // Construct updated chat object with awaited results
+        return {
+          ...chat.toObject(),
+          latestMessage: {
+            ...chat.latestMessage?._doc,
+            isSeen: !!isLatestMessageSeen,
+            seenBy,
+            totalseenBy: totalSeenCount||0,
+          },
+          unseenCount: correspondingUnseenCount
+            ? correspondingUnseenCount.unseenMessagesCount
+            : 0,
+        };
+      } catch (error) {
+        // Handle errors if necessary
+        console.error("Error:", error);
+        return null; // Return null or any other default value if needed
+      }
     });
+    // Wait for all promises to resolve using Promise.all
+    const resolvedFilteredChatsWithUnseenCount = await Promise.all(
+      filteredChatsWithUnseenCountPromises
+    );
+    // Modify populatedChats to include unseenCount for each chat
+    const populatedChatsWithUnseenCount = await Promise.all(
+      populatedChats.map(async (chat: any) => {
+        const correspondingUnseenCount = unseenCount.find(
+          (count: any) => count._id.toString() === chat._id.toString()
+        );
+
+        try {
+          const { seenBy, isLatestMessageSeen, totalSeenCount } = await getSeenByInfo(
+            chat._id,
+            chat?.latestMessage?._id,
+            req.id
+          );
+
+          // Construct updated chat object with awaited results
+          const updatedChat = {
+            ...chat.toObject(),
+            latestMessage: {
+              ...chat.latestMessage?._doc,
+              isSeen: !!isLatestMessageSeen,
+              seenBy,
+              totalseenBy: totalSeenCount || 0,
+            },
+            unseenCount: correspondingUnseenCount
+              ? correspondingUnseenCount.unseenMessagesCount
+              : 0,
+          };
+
+          return updatedChat;
+        } catch (error) {
+          // Handle errors if necessary
+          console.error("Error:", error);
+          return null; // Return null or any other default value if needed
+        }
+      })
+    );
+
     res.status(200).send({
       chats:
         filteredChats.length > 0
-          ? filteredChatsWithUnseenCount
+          ? resolvedFilteredChatsWithUnseenCount
           : req.query.search
           ? []
           : populatedChatsWithUnseenCount,
@@ -305,8 +378,6 @@ export const removeFromGroup = async (
     if (!chat) {
       return next(new CustomErrorHandler("Chat not found!", 404));
     }
-
-    
 
     const removedUser = await Chat.findByIdAndUpdate(
       chatId,
@@ -525,7 +596,9 @@ export const removeFromAdmin = async (
     if (updatedChat.groupAdmin.length === 0) {
       // Select two random users from the chat's users array, excluding the leaving admin
       const usersCount = updatedChat.users.length;
-      const leavingAdminIndex = updatedChat.users.findIndex(user => user._id.equals(userId));
+      const leavingAdminIndex = updatedChat.users.findIndex((user) =>
+        user._id.equals(userId)
+      );
       const randomAdmins = [];
 
       if (usersCount > 0) {
