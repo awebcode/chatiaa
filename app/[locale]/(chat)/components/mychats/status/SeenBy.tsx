@@ -9,6 +9,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { IoIosCheckmarkCircle, IoIosCheckmarkCircleOutline } from "react-icons/io";
+import dynamic from "next/dynamic";
+const TooltipContentComponent = dynamic(() => import("../../messages/typeMessages/TooltipWrapper"));
 const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
   return (
     <div className="">
@@ -49,9 +51,9 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
                       />
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{user?.userId?.name || user?.name}</p>
-                  </TooltipContent>
+                  <TooltipContentComponent
+                    user={(user?.userId as any) || (user as any)}
+                  />
                 </Tooltip>
               </TooltipProvider>
             );

@@ -297,7 +297,8 @@ export const messageReducer = (state: State, action: Action): State => {
                 ...(chat.latestMessage as any),
                 status: "seen",
                 seenBy: updatedSeenBy,
-                isSeen: action.payload?.currentUser ? true : false,
+                isSeen:
+                  !action.payload?.isSocketData && true
               },
             };
           }
@@ -390,13 +391,20 @@ export const messageReducer = (state: State, action: Action): State => {
       };
 
     case UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND:
+        console.log({ UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND: state?.chats });
+      
       return {
         ...state,
         // Update messages array to replace the existing message with the edited one
         chats: state?.chats?.map((chat) =>
-          chat.latestMessage?.sender?._id === action.payload.senderId
-            ? { ...chat, status: "delivered" }
+          chat?._id === action.payload.chatId
+            ? { ...chat, latestMessage: { ...chat.latestMessage as any, status: "delivered" } }
             : chat
+        ),
+        messages: state?.messages?.map((message) =>
+          message.chat._id === action.payload.chatId
+            ? { ...message, status: "delivered" }
+            : message
         ),
       };
 

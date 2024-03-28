@@ -42,13 +42,13 @@ const Login = () => {
         setloading(false);
         return setError(res.error)
       };
-      if (res?.ok) return router.push("/profile");
+      if (res?.ok) return router.push("/chat");
     } catch (error: any) {
       setError(error);
       setloading(false);
     }
   };
-  if (session?.user) router.push("/profile");
+  if (session?.user) router.push("/chat");
   return (
     <div className=" min-h-screen p-5">
       <div className="max-w-lg mx-auto   bg-white dark:bg-gray-800 p-8 rounded-xl shadow dark:shadow-none shadow-slate-300 dark:border dark:border-indigo-600">

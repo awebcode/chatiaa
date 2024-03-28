@@ -14,7 +14,6 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
 import { BaseUrl } from "@/config/BaseUrl";
-import { useSocketContext } from "@/context/SocketContextProvider";
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
@@ -164,7 +163,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-  console.log({ messages: "render" });
+  console.log({ messages });
   return (
     <div
       id="CustomscrollableTarget"

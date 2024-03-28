@@ -213,7 +213,7 @@ export const sendMessage = async (
           chat?.users.forEach((user) => {
             const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
-              io.to(chat?._id.toString())
+              io // //.to(chat?._id.toString())
                 .to(receiverId.socketId)
                 .emit("receiveMessage", {
                   ...message.toObject(),
@@ -254,7 +254,7 @@ export const sendMessage = async (
         chat?.users.forEach((user) => {
           const receiverId = getSocketConnectedUser(user.toString());
           if (receiverId) {
-            io.to(chat?._id.toString())
+            io //.to(chat?._id.toString())
               .to(receiverId.socketId)
               .emit("receiveMessage", {
                 ...message.toObject(),
@@ -396,15 +396,10 @@ export const updateChatMessageAsDeliveredController = async (
           latestMessage: chat.latestMessage._id,
         });
 
-        await Message.find(
-          { chat: chat._id },
-          {
-            status: { $in: ["unseen", "unsent"] },
-            // sender: { $ne: req.id }
-          }
-        ).updateMany({
-          status: "delivered",
-        });
+         await Message.updateMany(
+           { chat: chat._id, status: { $in: ["unseen", "unsent"] } },
+           { status: "delivered" }
+         );
       }
     });
 
@@ -564,7 +559,7 @@ export const replyMessage = async (
           chat?.users.forEach((user) => {
             const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
-              io.to(chat?._id.toString())
+              io //.to(chat?._id.toString())
                 .to(receiverId.socketId)
                 .emit("replyMessage", {
                   ...message.toObject(),
@@ -619,7 +614,7 @@ export const replyMessage = async (
       chat?.users.forEach((user) => {
         const receiverId = getSocketConnectedUser(user.toString());
         if (receiverId) {
-          io.to(chat?._id.toString())
+          io //.to(chat?._id.toString())
             .to(receiverId.socketId)
             .emit("replyMessage", {
               ...message.toObject(),
@@ -710,7 +705,7 @@ export const editMessage = async (
           chat?.users.forEach((user) => {
             const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
-              io.to(chat?._id.toString())
+              io //.to(chat?._id.toString())
                 .to(receiverId.socketId)
                 .emit("editMessage", {
                   ...editedChat.toObject(),
@@ -767,7 +762,7 @@ export const editMessage = async (
       chat?.users.forEach((user) => {
         const receiverId = getSocketConnectedUser(user.toString());
         if (receiverId) {
-          io.to(chat?._id.toString())
+          io //.to(chat?._id.toString())
             .to(receiverId.socketId)
             .emit("editMessage", {
               ...editedChat.toObject(),
@@ -820,7 +815,7 @@ export const addRemoveEmojiReactions = async (
             chat?.users.forEach((user) => {
               const receiverId = getSocketConnectedUser(user.toString());
               if (receiverId) {
-                io.to(chat?._id.toString())
+                io //.to(chat?._id.toString())
                   .to(receiverId.socketId)
                   .emit("addReactionOnMessage", {
                     reaction,
@@ -849,7 +844,7 @@ export const addRemoveEmojiReactions = async (
             chat?.users.forEach((user) => {
               const receiverId = getSocketConnectedUser(user.toString());
               if (receiverId) {
-                io.to(chat?._id.toString())
+                io //.to(chat?._id.toString())
                   .to(receiverId.socketId)
                   .emit("addReactionOnMessage", {
                     reaction,
@@ -876,7 +871,7 @@ export const addRemoveEmojiReactions = async (
           chat?.users.forEach((user) => {
             const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
-              io.to(chat?._id.toString())
+              io //.to(chat?._id.toString())
                 .to(receiverId.socketId)
                 .emit("addReactionOnMessage", {
                   reaction,

@@ -18,7 +18,7 @@ import { sentGroupNotifyMessage, sentSocketTextMessage } from "./controllers/fun
 import { Chat } from "./model/ChatModel";
 import { Types } from "mongoose";
 import { Message } from "./model/MessageModel";
-import { emitEventToGroupUsers } from "./common/groupSocket";
+import { emitEventToGroupUsers, markMessageAsDeliverdAfteronlineFriend } from "./common/groupSocket";
 const app = express();
 // app.use(uploadMiddleware.array("files"));
 
@@ -172,8 +172,8 @@ io.on("connection", (socket: Socket) => {
   });
 
   //deliveredAllMessageAfterReconnect -To all users
-  socket.on("deliveredAllMessageAfterReconnect", (message: any) => {
-    io.emit("receiveDeliveredAllMessageAfterReconnect", message);
+  socket.on("deliveredAllMessageAfterReconnect", async (data: any) => {
+    await markMessageAsDeliverdAfteronlineFriend(socket, data.userId);
   });
   // Handle typing
   socket.on("startTyping", async (data: any) => {

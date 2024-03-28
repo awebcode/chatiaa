@@ -4,6 +4,7 @@ export interface IMessage {
   _id: string;
   chatId: string;
   content: string;
+  chat: IChat;
   file: {
     url: string;
     public_id: string;

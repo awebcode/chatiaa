@@ -25,19 +25,19 @@ export const sentSocketTextMessage = async (newMessage: TnewMessage) => {
       path: "sender chat.users",
       select: "name image email lastActive",
     });
+    message = message.toObject();
 
     await Chat.findByIdAndUpdate(newMessage.chat, { latestMessage: message });
-    return message._doc;
+    return message;
   } catch (error) {
     console.log({ error });
   }
 };
 
-
 export const sentGroupNotifyMessage = async (newMessage: {
   chatId: string;
   user: { _id: string; name: string; email: string; image: string };
-  message:string
+  message: string;
 }) => {
   try {
     var data = {
@@ -57,7 +57,7 @@ export const sentGroupNotifyMessage = async (newMessage: {
       path: "sender chat.users",
       select: "name image email lastActive",
     });
-
+    // Deselecting fields "isedit", "isreply", and "file"
     await Chat.findByIdAndUpdate(newMessage.chatId, { latestMessage: message });
     return message;
   } catch (error) {

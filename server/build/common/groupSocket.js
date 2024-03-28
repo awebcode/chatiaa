@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.emitEventToGroupUsers = void 0;
+exports.markMessageAsDeliverdAfteronlineFriend = exports.emitEventToGroupUsers = void 0;
 const ChatModel_1 = require("../model/ChatModel");
 const __1 = require("..");
 // Function to emit an event to users within a chat
@@ -28,3 +28,24 @@ exports.emitEventToGroupUsers = emitEventToGroupUsers;
 // Example usage:
 // io and socket can be passed as arguments to the function when it's called
 // emitEventToChatUsers(io, "remove_remove_All_unsentMessage", message.chatId, message);
+const markMessageAsDeliverdAfteronlineFriend = (io, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const chats = yield ChatModel_1.Chat.find({ users: { $in: [userId] } }).populate("latestMessage");
+    if (!chats || chats.length === 0) {
+        return;
+    }
+    chats.map((chat) => {
+        var _a, _b, _c;
+        if (!chat.latestMessage) {
+            return; // Skip chats without a latest message
+        }
+        // Update the latest message's status to "delivered"
+        if (((_a = chat.latestMessage) === null || _a === void 0 ? void 0 : _a.status) === "unseen" &&
+            ((_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b.sender.toString()) !== userId) {
+            const receiverId = (0, __1.getSocketConnectedUser)((_c = chat.latestMessage) === null || _c === void 0 ? void 0 : _c.sender.toString());
+            if (receiverId) {
+                io.to(receiverId.socketId).emit("receiveDeliveredAllMessageAfterReconnect", { chatId: chat === null || chat === void 0 ? void 0 : chat._id });
+            }
+        }
+    });
+});
+exports.markMessageAsDeliverdAfteronlineFriend = markMessageAsDeliverdAfteronlineFriend;

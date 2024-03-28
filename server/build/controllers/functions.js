@@ -30,8 +30,9 @@ const sentSocketTextMessage = (newMessage) => __awaiter(void 0, void 0, void 0, 
             path: "sender chat.users",
             select: "name image email lastActive",
         });
+        message = message.toObject();
         yield ChatModel_1.Chat.findByIdAndUpdate(newMessage.chat, { latestMessage: message });
-        return message._doc;
+        return message;
     }
     catch (error) {
         console.log({ error });
@@ -56,6 +57,7 @@ const sentGroupNotifyMessage = (newMessage) => __awaiter(void 0, void 0, void 0,
             path: "sender chat.users",
             select: "name image email lastActive",
         });
+        // Deselecting fields "isedit", "isreply", and "file"
         yield ChatModel_1.Chat.findByIdAndUpdate(newMessage.chatId, { latestMessage: message });
         return message;
     }

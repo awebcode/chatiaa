@@ -71,7 +71,7 @@ const FriendsCard: React.FC<{
   const handleClick = (chatId: string) => {
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
-   
+
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
@@ -112,7 +112,7 @@ const FriendsCard: React.FC<{
     //push group message seen by in message or latest message
     if (
       chat?.isGroupChat &&
-      !chat?.latestMessage?.isSeen &&
+      (!chat?.latestMessage?.isSeen || chat?.latestMessage?.status !== "seen") &&
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
       //&& !chat?.latestMessage?.isSeen
@@ -120,7 +120,6 @@ const FriendsCard: React.FC<{
         chatId: chat?._id,
         messageId: chat?.latestMessage?._id,
         user: currentUser,
-        currentUser,
         status: "seen",
       };
 
@@ -133,7 +132,7 @@ const FriendsCard: React.FC<{
         chatId: chat?._id,
         messageId: chat?.latestMessage?._id as any,
       });
-      console.log("pushseen friend card");
+
       //update message status as seen
       if (chat?.latestMessage?.status !== "seen") {
         updateMessageStatus({ chatId: chat?._id, status: "seen" }).catch(console.error);
@@ -147,19 +146,21 @@ const FriendsCard: React.FC<{
     } else if (
       !chat?.isGroupChat &&
       (chat?.latestMessage?.status === "unseen" ||
-        chat?.latestMessage?.status === "delivered")
+        chat?.latestMessage?.status === "delivered") &&
+      chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
-       dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
-       updateStatusMutation.mutate(chatId);
+      dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
+      updateStatusMutation.mutate(chatId);
     }
     // queryclient.invalidateQueries({ queryKey: ["messages", chatId] });
   };
+
   const isUserOnline = onlineUsers.some((u: any) =>
     chat.isGroupChat
-      ? chat.users.some((user: any) => user._id === u.id)
+      ? chat.users.some((user: any) => user._id === u.id && user._id !== currentUser?._id)
       : getSenderFull(currentUser, chat.users)?._id === u.id
   );
-  // console.log({ chat });
+
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
@@ -180,7 +181,7 @@ const FriendsCard: React.FC<{
               src={
                 !chat.isGroupChat
                   ? getSenderFull(currentUser, chat.users)?.image
-                  :(chat as any)?.image?.url|| "/vercel.svg"
+                  : (chat as any)?.image?.url || "/vercel.svg"
               }
               loading="lazy"
             />

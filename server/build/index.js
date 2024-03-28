@@ -155,9 +155,9 @@ exports.io.on("connection", (socket) => {
         socket.to(message.receiverId).emit("receiveDeliveredMessage", message);
     });
     //deliveredAllMessageAfterReconnect -To all users
-    socket.on("deliveredAllMessageAfterReconnect", (message) => {
-        exports.io.emit("receiveDeliveredAllMessageAfterReconnect", message);
-    });
+    socket.on("deliveredAllMessageAfterReconnect", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0, groupSocket_1.markMessageAsDeliverdAfteronlineFriend)(socket, data.userId);
+    }));
     // Handle typing
     socket.on("startTyping", (data) => __awaiter(void 0, void 0, void 0, function* () {
         if (data.isGroupChat) {

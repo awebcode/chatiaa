@@ -25,42 +25,42 @@ export default function UpdateGroupDialog() {
   const { socket } = useSocketContext();
   const { selectedChat } = useMessageState();
   const dispatch = useMessageDispatch();
-  const [selectedImage, setSelectedImage] = useState<File | null|string>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null | string>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [groupName, setGroupName] = useState<string>("");
   const [groupDescription, setGroupDescription] = useState<string>("");
   //set inital values
   useEffect(() => {
-    setPreviewImage(selectedChat?.groupInfo?.image?.url as string)
+    setPreviewImage(selectedChat?.groupInfo?.image?.url as string);
     setGroupName(selectedChat?.chatName as string);
     setGroupDescription(selectedChat?.groupInfo?.description as string);
-  },[selectedChat])
+  }, [selectedChat]);
 
-   const [errors, setErrors] = useState<{ groupName: string; groupDescription: string }>({
-     groupName: "",
-     groupDescription: "",
-   });
+  const [errors, setErrors] = useState<{ groupName: string; groupDescription: string }>({
+    groupName: "",
+    groupDescription: "",
+  });
 
- ////set errors when break rules
-   useEffect(() => {
-     const newErrors = { ...errors };
+  ////set errors when break rules
+  useEffect(() => {
+    const newErrors = { ...errors };
 
-     // Check if group name exceeds character limit
-     if (groupName.length > 100) {
-       newErrors.groupName = "Group name must be 100 characters or less";
-     } else {
-       newErrors.groupName = "";
-     }
+    // Check if group name exceeds character limit
+    if (groupName.length > 100) {
+      newErrors.groupName = "Group name must be 100 characters or less";
+    } else {
+      newErrors.groupName = "";
+    }
 
-     // Check if group description exceeds character limit
-     if (groupDescription.length > 100) {
-       newErrors.groupDescription = "Group description must be 100 characters or less";
-     } else {
-       newErrors.groupDescription = "";
-     }
+    // Check if group description exceeds character limit
+    if (groupDescription.length > 100) {
+      newErrors.groupDescription = "Group description must be 100 characters or less";
+    } else {
+      newErrors.groupDescription = "";
+    }
 
-     setErrors(newErrors);
-   }, [groupName, groupDescription]);
+    setErrors(newErrors);
+  }, [groupName, groupDescription]);
 
   const updateGroupMutation = useMutation({
     mutationKey: ["group"],
@@ -195,14 +195,18 @@ export default function UpdateGroupDialog() {
               onChange={(e) => setGroupDescription(e.target.value)}
               className="col-span-6 resize-none h-10 border"
             />
-             {errors.groupDescription && <span className="text-red-500">{errors.groupDescription}</span>}
+            {errors.groupDescription && (
+              <span className="text-red-500">{errors.groupDescription}</span>
+            )}
           </div>
         </div>
         <DialogFooter>
           <Button
             type="submit"
             size={"lg"}
-            disabled={updateGroupMutation.isPending || isSubmitDisabled()}
+            disabled={
+              updateGroupMutation.isPending || (!selectedImage && isSubmitDisabled())
+            }
             onClick={handleSubmit}
           >
             {updateGroupMutation.isPending ? (

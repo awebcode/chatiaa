@@ -4,10 +4,11 @@ import Image from "next/image";
 import React from "react";
 import {
   Tooltip,
-  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import dynamic from "next/dynamic";
+const TooltipContentComponent=dynamic(()=>import("./TooltipWrapper"))
 const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuser }) => {
   return (
     <div className="absolute -bottom-10">
@@ -28,9 +29,7 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>{user?.userId?.name || user?.name}</p>
-                </TooltipContent>
+                <TooltipContentComponent user={user?.userId ||user} />
               </Tooltip>
             </TooltipProvider>
           );

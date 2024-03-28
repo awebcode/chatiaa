@@ -35,6 +35,7 @@ import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import {
   pushgroupSeenBy,
   updateAllMessageStatusAsDelivered,
+  updateAllMessageStatusAsSeen,
   updateMessageStatus,
 } from "@/functions/messageActions";
 
@@ -84,15 +85,16 @@ const Chat = () => {
       socket?.emit("setup", { id: currentUser._id });
     }
   }, [currentUser]);
-  //update friend message when i'm online
+  //update friend chat and messages staus when i'm online
   useEffect(() => {
+
     updateAllMessageStatusAsDelivered(currentUser?._id as any);
-    const deliverData = {
-      senderId: currentUser?._id,
-      pic: currentUser?.image,
-    };
-    socket.emit("deliveredAllMessageAfterReconnect", deliverData);
   }, []);
+  useEffect(() => {
+    socket.emit("deliveredAllMessageAfterReconnect", {
+      userId: currentUser?._id
+    });
+  }, [currentUser?._id]);
 
   const handleSocketMessage = useCallback(
     async (data: any) => {
@@ -209,10 +211,20 @@ const Chat = () => {
             messageId: data?._id as any,
           });
           await updateMessageStatus(updateStatusData);
+          updateAllMessageStatusAsSeen(data.chat?._id).catch(console.error);
         } else {
           console.log({ deliverGrpMessage: data });
 
-          if (data.chat.status !== "seen") {
+          if (
+            data.chat.status !== "seen" &&
+            data.chat.users?.some((user: any) =>
+              onlineUsersRef.current.some(
+                (onlineUser: any) =>
+                  onlineUser.id === user?._id &&
+                  onlineUser.id !== currentUserRef.current?._id
+              )
+            )
+          ) {
             dispatch({
               type: UPDATE_LATEST_CHAT_MESSAGE,
               payload: { ...data, status: "delivered" },
@@ -397,7 +409,10 @@ const Chat = () => {
 
   //handleSeenPushGroupMessage
   const handleSeenPushGroupMessage = useCallback((data: any) => {
-    dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: data });
+    dispatch({
+      type: SEEN_PUSH_USER_GROUP_MESSAGE,
+      payload: { ...data, isSocketData: true },
+    });
   }, []);
 
   //handleDeliveredGroupMessage
@@ -415,11 +430,11 @@ const Chat = () => {
   //hanlegroupNotifyReceived
 
   const handlegroupNotifyReceived = useCallback((data: any) => {
-   dispatch({ type: SET_MESSAGES, payload: data.message });
-   dispatch({
-     type: UPDATE_LATEST_CHAT_MESSAGE,
-     payload: data.message,
-   });
+    dispatch({ type: SET_MESSAGES, payload: data.message });
+    dispatch({
+      type: UPDATE_LATEST_CHAT_MESSAGE,
+      payload: data.message,
+    });
   }, []);
 
   useEffect(() => {
@@ -454,7 +469,7 @@ const Chat = () => {
     socket.on("seenPushGroupMessageReceived", handleSeenPushGroupMessage);
     socket.on("deliveredGroupMessageReceived", handleDeliveredGroupMessage);
     socket.on("update_group_info_Received", handleUpdate_group_info_Received);
-    socket.on("groupNotifyReceived",handlegroupNotifyReceived)
+    socket.on("groupNotifyReceived", handlegroupNotifyReceived);
     //block single chat
 
     socket.on("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
@@ -495,7 +510,7 @@ const Chat = () => {
       socket.off("seenPushGroupMessageReceived", handleSeenPushGroupMessage);
       socket.off("deliveredGroupMessageReceived", handleDeliveredGroupMessage);
       socket.off("update_group_info_Received", handleUpdate_group_info_Received);
-       socket.off("groupNotifyReceived",handlegroupNotifyReceived)
+      socket.off("groupNotifyReceived", handlegroupNotifyReceived);
     };
   }, []); //
 

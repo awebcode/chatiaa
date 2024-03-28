@@ -196,7 +196,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                         const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
-                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                            index_1.io // //.to(chat?._id.toString())
                                 .to(receiverId.socketId)
                                 .emit("receiveMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
                         }
@@ -233,7 +233,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                     const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                     if (receiverId) {
-                        index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                        index_1.io //.to(chat?._id.toString())
                             .to(receiverId.socketId)
                             .emit("receiveMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
                     }
@@ -337,12 +337,7 @@ const updateChatMessageAsDeliveredController = (req, res, next) => __awaiter(voi
                 yield ChatModel_1.Chat.findByIdAndUpdate(chat._id, {
                     latestMessage: chat.latestMessage._id,
                 });
-                yield MessageModel_1.Message.find({ chat: chat._id }, {
-                    status: { $in: ["unseen", "unsent"] },
-                    // sender: { $ne: req.id }
-                }).updateMany({
-                    status: "delivered",
-                });
+                yield MessageModel_1.Message.updateMany({ chat: chat._id, status: { $in: ["unseen", "unsent"] } }, { status: "delivered" });
             }
         }));
         // Wait for all updates to complete
@@ -468,7 +463,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                         const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
-                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                            index_1.io //.to(chat?._id.toString())
                                 .to(receiverId.socketId)
                                 .emit("replyMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
                         }
@@ -517,7 +512,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                 const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                 if (receiverId) {
-                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                    index_1.io //.to(chat?._id.toString())
                         .to(receiverId.socketId)
                         .emit("replyMessage", Object.assign(Object.assign({}, message.toObject()), { receiverId: receiverId.id }));
                 }
@@ -592,7 +587,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                         const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
-                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                            index_1.io //.to(chat?._id.toString())
                                 .to(receiverId.socketId)
                                 .emit("editMessage", Object.assign(Object.assign({}, editedChat.toObject()), { receiverId: receiverId.id }));
                         }
@@ -639,7 +634,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                 const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                 if (receiverId) {
-                    index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                    index_1.io //.to(chat?._id.toString())
                         .to(receiverId.socketId)
                         .emit("editMessage", Object.assign(Object.assign({}, editedChat.toObject()), { receiverId: receiverId.id }));
                 }
@@ -680,7 +675,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                         chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                             const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                             if (receiverId) {
-                                index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                index_1.io //.to(chat?._id.toString())
                                     .to(receiverId.socketId)
                                     .emit("addReactionOnMessage", {
                                     reaction,
@@ -709,7 +704,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                         chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                             const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                             if (receiverId) {
-                                index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                                index_1.io //.to(chat?._id.toString())
                                     .to(receiverId.socketId)
                                     .emit("addReactionOnMessage", {
                                     reaction,
@@ -735,7 +730,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
                         const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
-                            index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
+                            index_1.io //.to(chat?._id.toString())
                                 .to(receiverId.socketId)
                                 .emit("addReactionOnMessage", {
                                 reaction,

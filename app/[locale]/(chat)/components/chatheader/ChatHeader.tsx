@@ -44,7 +44,6 @@ const ChatHeader = () => {
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
   };
-  console.log({selectedChat,onlineUsers})
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
       <div className="flex items-center gap-2">
