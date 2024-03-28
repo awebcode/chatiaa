@@ -63,8 +63,16 @@ const ChatHeader = () => {
                 height={35}
                 width={35}
                 className="rounded-full object-fill h-full w-full"
-                alt={selectedChat?.userInfo?.name as any}
-                src={selectedChat?.userInfo.image as any}
+                alt={
+                  selectedChat.isGroupChat
+                    ? selectedChat?.chatName
+                    : (selectedChat?.userInfo?.name as any)
+                }
+                src={
+                  selectedChat.isGroupChat
+                    ? selectedChat?.groupInfo?.image?.url
+                    : (selectedChat?.userInfo.image as any)
+                }
                 loading="lazy"
               />
 
@@ -76,10 +84,14 @@ const ChatHeader = () => {
             </div>
             <div className="ml-1">
               <h3 className="text-xs md:text-sm font-bold ">
-                {selectedChat.userInfo.name}
+                {selectedChat.isGroupChat
+                  ? selectedChat?.chatName
+                  : selectedChat.userInfo.name}
               </h3>
               {typingUsers.some(
-                (typeuser) => typeuser.chatId === selectedChat?.chatId && typeuser.userInfo._id!==currentUser?._id
+                (typeuser) =>
+                  typeuser.chatId === selectedChat?.chatId &&
+                  typeuser.userInfo._id !== currentUser?._id
               ) ? (
                 <>
                   {

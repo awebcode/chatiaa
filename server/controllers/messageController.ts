@@ -211,7 +211,7 @@ export const sendMessage = async (
         // Send message to client
         if (chat?.isGroupChat) {
           chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user);
+            const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
               io.to(chat?._id.toString())
                 .to(receiverId.socketId)
@@ -252,7 +252,7 @@ export const sendMessage = async (
       const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
       if (chat?.isGroupChat) {
         chat?.users.forEach((user) => {
-          const receiverId = getSocketConnectedUser(user);
+          const receiverId = getSocketConnectedUser(user.toString());
           if (receiverId) {
             io.to(chat?._id.toString())
               .to(receiverId.socketId)
@@ -562,7 +562,7 @@ export const replyMessage = async (
         // Send message to client
         if (chat?.isGroupChat) {
           chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user);
+            const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
               io.to(chat?._id.toString())
                 .to(receiverId.socketId)
@@ -617,7 +617,7 @@ export const replyMessage = async (
 
     if (chat?.isGroupChat) {
       chat?.users.forEach((user) => {
-        const receiverId = getSocketConnectedUser(user);
+        const receiverId = getSocketConnectedUser(user.toString());
         if (receiverId) {
           io.to(chat?._id.toString())
             .to(receiverId.socketId)
@@ -649,9 +649,10 @@ export const editMessage = async (
   try {
     const { messageId, chatId, content, type, receiverId } = req.body;
     if (!messageId)
-      return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
+      {
+        return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
+      }
     const isLastMessage = await Chat.findOne({ _id: chatId, latestMessage: messageId });
-
     const prevMessage: any = await Message.findById(messageId);
     //delete Previous Image
     if (prevMessage.file?.public_Id) {
@@ -707,7 +708,7 @@ export const editMessage = async (
         // Send message to client
         if (chat?.isGroupChat) {
           chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user);
+            const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
               io.to(chat?._id.toString())
                 .to(receiverId.socketId)
@@ -729,11 +730,13 @@ export const editMessage = async (
       await Promise.all(fileUploadPromises);
       res.status(200).json({ message: "Edit Message sucessfully" });
     } else {
-      if (!messageId || !content)
+      if (!messageId || !content){
         return next(
           new CustomErrorHandler("messageId or content  cannot be empty!", 400)
         );
-      const message = await Message.findOne(messageId);
+      }
+        
+      const message = await Message.findOne({ _id: messageId });
       if (message?.file?.public_Id) {
         await v2.uploader.destroy(message.file.public_Id);
       }
@@ -762,7 +765,7 @@ export const editMessage = async (
     // Send message to client
     if (chat?.isGroupChat) {
       chat?.users.forEach((user) => {
-        const receiverId = getSocketConnectedUser(user);
+        const receiverId = getSocketConnectedUser(user.toString());
         if (receiverId) {
           io.to(chat?._id.toString())
             .to(receiverId.socketId)
@@ -779,6 +782,7 @@ export const editMessage = async (
     }
     res.status(200).json({ success: true, editedChat });
   } catch (error) {
+    console.log({error})
     next(error);
   }
 };
@@ -814,7 +818,7 @@ export const addRemoveEmojiReactions = async (
           // Send message to client
           if (chat?.isGroupChat) {
             chat?.users.forEach((user) => {
-              const receiverId = getSocketConnectedUser(user);
+              const receiverId = getSocketConnectedUser(user.toString());
               if (receiverId) {
                 io.to(chat?._id.toString())
                   .to(receiverId.socketId)
@@ -843,7 +847,7 @@ export const addRemoveEmojiReactions = async (
           // Send message to client
           if (chat?.isGroupChat) {
             chat?.users.forEach((user) => {
-              const receiverId = getSocketConnectedUser(user);
+              const receiverId = getSocketConnectedUser(user.toString());
               if (receiverId) {
                 io.to(chat?._id.toString())
                   .to(receiverId.socketId)
@@ -870,7 +874,7 @@ export const addRemoveEmojiReactions = async (
         const reaction = await Reaction.findByIdAndDelete(reactionId);
         if (chat?.isGroupChat) {
           chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user);
+            const receiverId = getSocketConnectedUser(user.toString());
             if (receiverId) {
               io.to(chat?._id.toString())
                 .to(receiverId.socketId)

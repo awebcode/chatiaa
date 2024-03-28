@@ -47,7 +47,7 @@ const register = async (req: Request | any, res: Response, next: NextFunction) =
       password: hashedPassword,
       email,
       image: avatarUrl,
-      provider:"credentials"
+      provider: "credentials",
     }); //, image: url.url
     const user = await newUser.save();
 
@@ -113,7 +113,11 @@ const getUser: any = async (req: CustomRequest, res: Response, next: NextFunctio
   }
 };
 //get profile
-export const getProfile: any = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const getProfile: any = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Access the authenticated user from the request
 
@@ -144,7 +148,7 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
           ],
         }
       : {};
-      console.log(req.query)
+    console.log(req.query);
     //when search for find group users then check only find users who exist in my chat
     const usersQuery =
       req.query.onGroupSearch === "true"
@@ -154,9 +158,7 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
                 .map((chat) => chat.users)
                 .flat(),
             },
-            $and: [
-              { _id: { $ne: req.id } },
-            ],
+            $and: [{ _id: { $ne: req.id } }],
           }
         : {
             $and: [{ _id: { $ne: req.id } }, { ...keyword }],
@@ -168,6 +170,42 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
     next(error);
   }
 };
+
+//find for adding in group who not exists in chat
+
+export const allUsersForAddgroupExclueWhoinAlreadyChat= async (
+  req: CustomRequest | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const limit = parseInt(req.query.limit) || 4;
+  const skip = parseInt(req.query.skip) || 0;
+  const chatId = req.params.chatId;
+
+  try {
+    const keyword = req.query.search
+      ? {
+          $or: [
+            { name: { $regex: req.query.search, $options: "i" } },
+            { email: { $regex: req.query.search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // Find users that are not part of the chat
+    const usersQuery: any = {
+      _id: { $nin: (await Chat.findById(chatId))?.users }, // Exclude users who are part of the chat
+      $and: [{ _id: { $ne: req.id } }, { ...keyword }],
+    };
+
+    const users = await User.find(usersQuery).limit(limit).skip(skip);
+    const total = await User.countDocuments(usersQuery);
+    res.send({ users, total, limit });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const logout = (req: CustomRequest | any, res: Response, next: NextFunction) => {
   res.cookie("authToken", "", {
     expires: new Date(0),
@@ -197,22 +235,21 @@ export const deleteUser = async (
     }
 
     // Check if the user has an associated image
-    if (user.image&&user.provider==="credentials") {
+    if (user.image && user.provider === "credentials") {
       // Extract the public_id from the image URL
-      const publicId = (user as any).image.split("/").pop().split(".")[0]
+      const publicId = (user as any).image.split("/").pop().split(".")[0];
 
       // Delete the image from Cloudinary using the public_id
-       await v2.uploader.destroy(publicId);
+      await v2.uploader.destroy(publicId);
     }
 
     // Delete the user from the database
     await User.findByIdAndDelete(userId);
 
-    res.status(200).json({message:"User and associated image deleted successfully"})
+    res.status(200).json({ message: "User and associated image deleted successfully" });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
-
 
 export { register, login, getUser, allUsers };

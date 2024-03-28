@@ -149,18 +149,18 @@ export default function SearchGroupModal() {
             <SliderUsers />
           </div>
           {/* Infinite scrolling */}
-          <div id="GroupSearchTarget" style={{ height: "60vh", overflowY: "scroll" }}>
+          <div id="GroupSearchTarget" style={{ height: "40vh", overflowY: "scroll" }}>
             <InfiniteScroll
               dataLength={users ? users?.length : 0}
               next={() => {
                 fetchNextPage();
               }}
-              hasMore={searchText.trim() !== "" && hasNextPage}
+              hasMore={hasNextPage} //searchText.trim() !== "" && 
               loader={<div>Loading...</div>}
               endMessage={
                 users &&
                 users?.length > 0 &&
-                searchText.trim() !== "" && (
+                  ( //searchText.trim() !== ""
                   <p className="text-green-400">
                     <b>all users here!</b>
                   </p>

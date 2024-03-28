@@ -14,13 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFilesInChat = exports.getUsersInAChat = exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.renameGroup = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
+exports.getFilesInChat = exports.getInitialFilesInChat = exports.getUsersInAChat = exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.updateGroupNamePhoto = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
 const errorHandler_1 = require("../middlewares/errorHandler");
 const ChatModel_1 = require("../model/ChatModel");
 const UserModel_1 = require("../model/UserModel");
 const MessageModel_1 = require("../model/MessageModel");
 const mongoose_1 = __importDefault(require("mongoose"));
 const seenByInfo_1 = require("../common/seenByInfo");
+const random_avatar_generator_1 = require("random-avatar-generator");
+const cloudinary_1 = require("cloudinary");
+const __1 = require("..");
+const groupSocket_1 = require("../common/groupSocket");
+const functions_1 = require("./functions");
+const generateUpdateMessage_1 = require("../common/generateUpdateMessage");
 //@access          Protected
 const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
@@ -38,7 +44,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         .populate("latestMessage");
     isChat = yield UserModel_1.User.populate(isChat, {
         path: "latestMessage.sender",
-        select: "name image email lastActive",
+        select: "name image email lastActive createdAt",
     });
     if (isChat.length > 0) {
         res.status(200).send({ chatData: isChat[0] });
@@ -51,7 +57,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         };
         try {
             const createdChat = yield ChatModel_1.Chat.create(chatData);
-            let FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive");
+            let FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive createdAt");
             res.status(201).json({ success: true, isNewChat: true, chatData: FullChat });
         }
         catch (error) {
@@ -86,18 +92,18 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         })
             .populate({
             path: "users",
-            select: "name email image",
+            select: "name email image createdAt",
             options: { limit: 10 }, // Set limit to Infinity to populate all documents
         })
-            .populate("groupAdmin", "email name image")
+            .populate("groupAdmin", "email name image createdAt")
             .populate("latestMessage")
-            .populate("chatBlockedBy", "name image email")
+            .populate("chatBlockedBy", "name image email createdAt")
             .sort({ updatedAt: -1 })
             .limit(limit)
             .skip(skip);
         const populatedChats = yield UserModel_1.User.populate(chats, {
             path: "latestMessage.sender",
-            select: "name image email lastActive ",
+            select: "name image email lastActive createdAt",
         });
         // Filter the populatedChats array based on the keyword
         let filteredChats = [];
@@ -106,30 +112,6 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))) || chat.chatName.match(new RegExp(keyword.$or[0].name.$regex, "i")) // Add chatName filtering condition
             );
         }
-        // const filteredChatsWithUnseenCount = filteredChats.map((chat: any) => {
-        //   const correspondingUnseenCount = unseenCount.find(
-        //     (count: any) => count._id.toString() === chat._id.toString()
-        //   );
-        //   //seenBy
-        //   //  const { seenBy, isLatestMessageSeen, totalseenBy } = await getSeenByInfo(
-        //   //    chat._id,
-        //   //    chat?.latestMessage?._id,
-        //   //    req.id
-        //   //  );
-        //   return {
-        //     ...chat.toObject(),
-        //     // latestMessage: {
-        //     //   ...chat.latestMessage,
-        //     //   isSeen: !!isLatestMessageSeen,
-        //     //   totalseenBy,
-        //     //   seenBy,
-        //     // },
-        //     unseenCount: correspondingUnseenCount
-        //       ? correspondingUnseenCount.unseenMessagesCount
-        //       : 0,
-        //   };
-        // });
-        // Use Promise.all to handle all asynchronous operations concurrently
         const filteredChatsWithUnseenCountPromises = filteredChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
             var _a, _b;
             const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
@@ -256,9 +238,19 @@ const createGroupChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
     users.push(req.id);
     try {
+        const generator = new random_avatar_generator_1.AvatarGenerator();
+        const randomAvatarUrl = generator.generateRandomAvatar();
+        const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(randomAvatarUrl, {
+            folder: "messengaria",
+            format: "png", // Specify the format as PNG
+        });
         const groupChat = yield ChatModel_1.Chat.create({
             chatName: req.body.groupName,
             users: users,
+            image: {
+                url: cloudinaryResponse.secure_url,
+                public_id: cloudinaryResponse.public_id,
+            },
             isGroupChat: true,
             groupAdmin: req.id,
         });
@@ -276,35 +268,77 @@ exports.createGroupChat = createGroupChat;
 // @desc    Rename Group
 // @route   PUT /api/chat/rename
 // @access  Protected
-const renameGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+//
+// @access  Protected updateGroupPhoto and name
+const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e, _f;
     try {
-        const { chatId, chatName } = req.body;
-        const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
-            chatName: chatName,
-        }, {
-            new: true,
-        })
-            .populate("users", "-password")
-            .populate("groupAdmin", "-password");
-        if (!updatedChat) {
-            res.status(404);
+        const { chatId, groupName, description } = req.body;
+        const foundChat = yield ChatModel_1.Chat.findById(chatId);
+        const currentUser = yield UserModel_1.User.findById(req.id);
+        if (!currentUser) {
+            return next(new errorHandler_1.CustomErrorHandler("User not found!", 404));
+        }
+        if (!foundChat) {
             return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
         }
-        else {
-            res.json(updatedChat);
+        // Update chat image if req.file.path exists
+        let imageUpdate = {};
+        if ((_e = req.file) === null || _e === void 0 ? void 0 : _e.path) {
+            // Check if chat.image exists, if so, remove the previous image from cloudinary
+            if (foundChat.image && foundChat.image.public_id) {
+                yield cloudinary_1.v2.uploader.destroy(foundChat.image.public_id);
+            }
+            const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(req.file.path, {
+                folder: "messengaria",
+                format: "png", // Specify the format as PNG
+            });
+            imageUpdate = {
+                image: {
+                    public_id: cloudinaryResponse.public_id,
+                    url: cloudinaryResponse.secure_url,
+                },
+            };
         }
+        // Update chat name and description if provided
+        const updatedChat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, Object.assign(Object.assign({}, imageUpdate), { chatName: groupName || foundChat.chatName, description: description || foundChat.description }), {
+            new: true,
+        })
+            .populate({
+            path: "users",
+            select: "name email image lastActive",
+            options: { limit: 10 },
+        })
+            .populate("groupAdmin", "name email image lastActive");
+        // //@@@ notify/emit-socket group members that who updated the group
+        // Generate update message
+        const message = (0, generateUpdateMessage_1.generateUpdateMessage)(currentUser, description, groupName, (_f = req.file) === null || _f === void 0 ? void 0 : _f.path);
+        if (message.trim() !== "") {
+            const updateGroupMessage = yield (0, functions_1.sentGroupNotifyMessage)({
+                chatId: chatId,
+                user: req.id,
+                message
+            });
+            const updateGroupData = {
+                message: Object.assign({}, updateGroupMessage.toObject()),
+                chatId,
+            };
+            yield (0, groupSocket_1.emitEventToGroupUsers)(__1.io, "groupNotifyReceived", chatId, updateGroupData);
+        }
+        //@@@ notify/emit socket group members that who updated the group
+        res.json(updatedChat);
     }
     catch (error) {
         console.log(error);
         next(error);
     }
 });
-exports.renameGroup = renameGroup;
+exports.updateGroupNamePhoto = updateGroupNamePhoto;
 // @desc    Remove user from Group
 // @route   PUT /api/chat/groupremove or leave user when leave user reassign new random admin
 // @access  Protected
 const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _g;
     try {
         const { chatId, userId } = req.body;
         const chat = yield ChatModel_1.Chat.findById(chatId);
@@ -335,7 +369,7 @@ const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                 }
                 else {
                     // If no random user is found, make the first user in the list the admin
-                    newGroupAdmins.push((_e = removedUser.users[0]) === null || _e === void 0 ? void 0 : _e._id);
+                    newGroupAdmins.push((_g = removedUser.users[0]) === null || _g === void 0 ? void 0 : _g._id);
                 }
             }
             // Update the groupAdmin field with the new admins
@@ -370,19 +404,59 @@ exports.removeFromGroup = removeFromGroup;
 // @access  Protected
 const addToGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { chatId, userId } = req.body;
-        // check if the requester is admin
+        const { chatId, userIds } = req.body;
+        //
+        const currentUser = yield UserModel_1.User.findById(req.id);
+        // Check if the chat exists
+        const chat = yield ChatModel_1.Chat.findById(chatId);
+        if (!chat) {
+            return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
+        }
+        const newUsers = [];
+        // Loop through userIds and add users who are not already members
+        for (const userId of userIds) {
+            if (!chat.users.includes(userId)) {
+                newUsers.push(userId);
+            }
+        }
+        // If all users are already members, return a message
+        if (newUsers.length === 0) {
+            return res
+                .status(400)
+                .json({ message: "All users are already members of the group" });
+        }
+        // Add new users to the group
         const added = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
-            $push: { users: userId },
+            $push: { users: { $each: newUsers } },
         }, {
             new: true,
         })
-            .populate("users", "-password")
-            .populate("groupAdmin", "-password");
+            .populate({
+            path: "users",
+            select: "name email image lastActive",
+            options: { limit: 10 },
+        })
+            .populate("groupAdmin", "name email image lastActive");
         if (!added) {
             return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
         }
         else {
+            //@@@ notify group members that who added in group
+            for (const userId of userIds) {
+                const user = yield UserModel_1.User.findById(userId);
+                const addUsersToGroupMessage = yield (0, functions_1.sentGroupNotifyMessage)({
+                    chatId: chatId,
+                    user: req.id,
+                    message: `${currentUser === null || currentUser === void 0 ? void 0 : currentUser.name} added ${user === null || user === void 0 ? void 0 : user.name} to the group `,
+                });
+                const addUsersToGroupData = {
+                    message: Object.assign({}, addUsersToGroupMessage.toObject()),
+                    user,
+                    chatId,
+                };
+                yield (0, groupSocket_1.emitEventToGroupUsers)(__1.io, "groupNotifyReceived", chatId, addUsersToGroupData);
+                //@@@ notify group members that who added in group
+            }
             res.json(added);
         }
     }
@@ -393,7 +467,7 @@ const addToGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 exports.addToGroup = addToGroup;
 //delete single chat one to one chat
 const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _h;
     try {
         if (!req.params.chatId || !req.id) {
             return next(new errorHandler_1.CustomErrorHandler("ChatId Not found", 400));
@@ -404,7 +478,7 @@ const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         res.json({
             success: true,
             chat: chat,
-            receiverId: (_f = chat === null || chat === void 0 ? void 0 : chat.users.find((user) => user.toString() !== req.id)) === null || _f === void 0 ? void 0 : _f._id.toString(),
+            receiverId: (_h = chat === null || chat === void 0 ? void 0 : chat.users.find((user) => user.toString() !== req.id)) === null || _h === void 0 ? void 0 : _h._id.toString(),
         });
     }
     catch (error) {
@@ -434,8 +508,12 @@ const makeAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         }, {
             new: true,
         })
-            .populate("users", "-password")
-            .populate("groupAdmin", "-password");
+            .populate({
+            path: "users",
+            select: "name email image lastActive",
+            options: { limit: 10 },
+        })
+            .populate("groupAdmin", "name email image lastActive");
         if (!updatedChat) {
             return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
         }
@@ -503,7 +581,7 @@ const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 exports.removeFromAdmin = removeFromAdmin;
 //update Chat status as Blocked/Unblocked
 const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _g;
+    var _j;
     try {
         const { chatId, status } = req.body;
         if (!status || !chatId)
@@ -532,7 +610,7 @@ const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, v
         res.status(200).json({
             chat: updatedChat,
             chatId: updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat._id,
-            receiverId: (_g = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.users.find((user) => user.toString() !== req.id)) === null || _g === void 0 ? void 0 : _g._id.toString(),
+            receiverId: (_j = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.users.find((user) => user.toString() !== req.id)) === null || _j === void 0 ? void 0 : _j._id.toString(),
             success: true,
         });
     }
@@ -590,6 +668,27 @@ const getUsersInAChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getUsersInAChat = getUsersInAChat;
+//find inital files from a chat
+const getInitialFilesInChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const files = yield MessageModel_1.Message.find({
+            chat: req.params.chatId,
+            type: "image",
+        })
+            .select("file") // Select only the 'file' field
+            .sort({ updatedAt: -1 })
+            .limit(5);
+        const total = yield MessageModel_1.Message.countDocuments({
+            type: { $in: ["image", "application", "audio", "video"] },
+        });
+        res.send({ files, total });
+    }
+    catch (error) {
+        console.log({ error });
+        next(error);
+    }
+});
+exports.getInitialFilesInChat = getInitialFilesInChat;
 //find files from a chat
 const getFilesInChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const limit = parseInt(req.query.limit) || 10;
@@ -607,10 +706,36 @@ const getFilesInChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         }
         const files = yield MessageModel_1.Message.find(query)
             .sort({ updatedAt: -1 })
+            .select("file type")
+            .populate("sender", "image name email createdAt")
             .limit(limit)
             .skip(skip);
         const total = yield MessageModel_1.Message.countDocuments(query);
-        res.send({ files, total, limit });
+        const totalImages = yield MessageModel_1.Message.countDocuments({
+            chat: req.params.chatId,
+            type: "image",
+        });
+        const totalAudios = yield MessageModel_1.Message.countDocuments({
+            chat: req.params.chatId,
+            type: "audio",
+        });
+        const totalVideos = yield MessageModel_1.Message.countDocuments({
+            chat: req.params.chatId,
+            type: "video",
+        });
+        const totalDocuments = yield MessageModel_1.Message.countDocuments({
+            chat: req.params.chatId,
+            type: "application",
+        });
+        res.send({
+            files,
+            total,
+            limit,
+            totalImages,
+            totalAudios,
+            totalVideos,
+            totalDocuments,
+        });
     }
     catch (error) {
         next(error);

@@ -8,8 +8,8 @@ const ToastProvider = () => {
     <>
       <ToastContainer
         position="top-left"
-        autoClose={false}
         limit={4}
+        autoClose={2000}
         newestOnTop
         closeOnClick
         rtl={false}

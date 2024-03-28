@@ -5,6 +5,9 @@ import { useMessageState } from "@/context/MessageContext";
 import { calculateTime } from "@/functions/formatTime";
 import dynamic from "next/dynamic";
 import Time from "./Time";
+import { handleDownload } from "@/config/handleDownload";
+import { RiDownloadCloudFill } from "react-icons/ri";
+import FullScreenPreview from "../../chatheader/media/FullScreen";
 const RREsystem = dynamic(() => import("../RRE/RREsystem"));
 const Status = dynamic(() => import("./Status"));
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
@@ -20,7 +23,7 @@ function ImageMessage({
   message: IMessage;
   isLastSeenMessage: boolean;
   isUserOnline: boolean;
-  isCurrentUserMessage:boolean
+  isCurrentUserMessage: boolean;
 }) {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   return (
@@ -44,6 +47,11 @@ function ImageMessage({
               height={300}
               width={300}
               loading="lazy"
+            />
+            <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+            <RiDownloadCloudFill
+              className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+              onClick={() => handleDownload(message?.file?.url)}
             />
             {/* Reply */}
             <RepliedMessage message={message} currentUser={currentUser as any} />

@@ -194,7 +194,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 // Send message to client
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
                             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                                 .to(receiverId.socketId)
@@ -231,7 +231,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
             if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                 chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                    const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                    const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                     if (receiverId) {
                         index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                             .to(receiverId.socketId)
@@ -466,7 +466,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 // Send message to client
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
                             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                                 .to(receiverId.socketId)
@@ -515,7 +515,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
             chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                 if (receiverId) {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId.socketId)
@@ -540,8 +540,9 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     var _l, _m, _o;
     try {
         const { messageId, chatId, content, type, receiverId } = req.body;
-        if (!messageId)
+        if (!messageId) {
             return next(new errorHandler_1.CustomErrorHandler("messageId  cannot be empty!", 400));
+        }
         const isLastMessage = yield ChatModel_1.Chat.findOne({ _id: chatId, latestMessage: messageId });
         const prevMessage = yield MessageModel_1.Message.findById(messageId);
         //delete Previous Image
@@ -589,7 +590,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 // Send message to client
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
                             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                                 .to(receiverId.socketId)
@@ -609,9 +610,10 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             res.status(200).json({ message: "Edit Message sucessfully" });
         }
         else {
-            if (!messageId || !content)
+            if (!messageId || !content) {
                 return next(new errorHandler_1.CustomErrorHandler("messageId or content  cannot be empty!", 400));
-            const message = yield MessageModel_1.Message.findOne(messageId);
+            }
+            const message = yield MessageModel_1.Message.findOne({ _id: messageId });
             if ((_o = message === null || message === void 0 ? void 0 : message.file) === null || _o === void 0 ? void 0 : _o.public_Id) {
                 yield cloudinary_1.v2.uploader.destroy(message.file.public_Id);
             }
@@ -635,7 +637,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         // Send message to client
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
             chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                 if (receiverId) {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId.socketId)
@@ -651,6 +653,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         res.status(200).json({ success: true, editedChat });
     }
     catch (error) {
+        console.log({ error });
         next(error);
     }
 });
@@ -675,7 +678,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                     // Send message to client
                     if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                         chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                            const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                            const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                             if (receiverId) {
                                 index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                                     .to(receiverId.socketId)
@@ -704,7 +707,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                     // Send message to client
                     if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                         chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                            const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                            const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                             if (receiverId) {
                                 index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                                     .to(receiverId.socketId)
@@ -730,7 +733,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                 const reaction = yield reactModal_1.Reaction.findByIdAndDelete(reactionId);
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                     chat === null || chat === void 0 ? void 0 : chat.users.forEach((user) => {
-                        const receiverId = (0, index_1.getSocketConnectedUser)(user);
+                        const receiverId = (0, index_1.getSocketConnectedUser)(user.toString());
                         if (receiverId) {
                             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                                 .to(receiverId.socketId)

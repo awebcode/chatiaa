@@ -7,6 +7,9 @@ import { PiFilePdf } from "react-icons/pi";
 import { FaDownload } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import Time from "./Time";
+import { RiDownloadCloudFill } from "react-icons/ri";
+import { handleDownload } from "@/config/handleDownload";
+import FullScreenPreview from "../../chatheader/media/FullScreen";
 const RREsystem = dynamic(() => import("../RRE/RREsystem"));
 const Status = dynamic(() => import("./Status"));
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
@@ -25,17 +28,6 @@ function PdfMessage({
   isCurrentUserMessage: boolean;
 }) {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
-
-  // Function to handle download action
-  const handleDownload = () => {
-    // Assuming the PDF URL is stored in the message object
-    const pdfUrl = message.file.url;
-    // Create an anchor element with the download attribute
-    const anchor = document.createElement("a");
-    anchor.href = pdfUrl;
-    anchor.download = `messengaria_image` + Math.random() * 1000 + "document.pdf"; // Set a default filename
-    anchor.click(); // Simulate a click to trigger download
-  };
 
   return (
     <div className="flex items-center gap-2 max-w-sm md:max-w-2xl">
@@ -57,6 +49,11 @@ function PdfMessage({
                 <PiFilePdf className={"rounded-lg text-2xl w-auto h-auto"} />
                 Pdf File
               </span>
+              <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+              <RiDownloadCloudFill
+                className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+                onClick={() => handleDownload(message?.file?.url)}
+              />
             </div>
             {/* Reply */}
             <RepliedMessage message={message} currentUser={currentUser as any} />

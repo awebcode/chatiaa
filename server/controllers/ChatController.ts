@@ -9,6 +9,12 @@ import { Message } from "../model/MessageModel";
 import mongoose from "mongoose";
 import { MessageSeenBy } from "../model/seenByModel";
 import { getSeenByInfo } from "../common/seenByInfo";
+import { AvatarGenerator } from "random-avatar-generator";
+import { v2 } from "cloudinary";
+import { io } from "..";
+import { emitEventToGroupUsers } from "../common/groupSocket";
+import { sentGroupNotifyMessage } from "./functions";
+import { generateUpdateMessage } from "../common/generateUpdateMessage";
 
 //@access          Protected
 export const accessChat = async (
@@ -34,7 +40,7 @@ export const accessChat = async (
 
   isChat = await User.populate(isChat, {
     path: "latestMessage.sender",
-    select: "name image email lastActive",
+    select: "name image email lastActive createdAt",
   });
 
   if (isChat.length > 0) {
@@ -50,7 +56,7 @@ export const accessChat = async (
       const createdChat = await Chat.create(chatData);
       let FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
         "users",
-        "name email image lastActive"
+        "name email image lastActive createdAt"
       );
 
       res.status(201).json({ success: true, isNewChat: true, chatData: FullChat });
@@ -91,18 +97,18 @@ export const fetchChats = async (
     })
       .populate({
         path: "users",
-        select: "name email image",
+        select: "name email image createdAt",
         options: { limit: 10 }, // Set limit to Infinity to populate all documents
       })
-      .populate("groupAdmin", "email name image")
+      .populate("groupAdmin", "email name image createdAt")
       .populate("latestMessage")
-      .populate("chatBlockedBy", "name image email")
+      .populate("chatBlockedBy", "name image email createdAt")
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(skip);
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
-      select: "name image email lastActive ",
+      select: "name image email lastActive createdAt",
     });
     // Filter the populatedChats array based on the keyword
     let filteredChats: any = [];
@@ -117,30 +123,6 @@ export const fetchChats = async (
       );
     }
 
-    // const filteredChatsWithUnseenCount = filteredChats.map((chat: any) => {
-    //   const correspondingUnseenCount = unseenCount.find(
-    //     (count: any) => count._id.toString() === chat._id.toString()
-    //   );
-    //   //seenBy
-    //   //  const { seenBy, isLatestMessageSeen, totalseenBy } = await getSeenByInfo(
-    //   //    chat._id,
-    //   //    chat?.latestMessage?._id,
-    //   //    req.id
-    //   //  );
-    //   return {
-    //     ...chat.toObject(),
-    //     // latestMessage: {
-    //     //   ...chat.latestMessage,
-    //     //   isSeen: !!isLatestMessageSeen,
-    //     //   totalseenBy,
-    //     //   seenBy,
-    //     // },
-    //     unseenCount: correspondingUnseenCount
-    //       ? correspondingUnseenCount.unseenMessagesCount
-    //       : 0,
-    //   };
-    // });
-    // Use Promise.all to handle all asynchronous operations concurrently
     const filteredChatsWithUnseenCountPromises = filteredChats.map(async (chat: any) => {
       const correspondingUnseenCount = unseenCount.find(
         (count: any) => count._id.toString() === chat._id.toString()
@@ -160,7 +142,7 @@ export const fetchChats = async (
             ...chat.latestMessage?._doc,
             isSeen: !!isLatestMessageSeen,
             seenBy,
-            totalseenBy: totalSeenCount||0,
+            totalseenBy: totalSeenCount || 0,
           },
           unseenCount: correspondingUnseenCount
             ? correspondingUnseenCount.unseenMessagesCount
@@ -313,9 +295,20 @@ export const createGroupChat = async (
   users.push(req.id);
 
   try {
+    const generator = new AvatarGenerator();
+    const randomAvatarUrl = generator.generateRandomAvatar();
+    const cloudinaryResponse = await v2.uploader.upload(randomAvatarUrl, {
+      folder: "messengaria",
+      format: "png", // Specify the format as PNG
+    });
+
     const groupChat = await Chat.create({
       chatName: req.body.groupName,
       users: users,
+      image: {
+        url: cloudinaryResponse.secure_url,
+        public_id: cloudinaryResponse.public_id,
+      },
       isGroupChat: true,
       groupAdmin: req.id,
     });
@@ -334,28 +327,87 @@ export const createGroupChat = async (
 // @desc    Rename Group
 // @route   PUT /api/chat/rename
 // @access  Protected
-export const renameGroup = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { chatId, chatName } = req.body;
 
+//
+// @access  Protected updateGroupPhoto and name
+export const updateGroupNamePhoto = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { chatId, groupName, description } = req.body;
+    const foundChat = await Chat.findById(chatId);
+    const currentUser = await User.findById(req.id);
+    if (!currentUser) {
+      return next(new CustomErrorHandler("User not found!", 404));
+    }
+    if (!foundChat) {
+      return next(new CustomErrorHandler("Chat not found!", 404));
+    }
+
+    // Update chat image if req.file.path exists
+    let imageUpdate = {};
+    if (req.file?.path) {
+      // Check if chat.image exists, if so, remove the previous image from cloudinary
+      if (foundChat.image && foundChat.image.public_id) {
+        await v2.uploader.destroy(foundChat.image.public_id as any);
+      }
+
+      const cloudinaryResponse = await v2.uploader.upload(req.file.path, {
+        folder: "messengaria",
+        format: "png", // Specify the format as PNG
+      });
+
+      imageUpdate = {
+        image: {
+          public_id: cloudinaryResponse.public_id,
+          url: cloudinaryResponse.secure_url,
+        },
+      };
+    }
+
+    // Update chat name and description if provided
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
-        chatName: chatName,
+        ...imageUpdate,
+        chatName: groupName || foundChat.chatName,
+        description: description || foundChat.description,
       },
       {
         new: true,
       }
     )
-      .populate("users", "-password")
-      .populate("groupAdmin", "-password");
-
-    if (!updatedChat) {
-      res.status(404);
-      return next(new CustomErrorHandler("Chat not found!", 404));
-    } else {
-      res.json(updatedChat);
+      .populate({
+        path: "users",
+        select: "name email image lastActive",
+        options: { limit: 10 },
+      })
+      .populate("groupAdmin", "name email image lastActive");
+    // //@@@ notify/emit-socket group members that who updated the group
+    // Generate update message
+    const message = generateUpdateMessage(
+      currentUser,
+      description,
+      groupName
+,
+      req.file?.path,
+    );
+    if (message.trim() !== "") {
+      const updateGroupMessage = await sentGroupNotifyMessage({
+        chatId: chatId,
+        user: req.id,
+        message
+      });
+      const updateGroupData = {
+        message: { ...updateGroupMessage.toObject() },
+        chatId,
+      };
+      await emitEventToGroupUsers(io, "groupNotifyReceived", chatId, updateGroupData);
     }
+    //@@@ notify/emit socket group members that who updated the group
+    res.json(updatedChat);
   } catch (error) {
     console.log(error);
     next(error);
@@ -457,27 +509,80 @@ export const removeFromGroup = async (
 // @desc    Add user to Group / Leave
 // @route   PUT /api/chat/groupadd
 // @access  Protected
-export const addToGroup = async (req: Request, res: Response, next: NextFunction) => {
+export const addToGroup = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { chatId, userId } = req.body;
+    const { chatId, userIds } = req.body;
+    //
+    const currentUser = await User.findById(req.id);
 
-    // check if the requester is admin
+    // Check if the chat exists
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return next(new CustomErrorHandler("Chat not found!", 404));
+    }
 
+    const newUsers = [];
+
+    // Loop through userIds and add users who are not already members
+    for (const userId of userIds) {
+      if (!chat.users.includes(userId)) {
+        newUsers.push(userId);
+      }
+    }
+
+    // If all users are already members, return a message
+    if (newUsers.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "All users are already members of the group" });
+    }
+
+    // Add new users to the group
     const added = await Chat.findByIdAndUpdate(
       chatId,
       {
-        $push: { users: userId },
+        $push: { users: { $each: newUsers } },
       },
       {
         new: true,
       }
     )
-      .populate("users", "-password")
-      .populate("groupAdmin", "-password");
+      .populate({
+        path: "users",
+        select: "name email image lastActive",
+        options: { limit: 10 },
+      })
+      .populate("groupAdmin", "name email image lastActive");
 
     if (!added) {
       return next(new CustomErrorHandler("Chat not found!", 404));
     } else {
+      //@@@ notify group members that who added in group
+
+      for (const userId of userIds) {
+        const user = await User.findById(userId);
+        const addUsersToGroupMessage = await sentGroupNotifyMessage({
+          chatId: chatId,
+          user: req.id,
+          message: `${currentUser?.name} added ${user?.name} to the group `,
+        });
+        const addUsersToGroupData = {
+          message: { ...addUsersToGroupMessage.toObject() },
+          user,
+          chatId,
+        };
+        await emitEventToGroupUsers(
+          io,
+          "groupNotifyReceived",
+          chatId,
+          addUsersToGroupData
+        );
+        //@@@ notify group members that who added in group
+      }
       res.json(added);
     }
   } catch (error) {
@@ -544,8 +649,12 @@ export const makeAdmin = async (
         new: true,
       }
     )
-      .populate("users", "-password")
-      .populate("groupAdmin", "-password");
+      .populate({
+        path: "users",
+        select: "name email image lastActive",
+        options: { limit: 10 },
+      })
+      .populate("groupAdmin", "name email image lastActive");
 
     if (!updatedChat) {
       return next(new CustomErrorHandler("Chat not found!", 404));
@@ -748,6 +857,30 @@ export const getUsersInAChat = async (
     next(error);
   }
 };
+//find inital files from a chat
+
+export const getInitialFilesInChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const files = await Message.find({
+      chat: req.params.chatId,
+      type: "image",
+    })
+      .select("file") // Select only the 'file' field
+      .sort({ updatedAt: -1 })
+      .limit(5);
+    const total = await Message.countDocuments({
+      type: { $in: ["image", "application", "audio", "video"] },
+    });
+    res.send({ files, total });
+  } catch (error) {
+    console.log({ error });
+    next(error);
+  }
+};
 
 //find files from a chat
 
@@ -773,10 +906,37 @@ export const getFilesInChat = async (
 
     const files = await Message.find(query)
       .sort({ updatedAt: -1 })
+      .select("file type")
+      .populate("sender", "image name email createdAt")
       .limit(limit)
       .skip(skip);
     const total = await Message.countDocuments(query);
-    res.send({ files, total, limit });
+    const totalImages = await Message.countDocuments({
+      chat: req.params.chatId,
+      type: "image",
+    });
+    const totalAudios = await Message.countDocuments({
+      chat: req.params.chatId,
+      type: "audio",
+    });
+    const totalVideos = await Message.countDocuments({
+      chat: req.params.chatId,
+      type: "video",
+    });
+    const totalDocuments = await Message.countDocuments({
+      chat: req.params.chatId,
+      type: "application",
+    });
+
+    res.send({
+      files,
+      total,
+      limit,
+      totalImages,
+      totalAudios,
+      totalVideos,
+      totalDocuments,
+    });
   } catch (error) {
     next(error);
   }

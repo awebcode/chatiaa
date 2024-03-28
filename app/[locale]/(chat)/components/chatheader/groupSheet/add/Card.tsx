@@ -13,7 +13,7 @@ const GroupCard: React.FC<{ user: Tuser }> = ({ user }) => {
     <div
       onClick={handleClick}
       className={`p-2 rounded-md  dark:text-white cursor-pointer  dark:bg-gray-800 dark:hover:bg-gray-700 bg-gray-200 hover:bg-gray-300  duration-500 ${
-        selectedAddGroupUsers.some((u) => u._id === user._id) ? "!bg-neutral-600" : ""
+        selectedAddGroupUsers.some((u) => u._id === user._id) ? "!bg-neutral-600 cursor-not-allowed" : ""
       }`}
     >
       <div className="flex items-center gap-3">

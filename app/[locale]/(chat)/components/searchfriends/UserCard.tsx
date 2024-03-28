@@ -38,8 +38,14 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
           lastActive: !chat?.chatData?.isGroupChat
             ? getSenderFull(currentUser, chat?.chatData?.isGroupChat.users)?.lastActive
             : "",
-          createdAt: !chat?.chatData?.isGroupChat ? isFriend?.createdAt : "",
+          createdAt: !chat?.chatData?.isGroupChat
+            ? isFriend?.createdAt
+            : chat?.chatData?.createdAt,
         } as any,
+        groupInfo: {
+          description: (chat as any)?.description,
+          image: { url: (chat as any)?.image?.url },
+        },
       };
       // setSelectedChat(chatData as any);
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });

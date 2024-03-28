@@ -15,6 +15,8 @@ authRoute.post("/login", authControllers_1.login);
 authRoute.get("/getUser", authMiddleware_1.default, authControllers_1.getUser);
 authRoute.get("/getProfile/:userId", authMiddleware_1.default, authControllers_1.getProfile);
 authRoute.get("/getUsers", authMiddleware_1.default, authControllers_1.allUsers);
+//allUsersForAddgroupExclueWhoinAlreadyChat
+authRoute.get("/allUsersForAddgroupExclueWhoinAlreadyChat/:chatId", authMiddleware_1.default, authControllers_1.allUsersForAddgroupExclueWhoinAlreadyChat);
 authRoute.post("/logout", authControllers_1.logout);
 authRoute.delete("/deleteUser", authMiddleware_1.default, authControllers_1.deleteUser);
 exports.default = authRoute;

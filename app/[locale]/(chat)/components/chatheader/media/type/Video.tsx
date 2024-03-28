@@ -1,33 +1,22 @@
 import { IMessage } from "@/context/reducers/interfaces";
-import dynamic from "next/dynamic";
-import Image from "next/image";
 import React from "react";
-const Time = dynamic(() => import("../../../messages/typeMessages/Time"));
 
-const Video = ({ message }: { message: IMessage }) => {
-  const senderImage = message.sender?.image;
-
+import TooltipWrapper from "./TooltipWrapper";
+import { handleDownload } from "@/config/handleDownload";
+import { RiDownloadCloudFill } from "react-icons/ri";
+import FullScreenPreview from "../FullScreen";
+const VideoFile = ({ message }: { message: IMessage }) => {
   return (
-    <div className="relative inline-block">
-      <video
-        src={message.file.url}
-        controls
-        className={"rounded-lg w-full h-full"}
-        height={300}
-        width={300}
+    <div className="relative inline-block h-36 w-36">
+      <video src={message.file.url} controls className={"rounded-lg w-full h-full"} />
+      <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+      <RiDownloadCloudFill
+        className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+        onClick={() => handleDownload(message?.file?.url)}
       />
-      {senderImage && (
-        <Image
-          src={senderImage}
-          alt="Sender Image"
-          height={40}
-          width={40}
-          loading="lazy"
-          className="absolute top-2 right-2 w-10 h-10 rounded-full border-2 border-white"
-        />
-      )}
+      <TooltipWrapper message={message} />
     </div>
   );
 };
 
-export default Video;
+export default VideoFile;

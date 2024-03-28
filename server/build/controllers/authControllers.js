@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allUsers = exports.getUser = exports.login = exports.register = exports.deleteUser = exports.logout = exports.getProfile = void 0;
+exports.allUsers = exports.getUser = exports.login = exports.register = exports.deleteUser = exports.logout = exports.allUsersForAddgroupExclueWhoinAlreadyChat = exports.getProfile = void 0;
 const cloudinary_1 = require("cloudinary");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -57,7 +57,7 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             password: hashedPassword,
             email,
             image: avatarUrl,
-            provider: "credentials"
+            provider: "credentials",
         }); //, image: url.url
         const user = yield newUser.save();
         res.status(201).json({ message: "User registered successfully", user: user });
@@ -153,9 +153,7 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                         .map((chat) => chat.users)
                         .flat(),
                 },
-                $and: [
-                    { _id: { $ne: req.id } },
-                ],
+                $and: [{ _id: { $ne: req.id } }],
             }
             : {
                 $and: [{ _id: { $ne: req.id } }, Object.assign({}, keyword)],
@@ -169,6 +167,35 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.allUsers = allUsers;
+//find for adding in group who not exists in chat
+const allUsersForAddgroupExclueWhoinAlreadyChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const limit = parseInt(req.query.limit) || 4;
+    const skip = parseInt(req.query.skip) || 0;
+    const chatId = req.params.chatId;
+    try {
+        const keyword = req.query.search
+            ? {
+                $or: [
+                    { name: { $regex: req.query.search, $options: "i" } },
+                    { email: { $regex: req.query.search, $options: "i" } },
+                ],
+            }
+            : {};
+        // Find users that are not part of the chat
+        const usersQuery = {
+            _id: { $nin: (_a = (yield ChatModel_1.Chat.findById(chatId))) === null || _a === void 0 ? void 0 : _a.users }, // Exclude users who are part of the chat
+            $and: [{ _id: { $ne: req.id } }, Object.assign({}, keyword)],
+        };
+        const users = yield UserModel_1.User.find(usersQuery).limit(limit).skip(skip);
+        const total = yield UserModel_1.User.countDocuments(usersQuery);
+        res.send({ users, total, limit });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.allUsersForAddgroupExclueWhoinAlreadyChat = allUsersForAddgroupExclueWhoinAlreadyChat;
 const logout = (req, res, next) => {
     res.cookie("authToken", "", {
         expires: new Date(0),

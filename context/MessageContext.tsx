@@ -10,6 +10,7 @@ import { State } from "./reducers/interfaces";
 import {  useContextSelector } from "use-context-selector";
 const initialState: State = {
   selectedChat: null,
+  isSelectedChat: null,
   messages: [],
   user: null,
   totalMessagesCount: 0,

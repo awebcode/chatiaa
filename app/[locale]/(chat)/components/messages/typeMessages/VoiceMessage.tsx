@@ -7,6 +7,9 @@ import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import dynamic from "next/dynamic";
 import Time from "./Time";
+import { RiDownloadCloudFill } from "react-icons/ri";
+import { handleDownload } from "@/config/handleDownload";
+import FullScreenPreview from "../../chatheader/media/FullScreen";
 const RREsystem = dynamic(() => import("../RRE/RREsystem"));
 const Status = dynamic(() => import("./Status"));
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
@@ -28,7 +31,7 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
-export default function  ({
+export default function ({
   message,
   isLastSeenMessage,
   isUserOnline,
@@ -37,8 +40,8 @@ export default function  ({
   message: IMessage;
   isLastSeenMessage: boolean;
   isUserOnline: boolean;
-  isCurrentUserMessage:boolean
-})  {
+  isCurrentUserMessage: boolean;
+}) {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
@@ -88,7 +91,7 @@ export default function  ({
     <div className="flex items-center gap-2 ">
       {/* Remove/Replay/Emoji */}
       <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
-      <div className="">
+      <div className="flex flex-col justify-end items-end">
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
         <div
           className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
@@ -103,6 +106,7 @@ export default function  ({
               className="h-full w-full object-cover rounded-full"
             />
           </div>
+
           <div className={"cursor-pointer text-xl"}>
             {!playing ? (
               <FaPlay onClick={handlePlayAudio} />
@@ -111,7 +115,8 @@ export default function  ({
             )}
           </div>
           <div className={"relative "}>
-            <div className={"w-24 md:w-60"} ref={waveformRef}></div>
+            <div className={"w-28 md:w-60"} ref={waveformRef}></div>
+
             <div
               className={
                 "text-bubble-meta text-[11px] pt-1 flex justify-between absolute bottom-[-22px] w-full"
@@ -138,8 +143,12 @@ export default function  ({
                 isLastSeenMessage={isLastSeenMessage}
                 isUserOnline={isUserOnline}
               />
+              <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+              <RiDownloadCloudFill
+                className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+                onClick={() => handleDownload(message?.file?.url)}
+              />
             </div>
-            
           </div>
         </div>
       </div>

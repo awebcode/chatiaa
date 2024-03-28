@@ -142,7 +142,9 @@ const Card = ({ user }: { user: Tuser }) => {
           ></span>
         </div>
         <div>
-          <h2 className="text-gray-200 fon-medium text-xs">{user?.name}</h2>
+          <h2 className="dark:text-gray-200 text-gray-600 fon-medium text-xs">
+            {user?.name}
+          </h2>
           <p className=" text-gray-400 text-[10px]">{user?.email}</p>
         </div>
       </div>

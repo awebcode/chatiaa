@@ -7,6 +7,7 @@ import {
   logout,
   deleteUser,
   getProfile,
+  allUsersForAddgroupExclueWhoinAlreadyChat,
 } from "../controllers/authControllers";
 import authMiddleware from "../middlewares/authMiddleware";
 import uploadMiddleware from "../middlewares/uploadMiddleware";
@@ -20,6 +21,12 @@ authRoute.post("/login", login);
 authRoute.get("/getUser", authMiddleware, getUser);
 authRoute.get("/getProfile/:userId", authMiddleware, getProfile);
 authRoute.get("/getUsers", authMiddleware, allUsers);
+//allUsersForAddgroupExclueWhoinAlreadyChat
+authRoute.get(
+  "/allUsersForAddgroupExclueWhoinAlreadyChat/:chatId",
+  authMiddleware,
+  allUsersForAddgroupExclueWhoinAlreadyChat
+);
 authRoute.post("/logout", logout);
 authRoute.delete("/deleteUser",authMiddleware, deleteUser);
 export default authRoute;

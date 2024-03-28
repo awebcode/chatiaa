@@ -35,10 +35,10 @@ export const createGroup = async (data: any) => {
   return groupData;
 };
 
-//rename
-export const renameGroup = async (dataGroup: { chatId: string; chatName: string }) => {
-  const { data } = await axiosClient.put(`/rename`, dataGroup, {
-    headers: { "Content-Type": "application/json" },
+//updateGroupNamePhoto
+export const updateGroupNamePhoto = async (dataGroup: FormData) => {
+  const { data } = await axiosClient.put(`/updateGroupNamePhoto`, dataGroup, {
+    headers: { "Content-Type": "multipart/form-data" },
     withCredentials: true,
   });
   return data;
@@ -55,7 +55,7 @@ export const removeFromGroup = async (removeData: { chatId: string; userId: stri
 
 //addTo group
 export const addToGroup = async (addData: any) => {
-  const { data } = await axiosClient.put(`/addTogroup/`, addData, {
+  const { data } = await axiosClient.put(`/addTogroup`, addData, {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
@@ -100,8 +100,16 @@ export const leaveChat = async (chatId: string, userId: string) => {
   return data;
 };
 
+//getInitialFilesInChat
 
-
+//leave from group Chat
+export const getInitialFilesInChat = async (chatId: string) => {
+  const { data } = await axiosClient.get(`/getInitialFilesInChat/${chatId}`, {
+    headers: { "Content-Type": "application/json" },
+    withCredentials: true,
+  });
+  return data;
+};
 //getFilesInChat
 
 export const getFilesInChat = async ({

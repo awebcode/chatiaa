@@ -1,8 +1,4 @@
 "use client";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetClose,
@@ -17,9 +13,11 @@ import Image from "next/image";
 import { BsThreeDots } from "react-icons/bs";
 import Media from "../media/Media";
 import Members from "./Members";
-
+const UpdateGroupDialog = dynamic(() => import("./update/UpdateGroupDialog"));
 export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boolean }) {
   const { selectedChat } = useMessageState();
+  console.log({ selectedChat });
+  
   return (
     <div className="relative grid grid-cols-2 gap-2 w-full ">
       <Sheet>
@@ -32,7 +30,7 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
           <SheetHeader>
             <SheetTitle className="text-center">
               {" "}
-              {selectedChat?.groupChatName} Info&apos;s
+              {selectedChat?.chatName} Group Info
             </SheetTitle>
           </SheetHeader>
           {/* Avatar and name*/}
@@ -43,11 +41,14 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
                 height={35}
                 width={35}
                 className="rounded-full object-fill h-full w-full"
-                alt={"group Image"}
-                src={"/logo.svg"}
+                alt={selectedChat?.chatName as any}
+                src={selectedChat?.groupInfo?.image?.url as any}
                 loading="lazy"
               />
-
+              {/* update image name dialog */}
+              <div className="absolute -top-2 -right-1">
+                <UpdateGroupDialog />
+              </div>
               <span
                 className={`absolute bottom-0 -right-1 rounded-full  p-[6px] ${
                   isUserOnline ? "bg-green-500" : "bg-rose-500"
@@ -55,16 +56,17 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
               ></span>
             </div>
             <h1 className="text-sm md:text-sm text-center font-medium text-gray-200">
-              {selectedChat?.groupChatName}
+              {selectedChat?.chatName} <UpdateGroupDialog />
             </h1>
           </div>
           {/* Description */}
 
           <div>
-            <p className="text-xs p-2 rounded text-gray-200 border ">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur numquam
-              corrupti voluptas placeat saepe !
-            </p>
+            {selectedChat?.groupInfo?.description ? (
+              <p className="text-xs p-2 rounded text-gray-200 border ">
+                {selectedChat?.groupInfo?.description.slice(0, 200)} <UpdateGroupDialog />
+              </p>
+            ) : null}
           </div>
           {/* Avatar and name end*/}
           <div className="grid gap-4 py-4">

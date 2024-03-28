@@ -1,11 +1,13 @@
 import React from "react";
 import { IMessage } from "@/context/reducers/interfaces";
 import { useMessageState } from "@/context/MessageContext";
-import { calculateTime } from "@/functions/formatTime";
 import dynamic from "next/dynamic";
 import Time from "./Time";
+import { handleDownload } from "@/config/handleDownload";
+import { RiDownloadCloudFill } from "react-icons/ri";
+import FullScreenPreview from "../../chatheader/media/FullScreen";
 const RREsystem = dynamic(() => import("../RRE/RREsystem"));
-const Status = dynamic(() => import("./Status"))
+const Status = dynamic(() => import("./Status"));
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
 
 // Import RepliedMessage dynamically
@@ -44,6 +46,11 @@ function VideoMessage({
                 className={"rounded-lg w-full h-full"}
                 // height={300}
                 // width={300}
+              />
+               <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+              <RiDownloadCloudFill
+                className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+                onClick={() => handleDownload(message?.file?.url)}
               />
             </div>
             {/* Reply */}

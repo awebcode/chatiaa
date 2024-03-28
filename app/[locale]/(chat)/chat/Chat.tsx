@@ -20,6 +20,7 @@ import {
   SET_TOTAL_MESSAGES_COUNT,
   UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND,
   UPDATE_CHAT_STATUS,
+  UPDATE_GROUP_INFO,
   UPDATE_LATEST_CHAT_MESSAGE,
   UPDATE_MESSAGE_STATUS,
 } from "@/context/reducers/actions";
@@ -153,14 +154,13 @@ const Chat = () => {
         };
         await updateMessageStatus(updateStatusData);
       } else {
-        if (data.chat.isGroupChat&&data.sender?._id!==currentUserRef.current?._id) {
+        if (data.chat.isGroupChat && data.sender?._id !== currentUserRef.current?._id) {
           //update group
           const pushData = {
             chatId: data?.chat?._id,
             messageId: data?._id,
             user: currentUserRef.current,
           };
-
 
           dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
         } else {
@@ -190,7 +190,7 @@ const Chat = () => {
             messageId: data?._id,
             user: currentUserRef.current,
             status: "seen",
-            onClickByseen:"false"
+            onClickByseen: "false",
           };
 
           //emit event to server to sender
@@ -211,7 +211,7 @@ const Chat = () => {
           await updateMessageStatus(updateStatusData);
         } else {
           console.log({ deliverGrpMessage: data });
-         
+
           if (data.chat.status !== "seen") {
             dispatch({
               type: UPDATE_LATEST_CHAT_MESSAGE,
@@ -226,7 +226,7 @@ const Chat = () => {
               status: "delivered",
             });
             //update status
-           
+
             await updateMessageStatus({
               chatId: data?.chat?._id,
               status: "delivered",
@@ -237,7 +237,7 @@ const Chat = () => {
             //   payload: { ...data, status: "seen" },
             // });
           }
-          
+
           // //update all message status as delivered in group
           // updateAllMessageStatusAsDeliveredMutation.mutateAsync(
           //   currentUserRef.current?._id as any
@@ -381,7 +381,7 @@ const Chat = () => {
       payload: data.message,
     });
     // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
-    // dispatch({ type: MAKE_AS_ADMIN_TO_GROUP_CHAT, payload: data });
+    dispatch({ type: MAKE_AS_ADMIN_TO_GROUP_CHAT, payload: data });
     // console.log({ handleMakeAdminToGroupNotify: data.message });
   }, []);
   //adminRemoveFromGroupNotify
@@ -392,7 +392,7 @@ const Chat = () => {
       payload: data.message,
     });
     // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
-    // dispatch({ type: REMOVE_ADMIN_FROM_GROUP_CHAT, payload: data });
+    dispatch({ type: REMOVE_ADMIN_FROM_GROUP_CHAT, payload: data });
   }, []);
 
   //handleSeenPushGroupMessage
@@ -408,6 +408,20 @@ const Chat = () => {
       payload: { ...data, status: "delivered" },
     });
   }, []);
+  //handleUpdate_group_info_Received
+  const handleUpdate_group_info_Received = useCallback((data: any) => {
+    dispatch({ type: UPDATE_GROUP_INFO, payload: data });
+  }, []);
+  //hanlegroupNotifyReceived
+
+  const handlegroupNotifyReceived = useCallback((data: any) => {
+   dispatch({ type: SET_MESSAGES, payload: data.message });
+   dispatch({
+     type: UPDATE_LATEST_CHAT_MESSAGE,
+     payload: data.message,
+   });
+  }, []);
+
   useEffect(() => {
     // Add event listeners
     socket.on("receiveMessage", handleSocketMessage);
@@ -439,6 +453,8 @@ const Chat = () => {
     socket.on("adminRemoveFromGroupNotifyReceived", handleAdminRemoveFromGroupNotify);
     socket.on("seenPushGroupMessageReceived", handleSeenPushGroupMessage);
     socket.on("deliveredGroupMessageReceived", handleDeliveredGroupMessage);
+    socket.on("update_group_info_Received", handleUpdate_group_info_Received);
+    socket.on("groupNotifyReceived",handlegroupNotifyReceived)
     //block single chat
 
     socket.on("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
@@ -478,6 +494,8 @@ const Chat = () => {
       socket.off("groupChatLeaveNotifyReceived", groupChatLeaveNotifyReceivedHandler);
       socket.off("seenPushGroupMessageReceived", handleSeenPushGroupMessage);
       socket.off("deliveredGroupMessageReceived", handleDeliveredGroupMessage);
+      socket.off("update_group_info_Received", handleUpdate_group_info_Received);
+       socket.off("groupNotifyReceived",handlegroupNotifyReceived)
     };
   }, []); //
 

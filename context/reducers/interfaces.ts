@@ -36,20 +36,22 @@ export interface IChat {
   chatId?: string;
   latestMessage?: IMessage ;
   isGroupChat: boolean;
-  groupChatName: string;
   chatName: string;
 
   userInfo: Tuser;
+  groupInfo: { description: string; image: { url: string;  } };
   groupAdmin?: Tuser[];
   users: Tuser[];
   unseenCount: number;
   createdAt: string;
   chatBlockedBy: Tuser[];
+  image:{ url: string;  }
 }
 
 export interface State {
   user: Tuser | null;
   selectedChat: IChat | null;
+  isSelectedChat: IChat | null;
   messages: IMessage[];
   totalMessagesCount: number;
   totalChats: number;

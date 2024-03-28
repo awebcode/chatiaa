@@ -1,52 +1,45 @@
-import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { useMessageState } from "@/context/MessageContext";
-import { getFilesInChat } from "@/functions/chatActions";
-import { TabsTrigger } from "@radix-ui/react-tabs";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useDebounce } from "@uidotdev/usehooks";
+import { IMessage } from "@/context/reducers/interfaces";
+import {  getInitialFilesInChat } from "@/functions/chatActions";
+import {  useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import React, { useState } from "react";
-const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
+const FilesSheet = dynamic(() => import("./FileSheet"));
 const Media = () => {
   const { selectedChat } = useMessageState();
-  const [filter, setFilter] = useState("all");
-  const debouncedFilter = useDebounce(filter, 600);
-  const { data, isFetching, fetchNextPage, hasNextPage } = useInfiniteQuery({
-    queryKey: [selectedChat?.chatId, debouncedFilter],
-
-    queryFn: getFilesInChat as any,
-
-    getNextPageParam: (lastPage: any) => {
-      const { prevOffset, total, limit } = lastPage;
-      // Calculate the next offset based on the limit
-      const nextOffset = prevOffset + limit;
-
-      // Check if there are more items to fetch
-      if (nextOffset >= total) {
-        return;
-      }
-
-      return nextOffset;
-    },
-    initialPageParam: 0,
+  const { data, isFetching, isLoading } = useQuery({
+    queryKey: [ "group"],
+    queryFn:()=> getInitialFilesInChat(selectedChat?.chatId as string),
   });
   return (
-    <div>
-      <Tabs defaultValue="all" onValueChange={(v)=>setFilter(v)} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 overflow-x-auto">
-          <TabsTrigger value="all">all files</TabsTrigger>
-          <TabsTrigger value="image">Image</TabsTrigger>
-          <TabsTrigger value="video">Video</TabsTrigger>
-
-          <TabsTrigger value="audio">Audio</TabsTrigger>
-          <TabsTrigger value="application">Application</TabsTrigger>
-        </TabsList>
-         <TabsContent value="all">
-            
-
-         </TabsContent>
-      </Tabs>
-    </div>
+    <>
+      <h1 className="text-sm md:text-lg text-gray-600">Media & files</h1>
+      {data?.total > 0 ? (
+        <div className="w-full flex items-center justify-between">
+          <div className="flex gap-1  items-center ">
+            {data?.files &&
+              data?.files?.length > 0 &&
+              data?.files?.map((file: IMessage, index: number) => {
+                return (
+                  <div className="h-10 w-10 rounded-lg">
+                    <Image
+                      src={file.file.url}
+                      alt="file"
+                      height={80}
+                      width={80}
+                      className="h-full w-full rounded-lg"
+                    />
+                  </div>
+                );
+              })}
+          </div>
+          <FilesSheet total={data?.total} />
+        </div>
+      ) : (
+        <h1 className="text-lg font-medium text-center text-gray-200">No files</h1>
+      )}
+    </>
   );
 };
 

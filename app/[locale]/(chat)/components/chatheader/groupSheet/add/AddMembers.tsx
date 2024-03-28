@@ -1,15 +1,13 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import dynamic from "next/dynamic";
 const SearchGroupModal = dynamic(() => import("./SearchGroupModal"));
 export default  function AddMembers() {
@@ -25,7 +23,8 @@ export default  function AddMembers() {
             add more members and enjoy group chatting with your friends.
           </DialogDescription>
         </DialogHeader>
-        <SearchGroupModal/>
+        <SearchGroupModal />
+        <DialogClose id="closeAddGroupDialog" className="hidden"></DialogClose>
       </DialogContent>
     </Dialog>
   );

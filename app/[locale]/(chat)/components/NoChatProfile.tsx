@@ -2,7 +2,6 @@ import Image from "next/image";
 import React from "react";
 import moment from "moment";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
-import { useChatStore } from "@/store/useChat";
 import { useUserStore } from "@/store/useUser";
 import { IChat } from "@/context/reducers/interfaces";
 
@@ -15,7 +14,7 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
           (user: any) => user._id === u.id && user._id !== currentUser?._id
         )
       : selectedChat?.userInfo?._id === u.id
-  )
+  );
   return (
     <div>
       <div className="max-w-sm bg-gray-200 dark:bg-gray-800 mx-auto m-20 rounded-lg shadow-md p-4">
@@ -25,8 +24,19 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
             height={80}
             width={80}
             className="rounded-full mx-auto h-full w-full"
-            src={selectedChat?.userInfo?.image}
-            alt={selectedChat?.userInfo?.name}
+            loading="lazy"
+            src={
+              selectedChat.isGroupChat
+                ? selectedChat?.groupInfo?.image?.url
+                : (selectedChat?.userInfo.image as any)
+            }
+            
+           
+            alt={
+              selectedChat.isGroupChat
+                ? selectedChat?.chatName
+                : (selectedChat?.userInfo.name as any)
+            }
           />
           <span
             className={`absolute bottom-0 right-0 rounded-full p-[7px] ${

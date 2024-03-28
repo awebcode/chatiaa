@@ -5,6 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import dynamic from "next/dynamic";
+import TooltipWrapper from "./TooltipWrapper";
+import { handleDownload } from "@/config/handleDownload";
+import { RiDownloadCloudFill } from "react-icons/ri";
+import FullScreenPreview from "../FullScreen";
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"));
 // Import RepliedMessage dynamically
 // styles
@@ -22,7 +26,13 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
-export default function ({ message }: { message: IMessage }) {
+export default function AudioFile({
+  message,
+  onPreview,
+}: {
+  message: IMessage;
+  onPreview: boolean;
+}) {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -68,23 +78,19 @@ export default function ({ message }: { message: IMessage }) {
   };
 
   return (
-    <div className="flex items-center gap-2 ">
+    <div className="relative flex items-center gap-2 ">
       {/* Remove/Replay/Emoji */}
+      <TooltipWrapper message={message} />
+      <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+      <RiDownloadCloudFill
+        className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+        onClick={() => handleDownload(message?.file?.url)}
+      />
       <div className="">
         <Time message={message} isCurrentUserMessage={true} />
         <div
           className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
         >
-          <div>
-            <Image
-              src={message.sender?.image}
-              height={60}
-              width={60}
-              loading="lazy"
-              alt="avatar"
-              className="h-full w-full object-cover rounded-full"
-            />
-          </div>
           <div className={"cursor-pointer text-xl"}>
             {!playing ? (
               <FaPlay onClick={handlePlayAudio} />
@@ -93,7 +99,7 @@ export default function ({ message }: { message: IMessage }) {
             )}
           </div>
           <div className={"relative "}>
-            <div className={"w-24 md:w-60"} ref={waveformRef}></div>
+            <div className={`${onPreview ? "w-80" : "w-16"}`} ref={waveformRef}></div>
             <div
               className={
                 "text-bubble-meta text-[11px] pt-1 flex justify-between absolute bottom-[-22px] w-full"

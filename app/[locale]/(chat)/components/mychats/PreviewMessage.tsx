@@ -20,44 +20,53 @@ export function MessagePreview({
   switch (chat?.latestMessage?.type) {
     case "image":
       previewContent = (
-        <>
+        <span className={`${!chat?.latestMessage?.isSeen?"font-bold":""}`}>
           {senderName} sent an{" "}
           <CiImageOn className="text-blue-500 text-lg inline mx-[1px]" />
           image
-        </>
+        </span>
       );
       break;
     case "audio":
       previewContent = (
-        <>
+        <span className={`${!chat?.latestMessage?.isSeen?"font-bold":""}`}>
           {senderName} sent an{" "}
           <AiOutlineAudio className="text-blue-500 text-lg inline mx-[1px]" /> audio
-        </>
+        </span>
       );
       break;
     case "video":
       previewContent = (
-        <>
+        <span className={`${!chat?.latestMessage?.isSeen?"font-bold":""}`}>
           {senderName} sent a{" "}
           <MdOutlineOndemandVideo className="text-blue-500 text-lg inline mx-[1px]" />{" "}
           video
-        </>
+        </span>
       );
       break;
     case "application":
       previewContent = (
-        <>
+         <span className={`${!chat?.latestMessage?.isSeen?"font-bold":""}`}>
           {senderName} sent a{" "}
           <PiFilePdf className="text-blue-500 text-lg inline mx-[1px]" /> Pdf file
-        </>
+        </span>
       );
       break;
     default:
-      if (chat?.latestMessage?.content) {
+      if (chat?.latestMessage?.content && !chat?.latestMessage?.isSeen) {
         previewContent =
           chat?.latestMessage?.content.length > 25
             ? chat?.latestMessage?.content.substring(0, 25) + "..."
             : chat?.latestMessage?.content;
+      } else if (chat?.latestMessage?.content && chat?.latestMessage?.isSeen) {
+        previewContent = (
+          <span className="font-bold">
+            {chat?.latestMessage?.content.length > 25
+              ? chat?.latestMessage?.content.substring(0, 25) + "..."
+              : chat?.latestMessage?.content}
+          </span>
+        );
+         
       } else {
         previewContent = "Start a new conversation";
       }

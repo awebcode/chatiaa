@@ -17,8 +17,8 @@ import { BaseUrl } from "@/config/BaseUrl";
 import { useSocketContext } from "@/context/SocketContextProvider";
 export default function Messages() {
   const { selectedChat } = useMessageState();
-  const { messages, totalMessagesCount } = useMessageState();
- 
+  const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
+
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export default function Messages() {
         setLoading(true);
         // await new Promise((resolve) => setTimeout(resolve, 100));
         const res = await fetch(
-          `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
+          `${BaseUrl}/allmessages/${isSelectedChat?.chatId}?page=${page}&limit=10`,
           {
             credentials: "include",
           }
@@ -70,14 +70,16 @@ export default function Messages() {
       }
     };
 
-    if (selectedChat && page === 1) {
+    if (isSelectedChat&&page === 1) {
       fetchData();
     }
-
+    // if (selectedChat && page === 1) {
+    //       fetchData();
+    //     }
     return () => {
       isMounted = false;
     };
-  }, [selectedChat, page]);
+  }, [isSelectedChat,page]); //selectedChat,
 
   useEffect(() => {
     const fetchData = async () => {
@@ -162,7 +164,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-  console.log({messages:"render"})
+  console.log({ messages: "render" });
   return (
     <div
       id="CustomscrollableTarget"
@@ -201,7 +203,7 @@ export default function Messages() {
           <div id="messageEndTarget" ref={messageEndRef}></div>
           {/* typing indicator */}
 
-            <TypingIndicator onFriendListCard={false} />
+          <TypingIndicator onFriendListCard={false} />
           {loading ? (
             <div className="flex justify-center items-center mt-6">
               <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>

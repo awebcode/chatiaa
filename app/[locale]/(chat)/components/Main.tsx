@@ -26,7 +26,7 @@ const Main = () => {
         <Messages />
       </div>
       {/* Inpute */}
-      <div className="w-full absolute bottom-0 z-50">
+      <div className="w-full absolute bottom-0 z-auto">
         {" "}
         <Input />
       </div>

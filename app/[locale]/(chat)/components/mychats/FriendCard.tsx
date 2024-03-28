@@ -92,8 +92,12 @@ const FriendsCard: React.FC<{
         _id: !chat?.isGroupChat ? isFriend?._id : chat?._id,
         image: !chat.isGroupChat ? isFriend?.image : "/vercel.svg",
         lastActive: !chat.isGroupChat ? isFriend?.lastActive : "",
-        createdAt: !chat.isGroupChat ? isFriend?.createdAt : "",
+        createdAt: !chat.isGroupChat ? isFriend?.createdAt : chat?.createdAt,
       } as any,
+      groupInfo: {
+        description: (chat as any)?.description,
+        image: { url: (chat as any)?.image?.url },
+      },
     };
 
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
@@ -109,7 +113,7 @@ const FriendsCard: React.FC<{
     if (
       chat?.isGroupChat &&
       !chat?.latestMessage?.isSeen &&
-      chat?.latestMessage?.sender._id !== currentUser?._id
+      chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
       //&& !chat?.latestMessage?.isSeen
       const pushData = {
@@ -176,7 +180,7 @@ const FriendsCard: React.FC<{
               src={
                 !chat.isGroupChat
                   ? getSenderFull(currentUser, chat.users)?.image
-                  : "/vercel.svg"
+                  :(chat as any)?.image?.url|| "/vercel.svg"
               }
               loading="lazy"
             />

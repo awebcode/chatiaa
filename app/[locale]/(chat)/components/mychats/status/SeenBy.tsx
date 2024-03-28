@@ -13,18 +13,27 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
   return (
     <div className="">
       <div className="flex  gap-1">
+        {/* unseen */}
         {chat?.latestMessage?.status === "unseen" && (
           <div className="h-5 w-5 relative m-1">
             <IoIosCheckmarkCircleOutline className="h-5 w-5 text-gray-400 rounded-full relative" />
           </div>
         )}
-        {chat?.latestMessage?.status === "delivered" && (
+        {/* Delivered */}
+        {chat?.latestMessage?.status === "delivered" &&
+        chat?.latestMessage?.sender?._id === currentUser?._id ? (
           <div className="h-5 w-5 relative m-1">
             <IoIosCheckmarkCircle className="h-5 w-5 relative text-gray-400" />
           </div>
+        ) : (
+          chat?.latestMessage?.status === "delivered" &&
+          chat?.latestMessage?.sender?._id !== currentUser?._id && (
+            <div className="h-5 w-5 bg-blue-500 rounded-full"></div>
+          )
         )}
+        {/* seen */}
         {chat?.latestMessage?.status === "seen" &&
-          chat?.latestMessage?.seenBy?.slice(0, 3)?.map((user: any) => {
+          chat?.latestMessage?.seenBy?.slice(0, 5)?.map((user: any) => {
             return (
               <TooltipProvider>
                 <Tooltip>

@@ -39,6 +39,26 @@ export const getAllUsers = async ({
   );
   return { ...data, prevOffset: pageParam, skip: pageParam };
 };
+//allUsersForAddgroupExclueWhoinAlreadyChat
+export const allUsersForAddgroupExclueWhoinAlreadyChat = async ({
+  queryKey = "",
+  pageParam = 0,
+}: {
+  pageParam: any;
+  queryKey: any;
+}) => {
+  const { data } = await axiosClient.get(
+    `/allUsersForAddgroupExclueWhoinAlreadyChat/${queryKey[0]}?search=${
+      queryKey[1]
+    }&skip=${pageParam}&limit=${10}
+    `,
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+  return { ...data, prevOffset: pageParam, skip: pageParam };
+};
 
 //logout user
 export const logoutUser = async () => {

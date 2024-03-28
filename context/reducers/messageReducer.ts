@@ -20,6 +20,7 @@ import {
   REMOVE_USER_FROM_GROUP,
   SET_GROUP_USERS_ON_FETCHING,
   SEEN_PUSH_USER_GROUP_MESSAGE,
+  UPDATE_GROUP_INFO,
 } from "./actions";
 import { Action, State } from "./interfaces";
 import {
@@ -296,7 +297,7 @@ export const messageReducer = (state: State, action: Action): State => {
                 ...(chat.latestMessage as any),
                 status: "seen",
                 seenBy: updatedSeenBy,
-                isSeen:action.payload?.user?._id===action.payload?.currentUser?._id?true: false,
+                isSeen: action.payload?.currentUser ? true : false,
               },
             };
           }
@@ -347,7 +348,7 @@ export const messageReducer = (state: State, action: Action): State => {
     // set chats end
     //selected chat start
     case SET_SELECTED_CHAT:
-      return { ...state, selectedChat: action.payload };
+      return { ...state, selectedChat: action.payload, isSelectedChat: action.payload };
     //selected chat end
     case SET_MESSAGES:
       let updatedMessages;
@@ -369,6 +370,7 @@ export const messageReducer = (state: State, action: Action): State => {
       return {
         ...state,
         messages: [],
+        
       };
     }
     //UPDATE MESSAGE STATUS
@@ -422,10 +424,14 @@ export const messageReducer = (state: State, action: Action): State => {
         messages: state.messages.map((message) => {
           if (message._id === action.payload.reaction.messageId) {
             // If the message ID matches, update the reactions
+            const updatedReactions = Array.isArray(message.reactions)
+              ? [...message.reactions]
+              : [];
             if (action.payload.type === "add") {
-              // For add type, add the new reaction and update the reactionsGroup
-              const updatedReactions = [action.payload.reaction, ...message.reactions];
-              let updatedReactionsGroup = [...message.reactionsGroup]; // Create a copy of the original reactionsGroup
+              updatedReactions.unshift(action.payload.reaction); // Add the new reaction to the beginning of the array
+              let updatedReactionsGroup = Array.isArray(message.reactionsGroup)
+                ? [...message.reactionsGroup]
+                : [];
 
               // Find the index of the emoji in reactionsGroup
               const emojiIndex = updatedReactionsGroup.findIndex(
@@ -578,7 +584,37 @@ export const messageReducer = (state: State, action: Action): State => {
               )
             : state.messages,
       };
+    //update group UPDATE_GROUP_INFO
 
+    case UPDATE_GROUP_INFO:
+      console.log({UPDATE_GROUP_INFO:action.payload})
+      return {
+        ...state,
+        chats: state?.chats?.map((chat) =>
+          chat?._id === action.payload._id
+            ? {
+                ...chat,
+                chatName: action.payload.chatName,
+                image: action.payload.image,
+                groupInfo: {
+                  description: action.payload.description,
+                  image: action.payload.image,
+                },
+              }
+            : chat
+        ),
+        selectedChat:
+          state?.selectedChat && state?.selectedChat?.chatId === action.payload._id
+            ? {
+                ...state?.selectedChat,
+                chatName: action.payload.chatName,
+                groupInfo: {
+                  description: action.payload.description,
+                  image: action.payload.image,
+                },
+              }
+            : state?.selectedChat,
+      };
     default:
       return state;
   }

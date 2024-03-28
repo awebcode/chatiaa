@@ -319,6 +319,11 @@ io.on("connection", (socket: Socket) => {
        data
      );
    });
+
+   //update_group_info
+    socket.on("update_group_info", async (data: any) => {
+      await emitEventToGroupUsers(socket, "update_group_info_Received", data._id, data);
+    });
   //@@@@@@ calling system end
   // Handle client disconnection
   socket.on("disconnect", async (data) => {

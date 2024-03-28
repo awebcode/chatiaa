@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { getAllUsers } from "@/functions/authActions";
+import { allUsersForAddgroupExclueWhoinAlreadyChat, getAllUsers } from "@/functions/authActions";
 
 import dynamic from "next/dynamic";
 import { Input } from "@/components/ui/input";
 import useGroupStore from "@/store/useGroupStore";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { toast } from "react-toastify";
-import { createGroup } from "@/functions/chatActions";
+import { addToGroup, createGroup } from "@/functions/chatActions";
 import { SET_CHATS, SET_SELECTED_CHAT } from "@/context/reducers/actions";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { Button } from "@/components/ui/button";
@@ -20,14 +20,14 @@ const GroupCard = dynamic(() => import("./Card"));
 export default function SearchGroupModal() {
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
-  const { user: currentUser } = useMessageState();
+  const { user: currentUser,selectedChat } = useMessageState();
   const [searchTerm, setSearchTerm] = useState("");
   const { selectedAddGroupUsers } = useGroupStore();
   const searchText = useDebounce(searchTerm, 600);
   const { data, isFetching, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
-    queryKey: ["messages", searchText, "onGroupsearch"],
+    queryKey: [selectedChat?.chatId, searchText],
 
-    queryFn: getAllUsers as any,
+    queryFn: allUsersForAddgroupExclueWhoinAlreadyChat as any,
 
     getNextPageParam: (lastPage: any) => {
       const { prevOffset, total, limit } = lastPage;
@@ -43,40 +43,15 @@ export default function SearchGroupModal() {
     },
     initialPageParam: 0,
   });
-  //create group mutation
-  const groupMutaion = useMutation({
-    mutationFn: (data: any) => createGroup(data),
+  //add new user to  group mutation
+  const addGroupMutaion = useMutation({
+     mutationFn: (data: any) => addToGroup(data),
     onSuccess: (chat) => {
-      const isFriend = getSenderFull(currentUser, chat.users);
-      toast.success("Group created successfully!");
-      const chatData = {
-        chatId: chat?._id,
-        latestMessage: chat?.latestMessage,
-        chatCreatedAt: chat?.createdAt,
-        groupChatName: chat?.chatName,
-        chatName: chat?.chatName,
-        isGroupChat: chat?.isGroupChat,
-        groupAdmin: chat?.groupAdmin,
-        // status: chat?.chatStatus?.status,
-        // chatUpdatedBy: chat?.chatStatus?.updatedBy,
-        chatStatus: chat?.chatStatus,
-        users: chat.isGroupChat ? chat.users : null,
-        userInfo: {
-          name: !chat?.isGroupChat ? isFriend?.name : chat.chatName,
-          email: !chat?.isGroupChat ? isFriend?.email : "",
-          _id: !chat?.isGroupChat ? isFriend?._id : chat?._id,
-          image: !chat.isGroupChat ? isFriend?.image : "/vercel.svg",
-          lastActive: !chat.isGroupChat
-            ? getSenderFull(currentUser, chat.isGroupChat.users)?.lastActive
-            : "",
-          createdAt: !chat.isGroupChat ? isFriend?.createdAt : "",
-        } as any,
-      };
-      socket.emit("groupCreatedNotify", { chatId: chat._id, chat });
+      toast.success("Added members to group successfully!");
+     
+      socket.emit("addUserTogroupNotify", { chatId: chat._id, chat });
 
-      dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
-      dispatch({ type: SET_CHATS, payload: chatData });
-      document.getElementById("closeCreateGroupDialog")?.click();
+      document.getElementById("closeAddGroupDialog")?.click();
     },
   });
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,47 +60,24 @@ export default function SearchGroupModal() {
 
   const users = data?.pages.flatMap((page) => page?.users);
   //createGroupHandler
-  const [groupName, setGroupName] = useState("");
-  const createGroupHandler = () => {
-    if (selectedAddGroupUsers.length < 2 && groupName.trim() === "") {
+  const addGroupHandler = () => {
+    if (selectedAddGroupUsers.length <1 ) {
       return;
     }
 
     const userIds = selectedAddGroupUsers.map((user: any) => user._id);
     const groupData = {
-      users: userIds,
-      groupName,
+      userIds,
+      chatId:selectedChat?.chatId,
     };
-    groupMutaion.mutateAsync(groupData);
+    addGroupMutaion.mutateAsync(groupData);
   };
   return (
     <>
       <div>
         <div className="p-2 bg-base-200 text-base-content overflow-y-scroll">
           {/* Group name */}
-          <div className="relative mb-5">
-            <label className="" htmlFor="Group">
-              Group Name:
-            </label>
-            <Input
-              type="text"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Group Name."
-              className="shadow-lg w-full h-auto bg-transparent  text-[10px] md:text-sm py-3 px-3 rounded-md  outline-none border border-gray-400  transition-all duration-300"
-            />
-            <Button
-              disabled={selectedAddGroupUsers.length < 2 || groupName.trim() === ""}
-              className="absolute right-1 top-[22px] bg-blue-600 btn m-1 text-xs rounded-md p-[7px] capitalize "
-              onClick={() => createGroupHandler()}
-            >
-              {groupMutaion.isPending ? (
-                <span className="animate-pulse">Creating...</span>
-              ) : (
-                "+Create"
-              )}
-            </Button>
-          </div>
+
           {/* Search group users */}
           <Input
             type="text"
@@ -148,23 +100,32 @@ export default function SearchGroupModal() {
             {" "}
             <SliderUsers />
           </div>
+          <div className="relative mb-5">
+            <Button
+              disabled={selectedAddGroupUsers.length === 0}
+              className=" bg-blue-600 btn m-1 text-xs w-full rounded-md p-[7px] capitalize "
+              onClick={() => addGroupHandler()}
+            >
+              {addGroupMutaion.isPending ? (
+                <span className="animate-pulse">Adding...</span>
+              ) : (
+                " +Add more to group"
+              )}
+            </Button>
+          </div>
           {/* Infinite scrolling */}
-          <div id="GroupSearchTarget" style={{ height: "60vh", overflowY: "scroll" }}>
+          <div id="GroupSearchTarget" style={{ height: "20vh", overflowY: "scroll" }}>
             <InfiniteScroll
               dataLength={users ? users?.length : 0}
               next={() => {
                 fetchNextPage();
               }}
-              hasMore={searchText.trim() !== "" && hasNextPage}
+              hasMore={hasNextPage}
               loader={<div>Loading...</div>}
               endMessage={
-                users &&
-                users?.length > 0 &&
-                searchText.trim() !== "" && (
-                  <p className="text-green-400">
-                    <b>all users here!</b>
-                  </p>
-                )
+                <p className="text-green-400">
+                  <b>all users here!</b>
+                </p>
               }
               style={{ height: "100%" }}
               scrollableTarget="GroupSearchTarget"

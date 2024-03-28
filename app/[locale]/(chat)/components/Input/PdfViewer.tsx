@@ -5,7 +5,7 @@ import { Document, Page, pdfjs } from "react-pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
-export default function PDFViewer({file}:{file:File}) {
+export default function PDFViewer({file}:{file:File|string}) {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1); // start on first page
   const [loading, setLoading] = useState(true);
