@@ -34,6 +34,12 @@ const mongoose_1 = require("mongoose");
 const groupSocket_1 = require("./common/groupSocket");
 const onlineUsersModel_1 = require("./model/onlineUsersModel");
 const app = (0, express_1.default)();
+// Enable CORS for all routes
+const corsOptions = {
+    origin: ["http://localhost:3000", "https://messengaria.vercel.app"], // Allow requests from this specific origin
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+};
 app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "100mb" }));
@@ -43,12 +49,6 @@ exports.io = new socket_io_1.Server(server, {
         origin: "*",
     },
 });
-// Enable CORS for all routes
-const corsOptions = {
-    origin: ["http://localhost:3000", "https://messengaria.vercel.app"], // Allow requests from this specific origin
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-};
 app.use((0, cookie_parser_1.default)());
 (0, cloudinaryConfig_1.default)();
 app.use("/api/v1", authRoutes_1.default);
