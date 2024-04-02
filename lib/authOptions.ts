@@ -10,6 +10,7 @@ import { AuthOptions } from "next-auth";
 import bcrypt from "bcrypt";
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
+
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID as string,
@@ -104,7 +105,7 @@ export const authOptions: AuthOptions = {
     },
 
     async jwt({ token, user }: any) {
-        //  await connectDb();
+      //  await connectDb();
       // Persist the OAuth access_token and or the user id to the token right after signin
       if (user) {
         token.accessToken = user.access_token;
@@ -113,7 +114,7 @@ export const authOptions: AuthOptions = {
       return Promise.resolve(token);
     },
     async session({ session, token }: any) {
-         await connectDb();
+      await connectDb();
       if (token) {
         session.user.id = token.id;
         session.accessToken = token.accessToken;
@@ -136,6 +137,17 @@ export const authOptions: AuthOptions = {
     maxAge: 60 * 60 * 24, //expires at 24 hour
   },
   secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        // path: "/",
+        secure: true,
+      },
+    },
+  },
   pages: {
     signIn: "/login",
     error: "/error",
