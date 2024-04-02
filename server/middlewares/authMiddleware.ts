@@ -10,12 +10,13 @@ const authMiddleware: any = async (
   next: NextFunction
 ) => {
   const token =
-    req.header("Authorization")?.split(" ")[1] ||
+    // req.header("Authorization")?.split(" ")[1] ||
     req.cookies.authToken ||
     req.cookies["next-auth.session-token"] ||
     req.cookies["__Secure-next-auth.session-token"];
+  
   console.log({token})
-  if (token === "undefined"&&process.env.NODE_ENV!=="production") {
+  if (token === "undefined") {
     return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
   }
   if (!token) {

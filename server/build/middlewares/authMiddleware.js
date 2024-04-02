@@ -12,13 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const errorHandler_1 = require("./errorHandler");
 const jwt_1 = require("next-auth/jwt");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const token = ((_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.split(" ")[1]) ||
-        req.cookies.authToken ||
+    const token = 
+    // req.header("Authorization")?.split(" ")[1] ||
+    req.cookies.authToken ||
         req.cookies["next-auth.session-token"] ||
         req.cookies["__Secure-next-auth.session-token"];
     console.log({ token });
-    if (token === "undefined" && process.env.NODE_ENV !== "production") {
+    if (token === "undefined") {
         return next(new errorHandler_1.CustomErrorHandler("Unauthorized - No token provided", 401));
     }
     if (!token) {
