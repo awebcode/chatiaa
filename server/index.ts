@@ -24,14 +24,7 @@ import {
 } from "./common/groupSocket";
 import { onlineUsersModel } from "./model/onlineUsersModel";
 const app = express();
-// Enable CORS for all routes
 
-const corsOptions = {
-  origin: ["http://localhost:3000", "https://messengaria.vercel.app"], // Allow requests from this specific origin
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
-app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
@@ -43,7 +36,14 @@ export const io = new Server(server, {
   },
 });
 
+// Enable CORS for all routes
 
+const corsOptions = {
+  origin: ["http://localhost:3000", "https://messengaria.vercel.app"], // Allow requests from this specific origin
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(cookieParser());
 cloudinaryConfig();
 

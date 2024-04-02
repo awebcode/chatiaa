@@ -11,13 +11,14 @@ const authMiddleware: any = async (
 ) => {
   const token =
     // req.header("Authorization")?.split(" ")[1] ||
+    req.cookies.authToken||
     req.cookies["next-auth.session-token"] ||
     req.cookies["__Secure-next-auth.session-token"];
   
-  console.log({token})
-  // if (token === "undefined") {
-  //   return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
-  // }
+  console.log({ token: req.cookies });
+  if (token === "undefined") {
+    return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
+  }
   if (!token) {
     return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
   }

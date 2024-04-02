@@ -14,12 +14,13 @@ const jwt_1 = require("next-auth/jwt");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = 
     // req.header("Authorization")?.split(" ")[1] ||
-    req.cookies["next-auth.session-token"] ||
+    req.cookies.authToken ||
+        req.cookies["next-auth.session-token"] ||
         req.cookies["__Secure-next-auth.session-token"];
-    console.log({ token });
-    // if (token === "undefined") {
-    //   return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
-    // }
+    console.log({ token: req.cookies });
+    if (token === "undefined") {
+        return next(new errorHandler_1.CustomErrorHandler("Unauthorized - No token provided", 401));
+    }
     if (!token) {
         return next(new errorHandler_1.CustomErrorHandler("Unauthorized - No token provided", 401));
     }
