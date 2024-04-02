@@ -134,21 +134,19 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   jwt: {
-    maxAge: 60 * 60 * 24, //expires at 24 hour
+    // maxAge: 60 * 60 * 24, //expires at 24 hour
   },
   secret: process.env.NEXTAUTH_SECRET,
   cookies: {
-    
     sessionToken: {
       name: `__Secure-next-auth.session-token`,
       options: {
-        httpOnly: true,
-        sameSite: "none",
-        // path: "/",
+        expires: new Date(Date.now() + 6 * 60 * 60 * 1000),
         secure: true,
+        sameSite: "none",
+        httpOnly: true,
       },
     },
-
   },
   pages: {
     signIn: "/login",
