@@ -14,17 +14,19 @@ const authMiddleware: any = async (
     req.cookies.authToken ||
     req.cookies["next-auth.session-token"] ||
     req.cookies["__Secure-next-auth.session-token"];
-
+  if (token === "undefined") {
+    return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
+  }
   if (!token) {
     return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
   }
-
   try {
     const decoded = await decode({
-      token: token,
+      token,
       secret: process.env.NEXTAUTH_SECRET!,
     });
     (req as any).id = decoded?.id;
+
     next();
   } catch (error) {
     console.log({ authMiddleware: error });

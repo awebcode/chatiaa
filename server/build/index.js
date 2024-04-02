@@ -30,9 +30,10 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 (0, dotenv_1.config)();
 const functions_1 = require("./controllers/functions");
 const ChatModel_1 = require("./model/ChatModel");
+const mongoose_1 = require("mongoose");
 const groupSocket_1 = require("./common/groupSocket");
+const onlineUsersModel_1 = require("./model/onlineUsersModel");
 const app = (0, express_1.default)();
-// app.use(uploadMiddleware.array("files"));
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "100mb" }));
 const server = (0, http_1.createServer)(app);
@@ -53,57 +54,94 @@ app.use((0, cookie_parser_1.default)());
 app.use("/api/v1", authRoutes_1.default);
 app.use("/api/v1", chatRoutes_1.default);
 app.use("/api/v1", messageRoutes_1.default);
-let users = [];
-const checkOnlineUsers = (id, socketId) => {
-    if (!users.some((user) => user.id === id)) {
-        users.push({ socketId, id });
-    }
-};
-const removeUser = (socketId) => __awaiter(void 0, void 0, void 0, function* () {
-    const removedUserIndex = users.findIndex((user) => user.socketId === socketId);
-    if (removedUserIndex !== -1) {
-        const removedUser = users[removedUserIndex];
-        users.splice(removedUserIndex, 1);
-        try {
-            //update lastActivity time
-            yield UserModel_1.User.findOneAndUpdate({ _id: removedUser.id }, { $set: { lastActive: new Date(Date.now()) } }, { new: true });
+// Keep track of connected sockets
+// Function to add or update a user in the online users model
+const checkOnlineUsers = (userId, socketId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Check if the user already exists in the online users model
+        let foundUser = yield onlineUsersModel_1.onlineUsersModel.findOne({ userId });
+        if (foundUser) {
+            // If the user exists, update their socketId
+            foundUser = yield onlineUsersModel_1.onlineUsersModel.findOneAndUpdate({ userId }, { $set: { socketId } }, { new: true });
+            // await onlineUsersModel.findOneAndDelete({ userId });
         }
-        catch (error) {
-            console.error("Error updating lastActive:", error);
+        else {
+            // If the user doesn't exist, create a new entry in the online users model
+            yield onlineUsersModel_1.onlineUsersModel.create({ userId, socketId });
+        }
+    }
+    catch (error) {
+        if (error.code === 11000) {
+            return null;
+        }
+        else {
+            console.error("Error checking online users:", error);
         }
     }
 });
-const getSocketConnectedUser = (id) => {
-    return users.find((user) => user.id === id || user.socketId === id);
-};
+// Function to remove a user from the online users model
+const removeUser = (socketId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Find the user in the online users model based on socketId
+        yield onlineUsersModel_1.onlineUsersModel.findOneAndDelete({ socketId });
+    }
+    catch (error) {
+        console.error("Error removing user:", error);
+    }
+});
+// Function to get the socket connected user from the onlineUsersModel
+const getSocketConnectedUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Query the onlineUsersModel to find the user based on id or socketId
+        if (id) {
+            //Types.ObjectId.isValid(id) ? { userId: id } : { socketId: id };
+            const query = mongoose_1.Types.ObjectId.isValid(id) ? { userId: id } : { socketId: id };
+            const user = yield onlineUsersModel_1.onlineUsersModel.findOne(query);
+            return user;
+        }
+    }
+    catch (error) {
+        console.error("Error finding socket connected user:", error);
+        return null;
+    }
+});
 exports.getSocketConnectedUser = getSocketConnectedUser;
 // WebSocket server logic
 exports.io.on("connection", (socket) => {
     socket.on("setup", (userData) => __awaiter(void 0, void 0, void 0, function* () {
-        socket.join(userData.id);
-        checkOnlineUsers(userData.id, socket.id);
+        socket.join(userData.userId);
+        yield checkOnlineUsers(userData.userId, socket.id);
         //store connected users
         let alreadyConnectedOnlineUsers = [];
-        //only send online users notify there who connected with new connected user
-        const chats = yield ChatModel_1.Chat.find({ users: { $elemMatch: { $eq: userData.id } } });
-        chats === null || chats === void 0 ? void 0 : chats.forEach((chatUsers) => {
-            chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((userId) => {
-                const receiverId = (0, exports.getSocketConnectedUser)(userId.toString());
+        let userIdSet = new Set(); // Maintain a set of unique user IDs
+        // Filtered users from chats
+        const chatUsers = yield ChatModel_1.Chat.find({ users: userData.userId });
+        // Iterate through chat users and add online users to alreadyConnectedOnlineUsers
+        yield Promise.all(chatUsers.map((chatUser) => __awaiter(void 0, void 0, void 0, function* () {
+            yield Promise.all(chatUser.users.map((chatUserId) => __awaiter(void 0, void 0, void 0, function* () {
+                const receiverId = yield (0, exports.getSocketConnectedUser)(chatUserId.toString());
                 if (receiverId) {
-                    const { id, socketId } = receiverId;
-                    const existsConn = alreadyConnectedOnlineUsers.find((conn) => conn.id === id);
-                    if (existsConn) {
-                        return;
+                    const { userId, socketId } = receiverId;
+                    const id = userId.toString(); // Convert userId to string
+                    const userInfo = yield UserModel_1.User.findById(id).select("name image lastActive");
+                    if (!userIdSet.has(id)) {
+                        // Check if user ID is already added
+                        alreadyConnectedOnlineUsers.push({ userId: id, socketId, userInfo });
+                        userIdSet.add(id); // Add user ID to set
                     }
-                    else {
-                        alreadyConnectedOnlineUsers.push({ id, socketId });
-                    }
-                    exports.io.to(id).emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
+                    exports.io.to(id).emit("addOnlineUsers", {
+                        chatId: chatUser._id,
+                        userId: userData.userId,
+                        socketId: socket.id,
+                        userInfo: yield UserModel_1.User.findById(userData.userId).select("name image lastActive"), ///new adduserdata send to others connected friends
+                    });
                 }
-            });
-        });
-        //send to new connected users
-        socket.emit("alreadyConnectedOnlineUsers", alreadyConnectedOnlineUsers);
+            })));
+        })));
+        // Emit the event only if there are connected users
+        // if (alreadyConnectedOnlineUsers.length > 0) {
+        //   socket.emit("alreadyConnectedOnlineUsers", alreadyConnectedOnlineUsers);
+        // }
         // io.emit("setup", users);
         console.log("Client connected");
     }));
@@ -185,14 +223,14 @@ exports.io.on("connection", (socket) => {
         socket.to(data.to).emit("chatCreatedNotifyReceived", data);
     });
     //singlechatDeletedNotify
-    socket.on("singleChatDeletedNotify", (data) => {
-        const receiverId = (0, exports.getSocketConnectedUser)(data.receiverId);
+    socket.on("singleChatDeletedNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        const receiverId = yield (0, exports.getSocketConnectedUser)(data.receiverId);
         if (receiverId) {
             socket
                 .to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId)
                 .emit("singleChatDeletedNotifyReceived", { chatId: data.chatId });
         }
-    });
+    }));
     //leave from group chat
     socket.on("groupChatLeaveNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
         const leaveMessage = yield (0, functions_1.sentGroupNotifyMessage)({
@@ -205,12 +243,12 @@ exports.io.on("connection", (socket) => {
     }));
     //chat blocked notify
     //singlechatDeletedNotify
-    socket.on("chatBlockedNotify", (data) => {
-        const receiverId = (0, exports.getSocketConnectedUser)(data.receiverId);
+    socket.on("chatBlockedNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        const receiverId = yield (0, exports.getSocketConnectedUser)(data.receiverId);
         if (receiverId) {
             socket.to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId).emit("chatBlockedNotifyReceived", data);
         }
-    });
+    }));
     //group events
     // userRemoveFromGroupNotify
     socket.on("userRemoveFromGroupNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
@@ -266,31 +304,123 @@ exports.io.on("connection", (socket) => {
     socket.on("update_group_info", (data) => __awaiter(void 0, void 0, void 0, function* () {
         yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "update_group_info_Received", data._id, data);
     }));
+    //calling system start
+    socket.on("sent_call_invitation", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        if (data.isGroupChat) {
+            yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "received_incoming_call", data.chatId, data);
+            //  socket.emit("receiveMessage", message);
+        }
+        else {
+            //all connected clients in room
+            socket.to((_a = data.receiver) === null || _a === void 0 ? void 0 : _a._id).emit("received_incoming_call", Object.assign({}, data));
+        }
+    }));
+    //accept call
+    socket.on("call_accepted", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _b;
+        //all connected clients in room
+        socket.to((_b = data.receiver) === null || _b === void 0 ? void 0 : _b._id).emit("user:call_accepted", Object.assign({}, data));
+    }));
+    //reject call
+    socket.on("call_rejected", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _c;
+        //all connected clients in room
+        socket.to((_c = data.receiver) === null || _c === void 0 ? void 0 : _c._id).emit("user:call_rejected", Object.assign({}, data));
+    }));
+    //caller_call_rejected
+    socket.on("caller_call_rejected", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _d;
+        //all connected clients in room
+        if (data.isGroupChat) {
+            yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "caller_call_rejected_received", data.chatId, data);
+            //  socket.emit("receiveMessage", message);
+        }
+        else {
+            //all connected clients in room
+            socket.to((_d = data.receiver) === null || _d === void 0 ? void 0 : _d._id).emit("caller_call_rejected_received", Object.assign({}, data));
+        }
+    }));
+    //update:on-call-count
+    socket.on("update:on-call-count", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _e;
+        const foundChat = yield ChatModel_1.Chat.findById(data.chatId);
+        //all connected clients in room
+        if (foundChat === null || foundChat === void 0 ? void 0 : foundChat.isGroupChat) {
+            yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "update:on-call-count_received", data.chatId, data);
+            //  socket.emit("receiveMessage", message);
+        }
+        else {
+            // Populate users field if it's not already populated
+            const receiver = yield (foundChat === null || foundChat === void 0 ? void 0 : foundChat.populate("users", "name email image lastActive"));
+            //all single user
+            (_e = receiver === null || receiver === void 0 ? void 0 : receiver.users) === null || _e === void 0 ? void 0 : _e.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
+                const isConnected = yield (0, exports.getSocketConnectedUser)(user === null || user === void 0 ? void 0 : user._id.toString());
+                if (isConnected) {
+                    exports.io
+                        .to(isConnected === null || isConnected === void 0 ? void 0 : isConnected.socketId)
+                        .emit("update:on-call-count_received", Object.assign({}, data));
+                }
+            }));
+        }
+    }));
+    //user-on-call-message
+    socket.on("user-on-call-message", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _f;
+        const foundChat = yield ChatModel_1.Chat.findById(data.chatId);
+        const userOncallMessage = yield (0, functions_1.sentGroupNotifyMessage)({
+            chatId: data.chatId,
+            user: data.user,
+            message: data.message,
+            type: data.type === "call-notify" ? "call-notify" : "notify",
+        });
+        const userOncallData = {
+            message: Object.assign({}, userOncallMessage.toObject()),
+            user: data.user,
+            chatId: data.chatId,
+        };
+        //all connected clients in room
+        if (foundChat === null || foundChat === void 0 ? void 0 : foundChat.isGroupChat) {
+            yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "user-on-call-message_received", data.chatId, userOncallData);
+            //  socket.emit("receiveMessage", message);
+        }
+        else {
+            // Populate users field if it's not already populated
+            const receiver = yield (foundChat === null || foundChat === void 0 ? void 0 : foundChat.populate("users", "name email image lastActive"));
+            //all single user
+            (_f = receiver === null || receiver === void 0 ? void 0 : receiver.users) === null || _f === void 0 ? void 0 : _f.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
+                const isConnected = yield (0, exports.getSocketConnectedUser)(user === null || user === void 0 ? void 0 : user._id.toString());
+                if (isConnected) {
+                    exports.io
+                        .to(isConnected === null || isConnected === void 0 ? void 0 : isConnected.socketId)
+                        .emit("user-on-call-message_received", Object.assign({}, userOncallData));
+                }
+            }));
+        }
+    }));
     //@@@@@@ calling system end
     // Handle client disconnection
-    socket.on("disconnect", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        // Emit the updated users array after a user disconnects
-        //only send online users notify there who connected with me
-        const leaveId = (0, exports.getSocketConnectedUser)(socket.id);
-        if (leaveId) {
-            socket.leave(leaveId.id);
+    // Keep track of disconnected sockets
+    socket.on("disconnect", () => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const leaveId = yield (0, exports.getSocketConnectedUser)(socket.id);
+            if (leaveId) {
+                socket.leave(leaveId.userId.toString());
+                const userId = leaveId.userId.toString();
+                // Emit leave user event to online users
+                const eventData = {
+                    userId: userId,
+                    socketId: socket.id,
+                };
+                yield (0, groupSocket_1.emitEventToOnlineUsers)(exports.io, "leaveOnlineUsers", userId, eventData);
+                // Remove the user from the database
+                yield removeUser(socket.id);
+                console.log("Client disconnected:", socket.id);
+            }
         }
-        const chats = yield ChatModel_1.Chat.find({ users: { $elemMatch: { $eq: leaveId === null || leaveId === void 0 ? void 0 : leaveId.id } } });
-        chats === null || chats === void 0 ? void 0 : chats.forEach((chatUsers) => {
-            chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((userId) => {
-                const receiverId = (0, exports.getSocketConnectedUser)(userId.toString());
-                if (receiverId) {
-                    const { id, socketId } = receiverId;
-                    exports.io.to(socketId).emit("leaveOnlineUsers", {
-                        id: leaveId === null || leaveId === void 0 ? void 0 : leaveId.id,
-                        socketId: socket.id,
-                    });
-                }
-            });
-        });
-        //remove from users array
-        yield removeUser(socket.id);
-        console.log("Client disconnected");
+        catch (error) {
+            console.error("Error handling disconnection:", error);
+        }
     }));
 });
 // Start the server

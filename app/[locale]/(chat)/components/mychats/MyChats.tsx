@@ -122,7 +122,6 @@ const MyFriends = () => {
     //   messageEndRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
-  // console.log({chats});
   
   return (
     <>

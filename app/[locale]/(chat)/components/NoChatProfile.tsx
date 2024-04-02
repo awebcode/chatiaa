@@ -8,12 +8,12 @@ import { IChat } from "@/context/reducers/interfaces";
 const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
   const { onlineUsers } = useOnlineUsersStore();
   const { currentUser } = useUserStore();
-  const isUserOnline = onlineUsers.some((u: any) =>
+  const isUserOnline = onlineUsers.some((u) =>
     selectedChat?.isGroupChat
       ? selectedChat?.users.some(
-          (user: any) => user._id === u.id && user._id !== currentUser?._id
+          (user: any) => user._id === u.userId && user._id !== currentUser?._id
         )
-      : selectedChat?.userInfo?._id === u.id
+      : selectedChat?.userInfo?._id === u.userId
   );
   return (
     <div>
@@ -30,8 +30,6 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
                 ? selectedChat?.groupInfo?.image?.url
                 : (selectedChat?.userInfo.image as any)
             }
-            
-           
             alt={
               selectedChat.isGroupChat
                 ? selectedChat?.chatName
@@ -40,7 +38,7 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
           />
           <span
             className={`absolute bottom-0 right-0 rounded-full p-[7px] ${
-              isUserOnline ? "bg-green-500" : "bg-rose-500"
+              selectedChat?.isOnline ? "bg-green-500" : "bg-rose-500"
             }`}
           ></span>
         </div>
@@ -66,11 +64,7 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
           </a>
         </div>
         <div className="mt-3 text-center">
-          <p className="text-[10px] md:text-xs mt-2">
-            {selectedChat?.userInfo?.name} is a software engineer with over 10 years of
-            experience in developing web and mobile applications. He is skilled in
-            JavaScript, React, and Node.js.
-          </p>
+          <p className="text-[10px] md:text-xs mt-2">{selectedChat?.userInfo?.bio}</p>
         </div>
       </div>
     </div>

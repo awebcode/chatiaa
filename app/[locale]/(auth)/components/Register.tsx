@@ -4,16 +4,28 @@ import { signIn, useSession } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useState } from "react";
 import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Register = () => {
+  const queryClient=useQueryClient()
   const [loading, setloading] = useState(false);
   const { data: session } = useSession();
   const handleGoogleLogin = async () => {
-    await signIn("google");
+    const res = await signIn("google");
+     if (res?.error){
+       throw new Error(res?.error)
+     }
+      
+    if(res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] })
   };
 
   const handleGithubLogin = async () => {
-    await signIn("github");
+   const res= await signIn("github");
+     if (res?.error){
+       throw new Error(res?.error)
+     }
+      
+    if(res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] })
   };
 
   const [error, setError] = useState("");
@@ -54,7 +66,11 @@ const Register = () => {
         console.log(res);
         return setError(res.error);
       }
-      if (res?.ok) return router.push("/chat");
+      if (res?.ok) {
+         queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] })
+
+        router.push("/chat");
+      };
     }
   };
   if (session?.user) router.push("/chat");

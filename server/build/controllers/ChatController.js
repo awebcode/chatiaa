@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFilesInChat = exports.getInitialFilesInChat = exports.getUsersInAChat = exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.updateGroupNamePhoto = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
+exports.onCallMembersCount = exports.getFilesInChat = exports.getInitialFilesInChat = exports.getUsersInAChat = exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.updateGroupNamePhoto = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
 const errorHandler_1 = require("../middlewares/errorHandler");
 const ChatModel_1 = require("../model/ChatModel");
 const UserModel_1 = require("../model/UserModel");
@@ -27,12 +27,21 @@ const __1 = require("..");
 const groupSocket_1 = require("../common/groupSocket");
 const functions_1 = require("./functions");
 const generateUpdateMessage_1 = require("../common/generateUpdateMessage");
+const onlineUsersModel_1 = require("../model/onlineUsersModel");
+const checkIsOnline_1 = require("../common/checkIsOnline");
 //@access          Protected
 const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
     if (!userId) {
         return next(new errorHandler_1.CustomErrorHandler("Chat Id or content cannot be empty!", 400));
     }
+    ///when use separate model for keep users reference for chat
+    // const userChatExists = await UserChat.find({
+    //   $or: [
+    //     { userId: req.id, userId: userId },
+    //     { userId: userId, userId: req.id },
+    //   ],
+    // }).populate("chatId");
     var isChat = yield ChatModel_1.Chat.find({
         isGroupChat: false,
         $and: [
@@ -46,8 +55,10 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         path: "latestMessage.sender",
         select: "name image email lastActive createdAt",
     });
+    //check if any user is online
+    const isOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(isChat === null || isChat === void 0 ? void 0 : isChat.users, req.id);
     if (isChat.length > 0) {
-        res.status(200).send({ chatData: isChat[0] });
+        res.status(200).send({ chatData: Object.assign(Object.assign({}, isChat[0].toObject()), { isOnline }) });
     }
     else {
         var chatData = {
@@ -58,7 +69,14 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         try {
             const createdChat = yield ChatModel_1.Chat.create(chatData);
             let FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive createdAt");
-            res.status(201).json({ success: true, isNewChat: true, chatData: FullChat });
+            const isOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(FullChat === null || FullChat === void 0 ? void 0 : FullChat.users, req.id);
+            res
+                .status(201)
+                .json({
+                success: true,
+                isNewChat: true,
+                chatData: Object.assign(Object.assign({}, FullChat === null || FullChat === void 0 ? void 0 : FullChat.toObject()), { isOnline }),
+            });
         }
         catch (error) {
             next(error);
@@ -84,26 +102,40 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         const totalDocs = yield ChatModel_1.Chat.countDocuments({
             users: { $elemMatch: { $eq: req.id } },
         });
+        //when i use keep users in chat to separate document
+        //const totalDocs = await UserChat.countDocuments({ userId: req.id });
+        // Find user-chat association documents for the current user
+        // const userChats = await UserChat.find({ userId: req.id }).select("chatId");
+        // // Extract chat IDs from user-chat association documents
+        // const chatIds = userChats.map((userChat) => userChat.chatId);
+        // // Perform the query to find chat documents based on the extracted chat IDs
+        // const chats = await Chat.find({
+        //   $or: [
+        //     { _id: { $in: chatIds } }, // Find chats where the _id matches any of the extracted chat IDs
+        //     { chatName: { $regex: req.query.search, $options: "i" } },
+        //   ],
+        // });
+        // const user=await User.findById(req.id);
         const chats = yield ChatModel_1.Chat.find({
-            $or: [
+            $and: [
                 { users: { $elemMatch: { $eq: req.id } } },
                 { chatName: { $regex: req.query.search, $options: "i" } },
             ],
         })
             .populate({
             path: "users",
-            select: "name email image createdAt",
+            select: "name email image createdAt lastActive",
             options: { limit: 10 }, // Set limit to Infinity to populate all documents
         })
-            .populate("groupAdmin", "email name image createdAt")
+            .populate("groupAdmin", "email name image createdAt lastActive")
             .populate("latestMessage")
-            .populate("chatBlockedBy", "name image email createdAt")
+            .populate("chatBlockedBy", "name image email createdAt lastActive")
             .sort({ updatedAt: -1 })
             .limit(limit)
             .skip(skip);
         const populatedChats = yield UserModel_1.User.populate(chats, {
             path: "latestMessage.sender",
-            select: "name image email lastActive createdAt",
+            select: "name image email lastActive createdAt lastActive",
         });
         // Filter the populatedChats array based on the keyword
         let filteredChats = [];
@@ -115,10 +147,12 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         const filteredChatsWithUnseenCountPromises = filteredChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
             var _a, _b;
             const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
+            //check if any user is online
+            const isAnyUserOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(chat === null || chat === void 0 ? void 0 : chat.users, req.id);
             try {
                 const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_a = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _a === void 0 ? void 0 : _a._id, req.id);
                 // Construct updated chat object with awaited results
-                return Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), unseenCount: correspondingUnseenCount
+                return Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
                         ? correspondingUnseenCount.unseenMessagesCount
                         : 0 });
             }
@@ -134,10 +168,12 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         const populatedChatsWithUnseenCount = yield Promise.all(populatedChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
             var _c, _d;
             const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
+            // Check if any user in the chat is online
+            const isAnyUserOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(chat === null || chat === void 0 ? void 0 : chat.users, req.id);
             try {
                 const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_c = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _c === void 0 ? void 0 : _c._id, req.id);
                 // Construct updated chat object with awaited results
-                const updatedChat = Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_d = chat.latestMessage) === null || _d === void 0 ? void 0 : _d._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), unseenCount: correspondingUnseenCount
+                const updatedChat = Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_d = chat.latestMessage) === null || _d === void 0 ? void 0 : _d._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
                         ? correspondingUnseenCount.unseenMessagesCount
                         : 0 });
                 return updatedChat;
@@ -148,6 +184,7 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 return null; // Return null or any other default value if needed
             }
         })));
+        // // Retrieve the IDs of the filtered users
         res.status(200).send({
             chats: filteredChats.length > 0
                 ? resolvedFilteredChatsWithUnseenCount
@@ -254,6 +291,22 @@ const createGroupChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             isGroupChat: true,
             groupAdmin: req.id,
         });
+        //
+        // Create user-chat associations for each user
+        // await Promise.all(
+        //   users.map(async (userId: string) => {
+        //     // Check if the user exists
+        //     const userExists = await User.exists({ _id: userId });
+        //     if (!userExists) {
+        //       throw new CustomErrorHandler(`User with ID ${userId} does not exist`, 404);
+        //     }
+        //     // Create the user-chat association document
+        //     await UserChat.create({
+        //       chatId: groupChat._id,
+        //       userId: userId,
+        //     });
+        //   })
+        // );
         const fullGroupChat = yield ChatModel_1.Chat.findOne({ _id: groupChat._id })
             .populate("users", "-password")
             .populate("groupAdmin", "-password");
@@ -291,7 +344,6 @@ const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 
             }
             const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(req.file.path, {
                 folder: "messengaria",
-                format: "png", // Specify the format as PNG
             });
             imageUpdate = {
                 image: {
@@ -317,7 +369,7 @@ const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 
             const updateGroupMessage = yield (0, functions_1.sentGroupNotifyMessage)({
                 chatId: chatId,
                 user: req.id,
-                message
+                message,
             });
             const updateGroupData = {
                 message: Object.assign({}, updateGroupMessage.toObject()),
@@ -358,7 +410,6 @@ const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         // Check if the removed user is in the groupAdmin array
         const isAdminLeave = removedUser.groupAdmin.some((adminId) => adminId.equals(userId));
         if (isAdminLeave) {
-            console.log("An admin leaves the group");
             // If the removed user was in the groupAdmin array, update the groupAdmin array
             const newGroupAdmins = removedUser.groupAdmin.filter((adminId) => !adminId.equals(userId));
             if (newGroupAdmins.length === 0) {
@@ -382,7 +433,6 @@ const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             // Check if all users have left the chat after admin leaves
             if (removedUser.users.length === 0) {
                 yield ChatModel_1.Chat.findByIdAndDelete(chatId).exec(); // Ensure the delete operation is awaited
-                console.log("Chat Deleted!");
             }
             res.json({ isAdminLeave: true, data: removedUser });
             return; // Return to prevent the execution of the rest of the code
@@ -390,7 +440,6 @@ const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         // Check if all users have left the chat, and if so, delete the chat
         if (removedUser.users.length === 0) {
             yield ChatModel_1.Chat.findByIdAndDelete(chatId).exec(); // Ensure the delete operation is awaited
-            console.log("Chat Deleted!");
         }
         res.json({ data: removedUser });
     }
@@ -661,7 +710,12 @@ const getUsersInAChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             options: { limit, skip },
         });
         const total = chat ? chat.users.length : 0;
-        res.send({ users: findChatQuery ? findChatQuery.users : [], total, limit });
+        // Check online status for each user
+        const usersWithOnlineStatus = yield Promise.all(((findChatQuery === null || findChatQuery === void 0 ? void 0 : findChatQuery.users) || []).map((user) => __awaiter(void 0, void 0, void 0, function* () {
+            const isOnline = yield onlineUsersModel_1.onlineUsersModel.findOne({ userId: user === null || user === void 0 ? void 0 : user._id });
+            return Object.assign(Object.assign({}, user.toObject()), { isOnline });
+        })));
+        res.send({ users: usersWithOnlineStatus, total, limit });
     }
     catch (error) {
         next(error);
@@ -742,3 +796,30 @@ const getFilesInChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getFilesInChat = getFilesInChat;
+//update oncallmembers count
+//onCallMembersCount
+const onCallMembersCount = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const chat = yield ChatModel_1.Chat.findById(req.body.chatId);
+        if (!chat) {
+            return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
+        }
+        // Update onCallMembers count based on join or leave action
+        // Update onCallMembers count based on join or leave action
+        if (req.body.type === "join") {
+            chat.onCallMembers += 1;
+        }
+        else {
+            // Ensure not to decrease onCallMembers below 0
+            chat.onCallMembers = Math.max(chat.onCallMembers - 1, 0);
+        }
+        // Save the updated chat object
+        yield chat.save();
+        res.send({ chat });
+    }
+    catch (error) {
+        console.log({ error });
+        next(error);
+    }
+});
+exports.onCallMembersCount = onCallMembersCount;

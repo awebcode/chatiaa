@@ -7,7 +7,7 @@ import {
   useDeleteSingleChatMutation,
   useLeaveChatMutation,
 } from "../mutations/Chatmutations";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { Tuser } from "@/store/types";
 import { IChat } from "@/context/reducers/interfaces";
 import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -16,6 +16,8 @@ import { PopoverArrow } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
 import { useRouter } from "@/navigation";
 import { getSenderFull } from "../logics/logics";
+import { useSocketContext } from "@/context/SocketContextProvider";
+import { handleSendCall } from "@/config/handleSendCall";
 
 const Modal = ({
   chatBlockedBy,
@@ -24,6 +26,8 @@ const Modal = ({
   chatBlockedBy: Tuser[];
   chat: IChat;
   }) => {
+   const { socket } = useSocketContext();
+   const dispatch = useMessageDispatch();
    const router=useRouter()
   const {theme}=useTheme()
   const blockMutation = useBlockMutation();
@@ -53,19 +57,19 @@ const Modal = ({
     {
       name: "View profile",
       icon: <RiProfileLine />,
-      action: () => router.push(isFriend?`/user/profile/${isFriend?._id}`:"/profile"),
+      action: () => router.push(isFriend ? `/user/profile/${isFriend?._id}` : "/profile"),
       isHidden: chat?.isGroupChat,
     },
     {
       name: "Audio call",
       icon: <MdCall />,
-      action: () => console.log("Audio call clicked"),
+      action: () => handleSendCall("audio", currentUser, chat, socket, dispatch),
       isHidden: false,
     },
     {
       name: "Video call",
       icon: <MdVideoCall />,
-      action: () => console.log("Video call clicked"),
+      action: () => handleSendCall("video", currentUser, chat, socket, dispatch),
       isHidden: false,
     },
     {

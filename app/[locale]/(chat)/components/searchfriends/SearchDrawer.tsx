@@ -18,7 +18,7 @@ export function SearchDrawer() {
   return (
     <div className="">
       <Sheet>
-        <SheetClose id="closeSheetDialog" className="hidden"></SheetClose>
+        <SheetClose id="closeSearchUsersSheet" className="hidden"></SheetClose>
 
         <SheetTrigger asChild className="w-full">
           <Button variant="secondary" size={"lg"}>

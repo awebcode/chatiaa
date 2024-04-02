@@ -14,6 +14,7 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
 import { BaseUrl } from "@/config/BaseUrl";
+import { IMessage } from "@/context/reducers/interfaces";
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
@@ -29,17 +30,14 @@ export default function Messages() {
   useEffect(() => {
     const container = document.getElementById("CustomscrollableTarget"); //containerRef.current will be null and not work
 
-    if (isIncomingMessage) {
-      container?.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    if (isIncomingMessage && container) {
+      // container?.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+      container.scrollTop = container.scrollHeight - container.clientHeight - 50; // Scroll slightly above the bottom
+      useIncomingMessageStore.setState({
+        isIncomingMessage: false,
+      });
     }
-    const tid = setTimeout(() => {
-      if (isIncomingMessage) {
-        useIncomingMessageStore.setState({
-          isIncomingMessage: false,
-        });
-      }
-    }, 1500);
-    return () => clearTimeout(tid);
+    
   }, [isIncomingMessage]);
 
   useEffect(() => {
@@ -69,7 +67,7 @@ export default function Messages() {
       }
     };
 
-    if (isSelectedChat&&page === 1) {
+    if (isSelectedChat?.chatId && page === 1) {
       fetchData();
     }
     // if (selectedChat && page === 1) {
@@ -78,7 +76,7 @@ export default function Messages() {
     return () => {
       isMounted = false;
     };
-  }, [isSelectedChat,page]); //selectedChat,
+  }, [isSelectedChat, page]); //selectedChat,
 
   useEffect(() => {
     const fetchData = async () => {
@@ -163,7 +161,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-  console.log({ messages });
+ 
   return (
     <div
       id="CustomscrollableTarget"
@@ -209,11 +207,12 @@ export default function Messages() {
             </div>
           ) : (
             messages &&
-            messages.map((message: any, index: number) => {
+            messages?.length > 0 &&
+            messages.map((message: IMessage, index: number) => {
               return (
                 <MessageCard
                   message={message}
-                  key={message._id + Date.now() + Math.floor(Math.random() * 1000)}
+                  key={message?._id + Date.now() + Math.floor(Math.random() * 1000)}
                   isLastSeenMessage={index === findLastSeenMessageIndex(messages)}
                 />
               );

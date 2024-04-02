@@ -8,8 +8,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import dynamic from "next/dynamic";
+import { useMessageState } from "@/context/MessageContext";
 const TooltipContentComponent=dynamic(()=>import("./TooltipWrapper"))
 const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuser }) => {
+  const {selectedChat}=useMessageState()
+  
   return (
     <div className="absolute -bottom-10">
       <div className="flex m-1 gap-1">
@@ -29,7 +32,10 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContentComponent user={user?.userId ||user} />
+                <TooltipContentComponent
+                  chat={selectedChat as any}
+                  user={user?.userId || user}
+                />
               </Tooltip>
             </TooltipProvider>
           );

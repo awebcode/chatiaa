@@ -38,14 +38,14 @@ export const sentGroupNotifyMessage = async (newMessage: {
   chatId: string;
   user: { _id: string; name: string; email: string; image: string };
   message: string;
+  type?:string
 }) => {
   try {
     var data = {
       sender: newMessage.user._id,
       content: newMessage?.message,
       chat: newMessage.chatId,
-      type: "notify",
-      status: "notify",
+      type: newMessage?.type ? newMessage?.type : "notify",
     };
     let message: any;
     message = await Message.create(data);

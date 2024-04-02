@@ -17,10 +17,13 @@ config();
 import { sentGroupNotifyMessage, sentSocketTextMessage } from "./controllers/functions";
 import { Chat } from "./model/ChatModel";
 import { Types } from "mongoose";
-import { Message } from "./model/MessageModel";
-import { emitEventToGroupUsers, markMessageAsDeliverdAfteronlineFriend } from "./common/groupSocket";
+import {
+  emitEventToGroupUsers,
+  emitEventToOnlineUsers,
+  markMessageAsDeliverdAfteronlineFriend,
+} from "./common/groupSocket";
+import { onlineUsersModel } from "./model/onlineUsersModel";
 const app = express();
-// app.use(uploadMiddleware.array("files"));
 
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
@@ -47,67 +50,121 @@ app.use("/api/v1", authRoute);
 app.use("/api/v1", chatRoute);
 
 app.use("/api/v1", messageRoute);
-
+type TUser = {
+  _id: string;
+  name: string;
+  image: string;
+  lastActive: string;
+};
 type TsocketUsers = {
-  id: string;
+  userId: string;
   socketId: string;
+  userInfo: TUser | null;
 };
-let users: TsocketUsers[] = [];
+// Keep track of connected sockets
+// Function to add or update a user in the online users model
+const checkOnlineUsers = async (userId: string, socketId: string) => {
+  try {
+    // Check if the user already exists in the online users model
+    let foundUser = await onlineUsersModel.findOne({ userId });
 
-const checkOnlineUsers = (id: string, socketId: string) => {
-  if (!users.some((user) => user.id === id)) {
-    users.push({ socketId, id });
-  }
-};
-const removeUser = async (socketId: string) => {
-  const removedUserIndex = users.findIndex((user) => user.socketId === socketId);
-
-  if (removedUserIndex !== -1) {
-    const removedUser = users[removedUserIndex];
-    users.splice(removedUserIndex, 1);
-
-    try {
-      //update lastActivity time
-      await User.findOneAndUpdate(
-        { _id: removedUser.id },
-        { $set: { lastActive: new Date(Date.now()) } },
+    if (foundUser) {
+      // If the user exists, update their socketId
+      foundUser = await onlineUsersModel.findOneAndUpdate(
+        { userId },
+        { $set: { socketId } },
         { new: true }
       );
-    } catch (error) {
-      console.error("Error updating lastActive:", error);
+      // await onlineUsersModel.findOneAndDelete({ userId });
+    } else {
+      // If the user doesn't exist, create a new entry in the online users model
+      await onlineUsersModel.create({ userId, socketId });
+    }
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return null;
+    } else {
+      console.error("Error checking online users:", error);
     }
   }
 };
 
-export const getSocketConnectedUser = (id: string | Types.ObjectId) => {
-  return users.find((user) => user.id === id || user.socketId === id);
+// Function to remove a user from the online users model
+const removeUser = async (socketId: string) => {
+  try {
+    // Find the user in the online users model based on socketId
+    await onlineUsersModel.findOneAndDelete({ socketId });
+  } catch (error) {
+    console.error("Error removing user:", error);
+  }
 };
+
+// Function to get the socket connected user from the onlineUsersModel
+export const getSocketConnectedUser = async (id: string | Types.ObjectId) => {
+  try {
+    // Query the onlineUsersModel to find the user based on id or socketId
+    if (id) {
+      //Types.ObjectId.isValid(id) ? { userId: id } : { socketId: id };
+      const query = Types.ObjectId.isValid(id) ? { userId: id } : { socketId: id };
+      const user = await onlineUsersModel.findOne(query);
+      return user;
+    }
+  } catch (error) {
+    console.error("Error finding socket connected user:", error);
+    return null;
+  }
+};
+
 // WebSocket server logic
 io.on("connection", (socket: Socket) => {
   socket.on("setup", async (userData) => {
-    socket.join(userData.id);
-    checkOnlineUsers(userData.id, socket.id);
+    socket.join(userData.userId);
+    await checkOnlineUsers(userData.userId, socket.id);
     //store connected users
+
     let alreadyConnectedOnlineUsers: TsocketUsers[] = [];
-    //only send online users notify there who connected with new connected user
-    const chats = await Chat.find({ users: { $elemMatch: { $eq: userData.id } } });
-    chats?.forEach((chatUsers) => {
-      chatUsers?.users.forEach((userId: any) => {
-        const receiverId = getSocketConnectedUser(userId.toString());
-        if (receiverId) {
-          const { id, socketId } = receiverId;
-          const existsConn = alreadyConnectedOnlineUsers.find((conn) => conn.id === id);
-          if (existsConn) {
-            return;
-          } else {
-            alreadyConnectedOnlineUsers.push({ id, socketId });
-          }
-          io.to(id).emit("addOnlineUsers", { id: userData.id, socketId: socket.id });
-        }
-      });
-    });
-    //send to new connected users
-    socket.emit("alreadyConnectedOnlineUsers", alreadyConnectedOnlineUsers);
+    let userIdSet = new Set(); // Maintain a set of unique user IDs
+
+    // Filtered users from chats
+    const chatUsers = await Chat.find({ users: userData.userId });
+
+    // Iterate through chat users and add online users to alreadyConnectedOnlineUsers
+    await Promise.all(
+      chatUsers.map(async (chatUser) => {
+        await Promise.all(
+          chatUser.users.map(async (chatUserId: any) => {
+            const receiverId = await getSocketConnectedUser(chatUserId.toString());
+            if (receiverId) {
+              const { userId, socketId } = receiverId;
+              const id = userId.toString(); // Convert userId to string
+              const userInfo: any = await User.findById(id).select(
+                "name image lastActive"
+              );
+              if (!userIdSet.has(id)) {
+                // Check if user ID is already added
+
+                alreadyConnectedOnlineUsers.push({ userId: id, socketId, userInfo });
+                userIdSet.add(id); // Add user ID to set
+              }
+
+              io.to(id).emit("addOnlineUsers", {
+                chatId: chatUser._id,
+                userId: userData.userId,
+                socketId: socket.id,
+                userInfo: await User.findById(userData.userId).select(
+                  "name image lastActive"
+                ), ///new adduserdata send to others connected friends
+              });
+            }
+          })
+        );
+      })
+    );
+
+    // Emit the event only if there are connected users
+    // if (alreadyConnectedOnlineUsers.length > 0) {
+    //   socket.emit("alreadyConnectedOnlineUsers", alreadyConnectedOnlineUsers);
+    // }
 
     // io.emit("setup", users);
     console.log("Client connected");
@@ -202,8 +259,8 @@ io.on("connection", (socket: Socket) => {
     socket.to(data.to).emit("chatCreatedNotifyReceived", data);
   });
   //singlechatDeletedNotify
-  socket.on("singleChatDeletedNotify", (data) => {
-    const receiverId = getSocketConnectedUser(data.receiverId);
+  socket.on("singleChatDeletedNotify", async (data) => {
+    const receiverId = await getSocketConnectedUser(data.receiverId);
     if (receiverId) {
       socket
         .to(receiverId?.socketId)
@@ -234,8 +291,8 @@ io.on("connection", (socket: Socket) => {
   //chat blocked notify
 
   //singlechatDeletedNotify
-  socket.on("chatBlockedNotify", (data) => {
-    const receiverId = getSocketConnectedUser(data.receiverId);
+  socket.on("chatBlockedNotify", async (data) => {
+    const receiverId = await getSocketConnectedUser(data.receiverId);
     if (receiverId) {
       socket.to(receiverId?.socketId).emit("chatBlockedNotifyReceived", data);
     }
@@ -309,48 +366,156 @@ io.on("connection", (socket: Socket) => {
       data
     );
   });
-  
+
   //deliveredGroupMessageReceived
-   socket.on("deliveredGroupMessage", async (data: any) => {
-     await emitEventToGroupUsers(
-       socket,
-       "deliveredGroupMessageReceived",
-       data.chatId,
-       data
-     );
-   });
+  socket.on("deliveredGroupMessage", async (data: any) => {
+    await emitEventToGroupUsers(
+      socket,
+      "deliveredGroupMessageReceived",
+      data.chatId,
+      data
+    );
+  });
 
-   //update_group_info
-    socket.on("update_group_info", async (data: any) => {
-      await emitEventToGroupUsers(socket, "update_group_info_Received", data._id, data);
-    });
-  //@@@@@@ calling system end
-  // Handle client disconnection
-  socket.on("disconnect", async (data) => {
-    // Emit the updated users array after a user disconnects
-    //only send online users notify there who connected with me
-    const leaveId = getSocketConnectedUser(socket.id);
-    if (leaveId) {
-      socket.leave(leaveId.id);
+  //update_group_info
+  socket.on("update_group_info", async (data: any) => {
+    await emitEventToGroupUsers(socket, "update_group_info_Received", data._id, data);
+  });
+  //calling system start
+  socket.on("sent_call_invitation", async (data: any) => {
+    if (data.isGroupChat) {
+      await emitEventToGroupUsers(socket, "received_incoming_call", data.chatId, data);
+
+      //  socket.emit("receiveMessage", message);
+    } else {
+      //all connected clients in room
+      socket.to(data.receiver?._id).emit("received_incoming_call", { ...data });
     }
+  });
+  //accept call
+  socket.on("call_accepted", async (data: any) => {
+    //all connected clients in room
+    socket.to(data.receiver?._id).emit("user:call_accepted", { ...data });
+  });
 
-    const chats = await Chat.find({ users: { $elemMatch: { $eq: leaveId?.id } } });
-    chats?.forEach((chatUsers) => {
-      chatUsers?.users.forEach((userId: any) => {
-        const receiverId = getSocketConnectedUser(userId.toString());
-        if (receiverId) {
-          const { id, socketId } = receiverId;
-          io.to(socketId).emit("leaveOnlineUsers", {
-            id: leaveId?.id,
-            socketId: socket.id,
-          });
+  //reject call
+  socket.on("call_rejected", async (data: any) => {
+    //all connected clients in room
+    socket.to(data.receiver?._id).emit("user:call_rejected", { ...data });
+  });
+  //caller_call_rejected
+  socket.on("caller_call_rejected", async (data: any) => {
+    //all connected clients in room
+    if (data.isGroupChat) {
+      await emitEventToGroupUsers(
+        socket,
+        "caller_call_rejected_received",
+        data.chatId,
+        data
+      );
+
+      //  socket.emit("receiveMessage", message);
+    } else {
+      //all connected clients in room
+      socket.to(data.receiver?._id).emit("caller_call_rejected_received", { ...data });
+    }
+  });
+
+  //update:on-call-count
+  socket.on("update:on-call-count", async (data: any) => {
+    const foundChat = await Chat.findById(data.chatId);
+    //all connected clients in room
+    if (foundChat?.isGroupChat) {
+      await emitEventToGroupUsers(
+        socket,
+        "update:on-call-count_received",
+        data.chatId,
+        data
+      );
+
+      //  socket.emit("receiveMessage", message);
+    } else {
+      // Populate users field if it's not already populated
+      const receiver = await foundChat?.populate("users", "name email image lastActive");
+      //all single user
+      receiver?.users?.forEach(async (user) => {
+        const isConnected = await getSocketConnectedUser(user?._id.toString());
+        if (isConnected) {
+          io
+            .to(isConnected?.socketId)
+            .emit("update:on-call-count_received", { ...data });
         }
       });
+    }
+  });
+  //user-on-call-message
+  socket.on("user-on-call-message", async (data: any) => {
+    const foundChat = await Chat.findById(data.chatId);
+    const userOncallMessage = await sentGroupNotifyMessage({
+      chatId: data.chatId,
+      user: data.user,
+      message: data.message,
+      type: data.type === "call-notify" ? "call-notify" : "notify",
     });
-    //remove from users array
-    await removeUser(socket.id);
+    const userOncallData = {
+      message: { ...userOncallMessage.toObject() },
+      user: data.user,
+      chatId: data.chatId,
+    };
+    //all connected clients in room
+    if (foundChat?.isGroupChat) {
+      await emitEventToGroupUsers(
+        socket,
+        "user-on-call-message_received",
+        data.chatId,
+        userOncallData
+      );
 
-    console.log("Client disconnected");
+      //  socket.emit("receiveMessage", message);
+    } else {
+      // Populate users field if it's not already populated
+      const receiver = await foundChat?.populate("users", "name email image lastActive");
+      //all single user
+      receiver?.users?.forEach(async (user) => {
+        const isConnected = await getSocketConnectedUser(user?._id.toString());
+        if (isConnected) {
+          io
+            .to(isConnected?.socketId)
+            .emit("user-on-call-message_received", { ...userOncallData });
+        }
+      });
+    }
+  });
+
+  
+  //@@@@@@ calling system end
+
+  // Handle client disconnection
+  // Keep track of disconnected sockets
+
+  socket.on("disconnect", async () => {
+    try {
+      const leaveId = await getSocketConnectedUser(socket.id);
+      if (leaveId) {
+        socket.leave(leaveId.userId.toString());
+
+        const userId = leaveId.userId.toString();
+
+        // Emit leave user event to online users
+        const eventData = {
+          userId: userId,
+          socketId: socket.id,
+        };
+        await emitEventToOnlineUsers(io, "leaveOnlineUsers", userId, eventData);
+
+        // Remove the user from the database
+        await removeUser(socket.id);
+
+        console.log("Client disconnected:", socket.id);
+      }
+    } catch (error) {
+      console.error("Error handling disconnection:", error);
+    }
   });
 });
 

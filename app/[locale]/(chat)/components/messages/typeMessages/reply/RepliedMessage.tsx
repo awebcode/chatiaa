@@ -5,7 +5,7 @@ import React from "react";
 import { AiOutlineAudio } from "react-icons/ai";
 import { CiImageOn } from "react-icons/ci";
 import { FaFile, FaRegFilePdf } from "react-icons/fa";
-import { MdAudioFile, MdOutlineOndemandVideo } from "react-icons/md";
+import { MdAudioFile, MdOutlineCallEnd, MdOutlineOndemandVideo } from "react-icons/md";
 
 const RepliedMessage = ({
   message,
@@ -96,6 +96,16 @@ const RepliedMessage = ({
                     <FaRegFilePdf className="text-violet-500 mx-1 inline h-4 w-4" />{" "}
                     replied a pdf file
                   </span>
+                </div>
+              )
+            ) : message.isReply.messageId?.type === "call-notify" ? (
+              message.isReply.messageId?.status === "removed" &&
+              message.isReply.messageId.removedBy?._id === currentUser?._id ? (
+                "Removed"
+              ) : (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs">replied a call</span>
+                  <MdOutlineCallEnd className="text-rose-600" />
                 </div>
               )
             ) : (

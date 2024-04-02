@@ -36,6 +36,7 @@ const messageSchema = new mongoose.Schema(
         // this two will call when leave or remove user from group
         "removedByAdmin",
         "notify",
+        "call-notify"
       ],
       default: "unseen",
     },

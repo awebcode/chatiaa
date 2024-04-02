@@ -13,8 +13,14 @@ const chatModel = new mongoose.Schema(
     groupAdmin: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     chatBlockedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     description: String,
+    onCallMembers: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
-
+// Define a schema for user-chat associations
+const chatUserSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  chatId: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
+});
+export const ChatUser = mongoose.model("ChatUser", chatUserSchema);
 export const Chat = mongoose.model("Chat", chatModel);

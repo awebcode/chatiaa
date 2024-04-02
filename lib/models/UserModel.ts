@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema(
     provider: {
       type: "String",
     },
- 
+    bio: String,
+    role: { type: String, default: "user" },
     lastActive: {
       type: Date,
       // default: Date.now,
@@ -20,4 +21,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const User = mongoose.models.User || mongoose.model("User", userSchema);
+export const User =mongoose.models.User|| mongoose.model("User", userSchema);

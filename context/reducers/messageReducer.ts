@@ -21,6 +21,16 @@ import {
   SET_GROUP_USERS_ON_FETCHING,
   SEEN_PUSH_USER_GROUP_MESSAGE,
   UPDATE_GROUP_INFO,
+  LEAVE_ONLINE_USER,
+  UPDATE_ONLINE_STATUS,
+  SENT_CALL_INVITATION,
+  REJECT_CALL,
+  ACCEPT_CALL,
+  USER_CALL_ACCEPTED,
+  USER_CALL_REJECTED,
+  CLEAR_CALL,
+  RECEIVE_CALL_INVITATION,
+  UPDATE_ON_CALL_COUNT,
 } from "./actions";
 import { Action, State } from "./interfaces";
 import {
@@ -78,7 +88,6 @@ export const messageReducer = (state: State, action: Action): State => {
       const updatedChatIndex = state.chats.findIndex(
         (chat) => chat._id === action.payload.chat._id || action.payload.chatId
       );
-      console.log({ UPDATE_LATEST_CHAT_MESSAGE: action.payload });
 
       // If the chat is not found, return state as is
       if (updatedChatIndex === -1) {
@@ -297,8 +306,7 @@ export const messageReducer = (state: State, action: Action): State => {
                 ...(chat.latestMessage as any),
                 status: "seen",
                 seenBy: updatedSeenBy,
-                isSeen:
-                  !action.payload?.isSocketData && true
+                isSeen: !action.payload?.isSocketData && true,
               },
             };
           }
@@ -371,7 +379,6 @@ export const messageReducer = (state: State, action: Action): State => {
       return {
         ...state,
         messages: [],
-        
       };
     }
     //UPDATE MESSAGE STATUS
@@ -391,14 +398,17 @@ export const messageReducer = (state: State, action: Action): State => {
       };
 
     case UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND:
-        console.log({ UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND: state?.chats });
-      
+      console.log({ UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND: state?.chats });
+
       return {
         ...state,
         // Update messages array to replace the existing message with the edited one
         chats: state?.chats?.map((chat) =>
           chat?._id === action.payload.chatId
-            ? { ...chat, latestMessage: { ...chat.latestMessage as any, status: "delivered" } }
+            ? {
+                ...chat,
+                latestMessage: { ...(chat.latestMessage as any), status: "delivered" },
+              }
             : chat
         ),
         messages: state?.messages?.map((message) =>
@@ -595,7 +605,7 @@ export const messageReducer = (state: State, action: Action): State => {
     //update group UPDATE_GROUP_INFO
 
     case UPDATE_GROUP_INFO:
-      console.log({UPDATE_GROUP_INFO:action.payload})
+      console.log({ UPDATE_GROUP_INFO: action.payload });
       return {
         ...state,
         chats: state?.chats?.map((chat) =>
@@ -623,6 +633,158 @@ export const messageReducer = (state: State, action: Action): State => {
               }
             : state?.selectedChat,
       };
+    //LEAVE_ONLINE_USER and update last active
+    case LEAVE_ONLINE_USER:
+      return {
+        ...state,
+        chats: state.chats.map((chat) => {
+          if (!chat.isGroupChat) {
+            const userIndex = chat?.users.findIndex(
+              (user) => user._id === action.payload.userInfo?.userId
+            );
+            if (userIndex !== -1) {
+              const updatedUsers = [...chat.users];
+              updatedUsers[userIndex].lastActive = action.payload.userInfo.lastActive; // Update lastActive
+              return {
+                ...chat,
+                users: updatedUsers,
+              };
+            }
+          }
+          return chat;
+        }),
+        selectedChat:
+          state.selectedChat && !state?.selectedChat.isGroupChat
+            ? {
+                ...state.selectedChat,
+                userInfo: {
+                  ...state.selectedChat.userInfo,
+                  lastActive: action.payload.userInfo.lastActive,
+                },
+              }
+            : state.selectedChat,
+      };
+    //UPDATE_ONLINE_STATUS
+    case UPDATE_ONLINE_STATUS:
+      return {
+        ...state,
+        chats: state.chats.map((chat) => {
+          if (chat._id === action.payload.chatId) {
+            const isOnline =
+              action.payload.type === "online"
+                ? true
+                : !chat.isGroupChat &&
+                  action.payload.type === "leave" &&
+                  action.payload.userId !== action.payload.currentUser._id
+                ? false
+                : action.payload.isAnyGroupUserOnline;
+
+            return {
+              ...chat,
+              isOnline: isOnline,
+            };
+          }
+          return chat;
+        }),
+        selectedChat:
+          state.selectedChat && state.selectedChat.chatId === action.payload.chatId
+            ? {
+                ...state.selectedChat,
+                isOnline:
+                  action.payload.type === "online"
+                    ? true
+                    : action.payload.type === "leave"
+                    ? false
+                    : state.selectedChat.isOnline,
+              }
+            : state.selectedChat,
+      };
+    //@@@@@@@@@@@CALLING MECHANISM
+
+    case SENT_CALL_INVITATION:
+      return {
+        ...state,
+        callInfo: { ...action.payload, isMyCall: true },
+      };
+    //RECEIVE_CALL_INVITATION
+
+    case RECEIVE_CALL_INVITATION:
+      return {
+        ...state,
+        callInfo: { ...action.payload, isIncomingCall: true },
+      };
+    //@@@@@@@@@@@ACCEPET CALL
+
+    case ACCEPT_CALL:
+      return {
+        ...state,
+        callInfo: { ...action.payload, isAccept: true },
+      };
+    //@@@@@@@@@@@REJECT CALL
+
+    case REJECT_CALL:
+      return {
+        ...state,
+        callInfo: null,
+      };
+    //USER_CALL_ACCEPTED
+    case USER_CALL_ACCEPTED:
+      return {
+        ...state,
+        callInfo: {
+          ...action.payload,
+          isAccepted: true,
+          isRejected: false,
+          isMyCall: false,
+          isIncomingCall: false,
+        },
+      };
+    //USER_CALL_ACCEPTED
+    case USER_CALL_REJECTED:
+      return {
+        ...state,
+        callInfo: {
+          ...action.payload,
+          isAccepted: false,
+          isRejected: true,
+          isMyCall: false,
+          isIncomingCall: false,
+        },
+      };
+    case CLEAR_CALL:
+      return {
+        ...state,
+        callInfo: null,
+      };
+    //UPDATE_ON_CALL_COUNT
+    case UPDATE_ON_CALL_COUNT:
+      return {
+        ...state,
+        chats: state.chats.map((chat) => {
+          if (chat._id === action.payload.chatId) {
+           
+            return {
+              ...chat,
+              onCallMembers:
+                action.payload.type === "join"
+                  ? chat.onCallMembers + 1
+                  : chat.onCallMembers - 1,
+            };
+          }
+          return chat;
+        }),
+        selectedChat:
+          state.selectedChat && state.selectedChat.chatId === action.payload.chatId
+            ? {
+                ...state.selectedChat,
+                onCallMembers:
+                  action.payload.type === "join"
+                    ? state.selectedChat.onCallMembers + 1
+                    : state.selectedChat.onCallMembers - 1,
+              }
+            : state.selectedChat,
+      };
+
     default:
       return state;
   }

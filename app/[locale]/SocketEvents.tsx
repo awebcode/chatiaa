@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
-import dynamic from "next/dynamic";
+
 import {
   ADD_EDITED_MESSAGE,
   ADD_REACTION_ON_MESSAGE,
@@ -10,7 +10,9 @@ import {
   BLOCK_CHAT,
   DELETE_CHAT,
   LEAVE_FROM_GROUP_CHAT,
+  LEAVE_ONLINE_USER,
   MAKE_AS_ADMIN_TO_GROUP_CHAT,
+  RECEIVE_CALL_INVITATION,
   REMOVE_ADMIN_FROM_GROUP_CHAT,
   REMOVE_UNSENT_MESSAGE,
   REMOVE_USER_FROM_GROUP,
@@ -18,11 +20,16 @@ import {
   SET_CHATS,
   SET_MESSAGES,
   SET_TOTAL_MESSAGES_COUNT,
+  SET_USER,
   UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND,
   UPDATE_CHAT_STATUS,
   UPDATE_GROUP_INFO,
   UPDATE_LATEST_CHAT_MESSAGE,
   UPDATE_MESSAGE_STATUS,
+  UPDATE_ONLINE_STATUS,
+  USER_CALL_REJECTED,
+  USER_CALL_ACCEPTED,
+  UPDATE_ON_CALL_COUNT,
 } from "@/context/reducers/actions";
 import { IChat } from "@/context/reducers/interfaces";
 import { Reaction, Tuser } from "@/store/types";
@@ -38,15 +45,21 @@ import {
   updateAllMessageStatusAsSeen,
   updateMessageStatus,
 } from "@/functions/messageActions";
-
-const Chat = () => {
+import { axiosClient } from "@/config/AxiosConfig";
+import { IncomingCallDialog } from "./call/IncomingCall";
+import { RejectedCallDialog } from "./call/CallRejected";
+import { MyCallPage } from "./call/MyCall";
+import { Howl } from "howler";
+import { showNotification } from "@/config/showNotification";
+const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   const queryClient = useQueryClient();
   const { socket } = useSocketContext();
   const {
-    user: currentUser,
+    // user: currentUser,
     messages,
     selectedChat,
     totalMessagesCount,
+    callInfo,
   } = useMessageState();
   const dispatch = useMessageDispatch();
 
@@ -60,6 +73,12 @@ const Chat = () => {
   const socketRef = useRef<Socket | null>(null); // Provide type annotation for socket, you can replace `any` with the specific type if available
   const onlineUsersRef = useRef<any>([]);
   const userRef = useRef<Tuser | null>(null);
+  const soundRef = useRef<any | null>(null);
+  const playSound = new Howl({
+    src: ["/audio/messenger.mp3"],
+    preload: true,
+    volume: 1,
+  });
   //updateAllMessageStatusAsDeliveredMutation
   const updateAllMessageStatusAsDeliveredMutation = useMutation({
     mutationKey: ["group"],
@@ -70,6 +89,11 @@ const Chat = () => {
     mutationKey: ["group"],
     mutationFn: (body: { chatId: string; messageId: string }) => pushgroupSeenBy(body),
   });
+  // set initial user start
+  useEffect(() => {
+    dispatch({ type: SET_USER, payload: currentUser });
+  }, [currentUser]);
+  // set initial user end
   useEffect(() => {
     totalMessagesCountRef.current = totalMessagesCount;
     selectedChatRef.current = selectedChat;
@@ -77,27 +101,44 @@ const Chat = () => {
     userRef.current = currentUser;
     socketRef.current = socket;
     onlineUsersRef.current = onlineUsers;
+    soundRef.current = playSound;
   }, [totalMessagesCount, selectedChat, currentUser, socket, onlineUsers]);
   useEffect(() => {
     // Emit "setup" event when the component mounts if currentUser is available
     // const user = JSON.parse(localStorage.getItem("currentUser") as any);
     if (currentUser) {
-      socket?.emit("setup", { id: currentUser._id });
+      socket?.emit("setup", { userId: currentUser._id });
     }
-  }, [currentUser]);
+  }, [currentUser?._id]);
+
+  //fetch initial online users
+  useEffect(() => {
+    const fetchOnlineUsers = async () => {
+      const { data } = await axiosClient.get("/getOnlineUsersInMyChats");
+      let onlineUserss = data.onlineUsers.map((u: any) => ({
+        userId: u.userId._id,
+        socketId: u.socketId,
+        userInfo: u.userId,
+      }));
+      setInitOnlineUsers(onlineUserss);
+    };
+    fetchOnlineUsers();
+  }, []);
   //update friend chat and messages staus when i'm online
   useEffect(() => {
-
     updateAllMessageStatusAsDelivered(currentUser?._id as any);
   }, []);
   useEffect(() => {
     socket.emit("deliveredAllMessageAfterReconnect", {
-      userId: currentUser?._id
+      userId: currentUser?._id,
     });
   }, [currentUser?._id]);
 
   const handleSocketMessage = useCallback(
     async (data: any) => {
+       useIncomingMessageStore.setState({
+         isIncomingMessage: true,
+       });
       //  update latest chat for both side
       console.log({ socketMessage: data });
 
@@ -117,6 +158,9 @@ const Chat = () => {
         !data?.chat?.isGroupChat &&
         data.sender?._id === selectedChatRef.current?.userInfo._id
       ) {
+         useIncomingMessageStore.setState({
+           isIncomingMessage: true,
+         });
         dispatch({
           type: UPDATE_LATEST_CHAT_MESSAGE,
           payload: { ...data, status: "seen" },
@@ -127,6 +171,25 @@ const Chat = () => {
           messageId: data._id,
           status: "seen",
         });
+
+        //send to db
+       
+        const pushData = {
+          chatId: data?.chat?._id,
+          messageId: data?._id,
+          user: currentUserRef.current,
+          status: "seen",
+          onClickByseen: "false",
+        };
+
+        //emit event to server to sender
+        socket.emit("seenPushGroupMessage", pushData);
+        //update my side visible the user who seen
+         dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
+         pushSeenByMutation.mutate({
+           chatId: data.chat?._id,
+           messageId: data?._id as any,
+         });
         const updateStatusData = {
           chatId: data?.chat._id,
           status: "seen",
@@ -137,9 +200,15 @@ const Chat = () => {
         //delivered message
         data.receiverId === currentUserRef.current?._id &&
         onlineUsersRef.current.some(
-          (user: any) => user.id === currentUserRef.current?._id
+          (user: any) => user.userId === currentUserRef.current?._id
         )
       ) {
+        //play sound
+        soundRef.current?.play();
+        showNotification(data.sender.name, data.sender.image, data.content);
+         useIncomingMessageStore.setState({
+           isIncomingMessage: true,
+         });
         dispatch({
           type: UPDATE_LATEST_CHAT_MESSAGE,
           payload: { ...data, status: "delivered" },
@@ -182,6 +251,9 @@ const Chat = () => {
           data?.sender?._id !== currentUserRef.current?._id
         ) {
           //update receiver side
+           useIncomingMessageStore.setState({
+             isIncomingMessage: true,
+           });
           dispatch({
             type: UPDATE_LATEST_CHAT_MESSAGE,
             payload: { ...data, status: "seen" },
@@ -213,18 +285,23 @@ const Chat = () => {
           await updateMessageStatus(updateStatusData);
           updateAllMessageStatusAsSeen(data.chat?._id).catch(console.error);
         } else {
-          console.log({ deliverGrpMessage: data });
-
+ 
           if (
             data.chat.status !== "seen" &&
             data.chat.users?.some((user: any) =>
               onlineUsersRef.current.some(
                 (onlineUser: any) =>
-                  onlineUser.id === user?._id &&
-                  onlineUser.id !== currentUserRef.current?._id
+                  onlineUser.userId === user?._id &&
+                  onlineUser.userId !== currentUserRef.current?._id
               )
             )
           ) {
+            //play sound
+            soundRef.current?.play();
+            showNotification(data.sender.name, data.sender.image, data.content);
+            useIncomingMessageStore.setState({
+              isIncomingMessage: true,
+            });
             dispatch({
               type: UPDATE_LATEST_CHAT_MESSAGE,
               payload: { ...data, status: "delivered" },
@@ -243,17 +320,7 @@ const Chat = () => {
               chatId: data?.chat?._id,
               status: "delivered",
             });
-          } else {
-            // dispatch({
-            //   type: UPDATE_LATEST_CHAT_MESSAGE,
-            //   payload: { ...data, status: "seen" },
-            // });
           }
-
-          // //update all message status as delivered in group
-          // updateAllMessageStatusAsDeliveredMutation.mutateAsync(
-          //   currentUserRef.current?._id as any
-          // );
         }
       }
     },
@@ -318,25 +385,54 @@ const Chat = () => {
   }, []);
   //handleAlreadyConnectedOnlineUsers
   const handleAlreadyConnectedOnlineUsers = useCallback(
-    (users: { id: string; socketId: string }[]) => {
+    (users: { userId: string; socketId: string; userInfo: Tuser }[]) => {
       if (users) {
-        setInitOnlineUsers(users);
+        // setInitOnlineUsers(users);
       }
     },
     []
   );
   //handleOnlineUsers
-  const handleOnlineUsers = useCallback((user: { id: string; socketId: string }) => {
-    if (user) {
-      addOnlineUser(user);
-    }
-  }, []);
+  const handleOnlineUsers = useCallback(
+    (user: { userId: string; socketId: string; userInfo: Tuser; chatId: string }) => {
+      if (user) {
+        dispatch({
+          type: UPDATE_ONLINE_STATUS,
+          payload: { chatId: user.chatId, type: "online" },
+        });
+        if (user.userId !== currentUserRef?.current?._id) {
+          addOnlineUser(user);
+        }
+      }
+    },
+    []
+  );
   //handleLeaveOnlineUsers
-  const handleLeaveOnlineUsers = useCallback((user: { id: string; socketId: string }) => {
-    if (user) {
-      removeOnlineUser(user);
-    }
-  }, []);
+  const handleLeaveOnlineUsers = useCallback(
+    (user: {
+      userId: string;
+      socketId: string;
+      userInfo: Tuser;
+      chatId: string;
+      isAnyGroupUserOnline: boolean;
+    }) => {
+      if (user) {
+        dispatch({
+          type: UPDATE_ONLINE_STATUS,
+          payload: {
+            chatId: user.chatId,
+            userId: user.userId,
+            currentUser,
+            isAnyGroupUserOnline: user.isAnyGroupUserOnline,
+            type: "leave",
+          },
+        });
+        dispatch({ type: LEAVE_ONLINE_USER, payload: user });
+        removeOnlineUser(user);
+      }
+    },
+    []
+  );
   const groupCreatedNotifyHandler = useCallback((data: any) => {
     // Implementation goes here
     dispatch({ type: SET_CHATS, payload: data.chat });
@@ -359,6 +455,10 @@ const Chat = () => {
   const groupChatLeaveNotifyReceivedHandler = useCallback((data: any) => {
     if (data.chatId === selectedChatRef.current?.chatId) {
       dispatch({ type: SET_MESSAGES, payload: data });
+
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
     }
 
     dispatch({
@@ -380,6 +480,11 @@ const Chat = () => {
       type: UPDATE_LATEST_CHAT_MESSAGE,
       payload: data.message,
     });
+    if (selectedChatRef.current?.chatId === data.chatId) {
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
+    }
     // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
     // dispatch({ type: REMOVE_USER_FROM_GROUP, payload: data });
 
@@ -394,6 +499,12 @@ const Chat = () => {
     });
     // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
     dispatch({ type: MAKE_AS_ADMIN_TO_GROUP_CHAT, payload: data });
+
+    if (selectedChatRef.current?.chatId === data.chatId) {
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
+    }
     // console.log({ handleMakeAdminToGroupNotify: data.message });
   }, []);
   //adminRemoveFromGroupNotify
@@ -405,6 +516,11 @@ const Chat = () => {
     });
     // queryClient.invalidateQueries({ queryKey: ["groupUsers"] });
     dispatch({ type: REMOVE_ADMIN_FROM_GROUP_CHAT, payload: data });
+    if (selectedChatRef.current?.chatId === data.chatId) {
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
+    }
   }, []);
 
   //handleSeenPushGroupMessage
@@ -435,8 +551,100 @@ const Chat = () => {
       type: UPDATE_LATEST_CHAT_MESSAGE,
       payload: data.message,
     });
+    if (selectedChatRef.current?.chatId === data.chatId) {
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
+    }
+  }, []);
+  //call handlers
+
+  //handleIncomingCall
+  const handleIncomingCall = useCallback((data: any) => {
+    dispatch({ type: RECEIVE_CALL_INVITATION, payload: data });
+  }, []);
+  //handleCallAccepted
+  const handleCallAccepted = useCallback((data: any) => {
+    dispatch({ type: USER_CALL_ACCEPTED, payload: data });
+    router.push(`/call/${data.chatId}`);
   }, []);
 
+  //handleCallRejected
+  const handleCallRejected = useCallback((data: any) => {
+    dispatch({ type: USER_CALL_REJECTED, payload: data });
+  }, []);
+  //handleUpdateOnCallCount
+  const handleUpdateOnCallCount = useCallback((data: any) => {
+    dispatch({ type: UPDATE_ON_CALL_COUNT, payload: data });
+  }, []);
+  //handleUserOnCallMessage
+  const handleUserOnCallMessage = useCallback((data: any) => {
+    if (
+      data.receiverId === currentUserRef.current?._id &&
+      onlineUsersRef.current.some(
+        (user: any) => user.userId === currentUserRef.current?._id
+      )
+    ) {
+      dispatch({ type: SET_MESSAGES, payload: { ...data.message, status: "delivered" } });
+      dispatch({
+        type: UPDATE_LATEST_CHAT_MESSAGE,
+        payload: { ...data.message, status: "delivered" },
+      });
+      socketRef?.current?.emit("deliveredMessage", {
+        receiverId: data.message.sender._id,
+        chatId: data.chatId,
+        messageId: data.message._id,
+        status: "delivered",
+      });
+      const updateStatusData = {
+        chatId: data?.chatId,
+        status: "delivered",
+      };
+      updateMessageStatus(updateStatusData);
+    }
+
+    if (selectedChatRef.current?.chatId === data.chatId) {
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
+      dispatch({ type: SET_MESSAGES, payload: { ...data.message, status: "seen" } });
+      dispatch({
+        type: UPDATE_LATEST_CHAT_MESSAGE,
+        payload: { ...data.message, status: "seen" },
+      });
+
+      socketRef?.current?.emit("seenMessage", {
+        receiverId: data.message.sender._id,
+        chatId: data.chatId,
+        messageId: data.message._id,
+        status: "seen",
+      });
+
+      //send to db
+
+      const pushData = {
+        chatId: data?.chatId,
+        messageId: data.message?._id as any,
+        user: currentUserRef.current,
+        status: "seen",
+        onClickByseen: "false",
+      };
+
+      //emit event to server to sender
+      socket.emit("seenPushGroupMessage", pushData);
+      //update my side visible the user who seen
+      dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
+      pushSeenByMutation.mutate({
+        chatId: data?.chatId,
+        messageId: data.message?._id as any,
+      });
+      const updateStatusData = {
+        chatId: data?.chatId,
+        status: "seen",
+      };
+      updateMessageStatus(updateStatusData);
+    }
+  }, []);
   useEffect(() => {
     // Add event listeners
     socket.on("receiveMessage", handleSocketMessage);
@@ -474,6 +682,13 @@ const Chat = () => {
 
     socket.on("chatBlockedNotifyReceived", chatBlockedNotifyReceivedHandler);
     // Clean up event listeners when the component unmounts
+    //call
+    socket.on("received_incoming_call", handleIncomingCall);
+    socket.on("user:call_accepted", handleCallAccepted);
+    socket.on("user:call_rejected", handleCallRejected);
+    socket.on("caller_call_rejected_received", handleCallRejected);
+    socket.on("update:on-call-count_received", handleUpdateOnCallCount);
+    socket.on("user-on-call-message_received", handleUserOnCallMessage);
     return () => {
       //online events
       socket.off("addOnlineUsers", handleOnlineUsers);
@@ -511,10 +726,64 @@ const Chat = () => {
       socket.off("deliveredGroupMessageReceived", handleDeliveredGroupMessage);
       socket.off("update_group_info_Received", handleUpdate_group_info_Received);
       socket.off("groupNotifyReceived", handlegroupNotifyReceived);
+      //call
+      socket.off("received_incoming_call", handleIncomingCall);
+      socket.off("user:call_accepted", handleCallAccepted);
+      socket.off("user:call_rejected", handleCallRejected);
+      socket.off("caller_call_rejected_received", handleCallRejected);
+      //update:on-call-count_received
+      socket.off("update:on-call-count_received", handleUpdateOnCallCount);
+      socket.off("user-on-call-message_received", handleUserOnCallMessage);
     };
   }, []); //
 
-  return <></>;
+  //show notification
+  const playIncomingCallSound = new Howl({
+    src: ["/audio/messenger_call_ring.mp3"],
+    volume: 1,
+    loop: true,
+  });
+
+  useEffect(() => {
+    if (callInfo?.isIncomingCall) {
+      playIncomingCallSound.play();
+      showNotification(
+        callInfo?.sender.name as string,
+        callInfo?.sender.image as string,
+        "Incoming call received"
+      );
+    } else {
+      playIncomingCallSound.stop();
+    }
+    return () => {
+      playIncomingCallSound.stop();
+    };
+  }, [callInfo]);
+ //
+  const playMycallingSound = new Howl({
+    src: ["/audio/iphone_ring.mp3"],
+    volume: 1,
+    loop: true,
+  });
+
+  useEffect(() => {
+    if (callInfo?.isMyCall === true) {
+      playMycallingSound.play();
+    } else {
+      playMycallingSound.stop();
+    }
+    return () => {
+      playMycallingSound.stop();
+    };
+  }, [callInfo]);
+
+  return (
+    <>
+      {callInfo?.isMyCall && <MyCallPage />}
+      {callInfo?.isIncomingCall && <IncomingCallDialog />}
+      {callInfo?.isRejected && <RejectedCallDialog />}
+    </>
+  );
 };
 
-export default Chat;
+export default SocketEvents;

@@ -62,8 +62,8 @@ export const getSenderFull = (loggedUser: Tuser | any, users: Tuser[]): Tuser | 
 //find last seen message
 
 export function findLastSeenMessageIndex(messages: any) {
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].status === "seen") {
+  for (let i = messages?.length - 1; i >= 0; i--) {
+    if (messages[i]?.status === "seen") {
       return i;
     }
   }

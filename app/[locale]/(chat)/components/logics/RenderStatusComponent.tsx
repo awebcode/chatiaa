@@ -29,15 +29,16 @@ export const RenderStatus = (
           ))
         : (statusDiv =
             type === "onMessage" ? (
-              <div className="h-4 w-4 md:h-5 md:w-5 relative m-[2px] mt-3">
-                <Image
-                  height={15}
-                  width={15}
-                  className="rounded-full h-full w-full object-cover"
-                  alt={selectedChat?.userInfo?.name as any}
-                  src={selectedChat?.userInfo?.image as any}
-                />
-              </div>
+              // <div className="h-4 w-4 md:h-5 md:w-5 relative m-[2px] mt-3">
+              //   <Image
+              //     height={15}
+              //     width={15}
+              //     className="rounded-full h-full w-full object-cover"
+              //     alt={selectedChat?.userInfo?.name as any}
+              //     src={selectedChat?.userInfo?.image as any}
+              //   />
+              // </div>
+              ""
             ) : null);
       break;
     case "delivered":

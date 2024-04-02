@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema(
     provider: {
       type: "String",
     },
-   
+    bio: String,
+    role: { type: String, default: "user" },
     lastActive: {
       type: Date,
       // default: Date.now,

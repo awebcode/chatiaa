@@ -3,8 +3,11 @@ export type Tuser = {
   name: string;
   email: string;
   image: string;
+  bio: string;
+  role: string;
   createdAt: string;
   lastActive: string;
+  isOnline:boolean
 };
 
 //reactions

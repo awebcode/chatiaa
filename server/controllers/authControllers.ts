@@ -6,7 +6,8 @@ import { CustomErrorHandler } from "../middlewares/errorHandler";
 import { User } from "../model/UserModel";
 import { Chat } from "../model/ChatModel";
 import { AvatarGenerator } from "random-avatar-generator";
-import { Message } from "../model/MessageModel";
+import { onlineUsersModel } from "../model/onlineUsersModel";
+import AccountModel from "../model/AccountModel";
 const register = async (req: Request | any, res: Response, next: NextFunction) => {
   const { name, password, email } = req.body;
 
@@ -19,15 +20,7 @@ const register = async (req: Request | any, res: Response, next: NextFunction) =
     if (password.length < 6) {
       return next(new CustomErrorHandler("Password must be at least 6 charecters!", 400));
     }
-    // const url = await v2.uploader.upload(req.file.path);
-    // const localFilePath = req.file.path;
-    // fs.unlink(localFilePath, (err) => {
-    //   if (err) {
-    //     console.error(`Error deleting local file: ${err.message}`);
-    //   } else {
-    //     console.log(`Local file deleted: ${localFilePath}`);
-    //   }
-    // });
+
     // Hash the password
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -148,7 +141,6 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
           ],
         }
       : {};
-    console.log(req.query);
     //when search for find group users then check only find users who exist in my chat
     const usersQuery =
       req.query.onGroupSearch === "true"
@@ -165,7 +157,8 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
           };
     const users = await User.find(usersQuery).limit(limit).skip(skip);
     const total = await User.countDocuments(usersQuery);
-    res.send({ users, total, limit });
+    const totalOnlineUsers = await onlineUsersModel.countDocuments();
+    res.send({ users, total, limit, totalOnlineUsers });
   } catch (error) {
     next(error);
   }
@@ -173,7 +166,7 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
 
 //find for adding in group who not exists in chat
 
-export const allUsersForAddgroupExclueWhoinAlreadyChat= async (
+export const allUsersForAddgroupExclueWhoinAlreadyChat = async (
   req: CustomRequest | any,
   res: Response,
   next: NextFunction
@@ -205,6 +198,61 @@ export const allUsersForAddgroupExclueWhoinAlreadyChat= async (
     next(error);
   }
 };
+//all users for admin
+
+export const allAdminUsers = async (
+  req: CustomRequest | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const limit = parseInt(req.query.limit) || 4;
+  const skip = parseInt(req.query.skip) || 0;
+
+  try {
+    const adminUser = await User.findById(req.id);
+    if (!adminUser || adminUser.role !== "admin") {
+      return next(new CustomErrorHandler("You are not an admin", 401));
+    }
+    const keyword = req.query.search
+      ? {
+          $or: [
+            { name: { $regex: req.query.search, $options: "i" } },
+            { email: { $regex: req.query.search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // Find filtered users
+    let users: any = await User.find({ ...keyword })
+      .limit(limit)
+      .skip(skip);
+
+    // Count total documents matching the keyword
+    const total = await User.countDocuments({ ...keyword });
+
+    // Retrieve the IDs of the filtered users
+    const userIds = users.map((user: any) => user._id);
+
+    // Query onlineUsersModel for online status of filtered users
+    const onlineUsers = await onlineUsersModel.find({ userId: { $in: userIds } });
+
+    // Map the online status to userIds
+    const onlineUserIds = onlineUsers.map((user: any) => user.userId.toString());
+
+    // Merge online status into user data
+    users = users.map((user: any) => ({
+      ...user.toObject(),
+      isOnline: onlineUserIds.includes(user._id.toString()),
+    }));
+
+    // Count total online users
+    const totalOnlineUsers = await onlineUsersModel.countDocuments();
+
+    res.send({ users, total, limit, totalOnlineUsers });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const logout = (req: CustomRequest | any, res: Response, next: NextFunction) => {
   res.cookie("authToken", "", {
@@ -226,6 +274,10 @@ export const deleteUser = async (
   next: NextFunction
 ) => {
   try {
+    const currentUser = await User.findById(req.id);
+    if (!currentUser) {
+      return next(new CustomErrorHandler("You are not authorized", 401));
+    }
     const { id: userId } = req;
     // Find the user by ID
     const user = await User.findById(userId);
@@ -245,8 +297,164 @@ export const deleteUser = async (
 
     // Delete the user from the database
     await User.findByIdAndDelete(userId);
+    await AccountModel.findOneAndDelete({ userId });
 
     res.status(200).json({ message: "User and associated image deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+//Delete user by admin
+
+export const deleteUserByAdmin = async (
+  req: CustomRequest | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const currentUser = await User.findById(req.id);
+    if (!currentUser) {
+      return next(new CustomErrorHandler("You are not authorized", 401));
+    }
+    if (currentUser.role !== "admin") {
+      return next(new CustomErrorHandler("You are not admin", 401));
+    }
+    const { userId } = req.params;
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(new CustomErrorHandler("No user found", 401));
+    }
+
+    // Check if the user has an associated image
+    if (user.image && user.provider === "credentials") {
+      // Extract the public_id from the image URL
+      const publicId = (user as any).image.split("/").pop().split(".")[0];
+
+      // Delete the image from Cloudinary using the public_id
+      await v2.uploader.destroy(publicId);
+    }
+
+    // Delete the user from the database
+    await User.findByIdAndDelete(userId);
+    await AccountModel.findOneAndDelete({ userId });
+    res.status(200).json({ message: "User and associated image deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+// @access  Protected updateUser
+export const updateUser = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, name, password, bio, role } = req.body;
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return next(new CustomErrorHandler("User not found!", 404));
+    }
+
+    // Update chat image if req.file.path exists
+    let imageUpdate: string | undefined;
+    if (req.file?.path) {
+      // Check if chat.image exists, if so, remove the previous image from cloudinary
+      // Check if the user has an associated image
+      if (currentUser.image && currentUser.provider === "credentials") {
+        // Extract the public_id from the image URL
+        const publicId = (currentUser as any).image.split("/").pop().split(".")[0];
+
+        // Delete the image from Cloudinary using the public_id
+        await v2.uploader.destroy(publicId);
+      }
+
+      const cloudinaryResponse = await v2.uploader.upload(req.file.path, {
+        folder: "messengaria",
+      });
+
+      imageUpdate = cloudinaryResponse.secure_url;
+    }
+    let hashedPassword: string | undefined;
+
+    if (password) {
+      // Hash the provided password
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    // Update user's name, bio, photo, and password if provided, otherwise keep the existing data
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        ...(imageUpdate && { image: imageUpdate }),
+        ...(name && { name: name }),
+        ...(bio && { bio: bio }),
+        ...(role && { role: role }),
+        ...(hashedPassword && { password: hashedPassword }),
+      },
+      { new: true }
+    );
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+// getOnlineUsersInMyChats
+export const getOnlineUsersInMyChats = async (
+  req: CustomRequest | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
+    const skip = parseInt(req.query.skip) || 0;
+    const searchTerm = req.query.search;
+
+    // Constructing the keyword for searching by username and email
+    const keyword = searchTerm
+      ? {
+          $or: [
+            { name: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for name
+            { email: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for email
+          ],
+        }
+      : {};
+
+    // Find chats where the current user is present and it's not a group chat
+    const userChats = await Chat.find({ users: req.id, isGroupChat: false }).sort({
+      updatedAt: -1,
+    });
+
+    // Extract user IDs from these chats
+    const userIdsInChats = userChats.reduce((acc: string[], chat: any) => {
+      chat.users.forEach((userId: string) => {
+        if (userId !== req.id && !acc.includes(userId)) {
+          acc.push(userId);
+        }
+      });
+      return acc;
+    }, []);
+
+    // Find online users among the extracted user IDs with pagination, population, and sorting
+    const onlineUsers = await onlineUsersModel
+      .find({ userId: { $in: userIdsInChats }, ...keyword })
+      .populate({ path: "userId", select: "name image email lastActive" }) // Populate user details
+      .sort({ updatedAt: -1 }) // Sort by updatedAt in descending order
+      .limit(limit)
+      .skip(skip);
+
+    // Count total online users matching the search criteria
+    const totalOnlineUsers = await onlineUsersModel.countDocuments({
+      userId: { $in: userIdsInChats },
+      ...keyword,
+    });
+
+    // Send the list of online users along with total count
+    res.send({ onlineUsers, totalOnlineUsers, limit, skip });
   } catch (error) {
     next(error);
   }

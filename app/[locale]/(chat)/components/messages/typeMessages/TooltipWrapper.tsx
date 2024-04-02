@@ -7,8 +7,23 @@ import { useRouter } from "@/navigation";
 import { Tuser } from "@/store/types";
 import Image from "next/image";
 import { FaComments, FaMicrophone, FaVideo } from "react-icons/fa";
-const TooltipContentComponent = ({ user }: { user: Tuser }) => {
+import { useAccessChatMutation } from "../../mutations/Chatmutations";
+import { CLEAR_MESSAGES } from "@/context/reducers/actions";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
+import { handleSendCall } from "@/config/handleSendCall";
+import { useSocketContext } from "@/context/SocketContextProvider";
+import { IChat } from "@/context/reducers/interfaces";
+const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => {
+  const {user:currentUser}=useMessageState();
+  const {socket}=useSocketContext()
+  const dispatch=useMessageDispatch()
   const Router = useRouter();
+  const mutaion = useAccessChatMutation("");
+  
+  const handleAccessChat = (userId: string) => {
+    dispatch({ type: CLEAR_MESSAGES });
+    mutaion.mutateAsync(userId as any);
+  };
   return (
     <div>
       {user && (
@@ -25,16 +40,29 @@ const TooltipContentComponent = ({ user }: { user: Tuser }) => {
             <div className="flex items-center justify-center mt-4 gap-1">
               {/* Video Icon */}
               <div className="rounded-full bg-white dark:bg-gray-700 hover:bg-opacity-80 shadow p-2 text-xl">
-                <FaVideo className=" text-[12px] text-blue-500 cursor-pointer hover:text-blue-700" />
+                <FaVideo
+                  onClick={() =>
+                    handleSendCall("video", currentUser, chat as any, socket, dispatch)
+                  }
+                  className=" text-[12px] text-blue-500 cursor-pointer hover:text-blue-700"
+                />
               </div>
 
               {/* Audio Icon */}
               <div className="rounded-full bg-white dark:bg-gray-700 hover:bg-opacity-80 shadow p-2 text-xl">
-                <FaMicrophone className="text-[12px] text-green-500 cursor-pointer hover:text-green-700" />
+                <FaMicrophone
+                  onClick={() =>
+                    handleSendCall("audio", currentUser, chat as any, socket, dispatch)
+                  }
+                  className="text-[12px] text-green-500 cursor-pointer hover:text-green-700"
+                />
               </div>
               {/* Chat Icon */}
               <div className="rounded-full bg-white dark:bg-gray-700 hover:bg-opacity-80 shadow p-2 text-xl">
-                <FaComments className="text-[12px] text-purple-500 cursor-pointer hover:text-purple-700" />
+                <FaComments
+                  onClick={() => handleAccessChat(user._id)}
+                  className="text-[12px] text-purple-500 cursor-pointer hover:text-purple-700"
+                />
               </div>
             </div>
           </div>

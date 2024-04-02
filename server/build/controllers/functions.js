@@ -45,8 +45,7 @@ const sentGroupNotifyMessage = (newMessage) => __awaiter(void 0, void 0, void 0,
             sender: newMessage.user._id,
             content: newMessage === null || newMessage === void 0 ? void 0 : newMessage.message,
             chat: newMessage.chatId,
-            type: "notify",
-            status: "notify",
+            type: (newMessage === null || newMessage === void 0 ? void 0 : newMessage.type) ? newMessage === null || newMessage === void 0 ? void 0 : newMessage.type : "notify",
         };
         let message;
         message = yield MessageModel_1.Message.create(data);

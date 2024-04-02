@@ -1,5 +1,6 @@
 import { useSocketContext } from "@/context/SocketContextProvider";
 import {
+  accessChats,
   deleteSingleChat,
   leaveChat,
   makeAsAdmin,
@@ -18,10 +19,78 @@ import {
   MAKE_AS_ADMIN_TO_GROUP_CHAT,
   REMOVE_ADMIN_FROM_GROUP_CHAT,
   REMOVE_USER_FROM_GROUP,
+  SET_CHATS,
   SET_SELECTED_CHAT,
 } from "@/context/reducers/actions";
 import { Tuser } from "@/store/types";
+import { getSenderFull } from "../logics/logics";
+import { useOnlineUsersStore } from "@/store/useOnlineUsers";
+//useAccessChats mutation
 
+export const useAccessChatMutation = (closeDialogId:string) => {
+  const {  user:currentUser } = useMessageState();
+  const dispatch = useMessageDispatch();
+  const { socket } = useSocketContext();
+  const addOnlineUser=useOnlineUsersStore((s)=>s.addOnlineUser)
+  return useMutation({
+    mutationFn: (data) => accessChats(data),
+    
+    onSuccess: (chat) => {
+      console.log({chat})
+      const isFriend = getSenderFull(currentUser, chat.chatData?.users);
+      const chatData = {
+        chatId: chat?.chatData?._id,
+        latestMessage: chat?.chatData?.latestMessage,
+        chatCreatedAt: chat?.chatData?.createdAt,
+
+        groupChatName: chat?.chatData?.chatName,
+        isGroupChat: chat?.chatData?.isGroupChat,
+        groupAdmin: chat?.chatData?.groupAdmin,
+        chatStatus: chat?.chatData?.chatStatus,
+        users: chat?.chatData?.isGroupChat ? chat?.chatData?.users : null,
+        userInfo: {
+          name: !chat?.chatData?.isGroupChat ? isFriend?.name : chat?.chatData?.chatName,
+          email: !chat?.chatData?.isGroupChat ? isFriend?.email : "",
+          _id: !chat?.chatData?.isGroupChat ? isFriend?._id : chat?.chatData?._id,
+          image: !chat?.chatData?.isGroupChat ? isFriend?.image : "/vercel.svg",
+          lastActive: !chat?.chatData?.isGroupChat ? isFriend?.lastActive : "",
+          createdAt: !chat?.chatData?.isGroupChat
+            ? isFriend?.createdAt
+            : chat?.chatData?.createdAt,
+        } as any,
+        groupInfo: {
+          description: (chat?.chatData as any)?.description,
+          image: { url: (chat?.chatData as any)?.image?.url },
+        },
+        isOnline: chat?.chatData?.isOnline,
+        onCallMembers:chat?.chatData?.onCallMembers
+      };
+      // setSelectedChat(chatData as any);
+      dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
+      if (chat?.isNewChat) {
+        dispatch({ type: SET_CHATS, payload: chat.chatData });
+        if (chat?.chatData?.isOnline) {
+           const onlineUserData = {
+             userId: isFriend?._id,
+             chatId: chat.chatData?._id,
+             userInfo: isFriend,
+             socketId: "",
+           };
+           addOnlineUser(onlineUserData);
+        }
+       
+        socket.emit("chatCreatedNotify", {
+          to: isFriend?._id,
+          chat: chat.chatData,
+          chatId: chat.chatData?._id,
+        });
+      }
+
+      document.getElementById(closeDialogId)?.click();
+      // setIsOpen(false);
+    },
+  });
+}
 export const useBlockMutation = () => {
   const { selectedChat, user } = useMessageState();
   const dispatch = useMessageDispatch();
@@ -45,6 +114,7 @@ export const useBlockMutation = () => {
 
 export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => {
   const { socket } = useSocketContext();
+  const removeOnlineUser=useOnlineUsersStore((s)=>s.removeOnlineUser)
    const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   return useMutation({
@@ -54,14 +124,14 @@ export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => 
       if (onChat || chatId === selectedChat?.chatId) {
         dispatch({
           type: SET_SELECTED_CHAT,
-          payload: [],
+          payload: null,
         });
       }
       dispatch({
         type: DELETE_CHAT,
         payload: { chatId },
       });
-
+      removeOnlineUser({userId:data.receiverId} as any)
       socket.emit("singleChatDeletedNotify", {
         chatId,
         receiverId: data.receiverId,

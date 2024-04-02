@@ -15,8 +15,15 @@ authRoute.post("/login", authControllers_1.login);
 authRoute.get("/getUser", authMiddleware_1.default, authControllers_1.getUser);
 authRoute.get("/getProfile/:userId", authMiddleware_1.default, authControllers_1.getProfile);
 authRoute.get("/getUsers", authMiddleware_1.default, authControllers_1.allUsers);
+//allAdminUsers
+authRoute.get("/allAdminUsers", authMiddleware_1.default, authControllers_1.allAdminUsers);
+//getOnlineUsersInMyChats
+authRoute.get("/getOnlineUsersInMyChats", authMiddleware_1.default, authControllers_1.getOnlineUsersInMyChats);
+authRoute.put("/updateUser", authMiddleware_1.default, uploadMiddleware_1.default.single("file"), authControllers_1.updateUser);
 //allUsersForAddgroupExclueWhoinAlreadyChat
 authRoute.get("/allUsersForAddgroupExclueWhoinAlreadyChat/:chatId", authMiddleware_1.default, authControllers_1.allUsersForAddgroupExclueWhoinAlreadyChat);
 authRoute.post("/logout", authControllers_1.logout);
 authRoute.delete("/deleteUser", authMiddleware_1.default, authControllers_1.deleteUser);
+//deleteUserByAdmin
+authRoute.delete("/deleteUserByAdmin/:userId", authMiddleware_1.default, authControllers_1.deleteUserByAdmin);
 exports.default = authRoute;

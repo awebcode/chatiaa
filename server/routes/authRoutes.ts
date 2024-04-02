@@ -8,6 +8,10 @@ import {
   deleteUser,
   getProfile,
   allUsersForAddgroupExclueWhoinAlreadyChat,
+  updateUser,
+  deleteUserByAdmin,
+  allAdminUsers,
+  getOnlineUsersInMyChats,
 } from "../controllers/authControllers";
 import authMiddleware from "../middlewares/authMiddleware";
 import uploadMiddleware from "../middlewares/uploadMiddleware";
@@ -21,6 +25,17 @@ authRoute.post("/login", login);
 authRoute.get("/getUser", authMiddleware, getUser);
 authRoute.get("/getProfile/:userId", authMiddleware, getProfile);
 authRoute.get("/getUsers", authMiddleware, allUsers);
+//allAdminUsers
+authRoute.get("/allAdminUsers", authMiddleware, allAdminUsers);
+
+//getOnlineUsersInMyChats
+authRoute.get("/getOnlineUsersInMyChats", authMiddleware, getOnlineUsersInMyChats);
+authRoute.put(
+  "/updateUser",
+  authMiddleware,
+  uploadMiddleware.single("file"),
+  updateUser
+);
 //allUsersForAddgroupExclueWhoinAlreadyChat
 authRoute.get(
   "/allUsersForAddgroupExclueWhoinAlreadyChat/:chatId",
@@ -29,4 +44,7 @@ authRoute.get(
 );
 authRoute.post("/logout", logout);
 authRoute.delete("/deleteUser",authMiddleware, deleteUser);
+//deleteUserByAdmin
+
+authRoute.delete("/deleteUserByAdmin/:userId", authMiddleware, deleteUserByAdmin);
 export default authRoute;

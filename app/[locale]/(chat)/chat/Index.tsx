@@ -10,12 +10,9 @@ import React, { useEffect } from "react";
 import LeftSide from "../components/LeftSide";
 import Main from "../components/Main";
 import EmptyChat from "../components/Empty";
-const Index = ({user}:{user:Tuser}) => {
+const Index = () => {
   const { selectedChat } = useMessageState();
-   const dispatch = useMessageDispatch();
-   useEffect(() => {
-     dispatch({ type: SET_USER, payload: user });
-   }, [user]);
+  
   return (
     <div className="">
       <div className="  flexBetween gap-2 overflow-hidden">

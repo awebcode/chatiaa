@@ -104,6 +104,7 @@ export const authOptions: AuthOptions = {
     },
 
     async jwt({ token, user }: any) {
+        //  await connectDb();
       // Persist the OAuth access_token and or the user id to the token right after signin
       if (user) {
         token.accessToken = user.access_token;
@@ -112,15 +113,17 @@ export const authOptions: AuthOptions = {
       return Promise.resolve(token);
     },
     async session({ session, token }: any) {
-      //   const existingUser = await clientPromise.user.findUnique({ where: { id: token.sub } });
+         await connectDb();
+      if (token) {
+        session.user.id = token.id;
+        session.accessToken = token.accessToken;
 
-      //   if (!existingUser) return token;
+        const loggedUser = await User.findById(token.id);
 
-      //   token.image = existingUser.imageUrl;
-      //   token.name = existingUser.name;
-      // Send properties to the client, like an access_token and user id from a provider.
-      session.accessToken = token.accessToken;
-      session.user.id = token.id;
+        if (loggedUser) {
+          session.user.role = loggedUser.role || "user";
+        }
+      }
 
       return session;
     },
@@ -130,7 +133,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   jwt: {
-    maxAge: 60 * 60  * 24, //expires at 24 hour
+    maxAge: 60 * 60 * 24, //expires at 24 hour
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {

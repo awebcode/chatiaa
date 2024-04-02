@@ -7,7 +7,6 @@ import { Chat } from "../model/ChatModel";
 import { User } from "../model/UserModel";
 import { Message } from "../model/MessageModel";
 import mongoose from "mongoose";
-import { MessageSeenBy } from "../model/seenByModel";
 import { getSeenByInfo } from "../common/seenByInfo";
 import { AvatarGenerator } from "random-avatar-generator";
 import { v2 } from "cloudinary";
@@ -15,6 +14,8 @@ import { io } from "..";
 import { emitEventToGroupUsers } from "../common/groupSocket";
 import { sentGroupNotifyMessage } from "./functions";
 import { generateUpdateMessage } from "../common/generateUpdateMessage";
+import { onlineUsersModel } from "../model/onlineUsersModel";
+import { checkIfAnyUserIsOnline } from "../common/checkIsOnline";
 
 //@access          Protected
 export const accessChat = async (
@@ -27,7 +28,13 @@ export const accessChat = async (
   if (!userId) {
     return next(new CustomErrorHandler("Chat Id or content cannot be empty!", 400));
   }
-
+  ///when use separate model for keep users reference for chat
+  // const userChatExists = await UserChat.find({
+  //   $or: [
+  //     { userId: req.id, userId: userId },
+  //     { userId: userId, userId: req.id },
+  //   ],
+  // }).populate("chatId");
   var isChat: any = await Chat.find({
     isGroupChat: false,
     $and: [
@@ -42,9 +49,11 @@ export const accessChat = async (
     path: "latestMessage.sender",
     select: "name image email lastActive createdAt",
   });
+  //check if any user is online
+  const isOnline = await checkIfAnyUserIsOnline(isChat?.users, req.id);
 
   if (isChat.length > 0) {
-    res.status(200).send({ chatData: isChat[0] });
+    res.status(200).send({ chatData: { ...isChat[0].toObject(), isOnline } });
   } else {
     var chatData = {
       chatName: "sender",
@@ -58,8 +67,14 @@ export const accessChat = async (
         "users",
         "name email image lastActive createdAt"
       );
-
-      res.status(201).json({ success: true, isNewChat: true, chatData: FullChat });
+      const isOnline = await checkIfAnyUserIsOnline(FullChat?.users as any, req.id);
+      res
+        .status(201)
+        .json({
+          success: true,
+          isNewChat: true,
+          chatData: { ...FullChat?.toObject(), isOnline },
+        });
     } catch (error: any) {
       next(error);
     }
@@ -88,27 +103,43 @@ export const fetchChats = async (
     const totalDocs = await Chat.countDocuments({
       users: { $elemMatch: { $eq: req.id } },
     });
+    //when i use keep users in chat to separate document
+    //const totalDocs = await UserChat.countDocuments({ userId: req.id });
 
+    // Find user-chat association documents for the current user
+    // const userChats = await UserChat.find({ userId: req.id }).select("chatId");
+
+    // // Extract chat IDs from user-chat association documents
+    // const chatIds = userChats.map((userChat) => userChat.chatId);
+
+    // // Perform the query to find chat documents based on the extracted chat IDs
+    // const chats = await Chat.find({
+    //   $or: [
+    //     { _id: { $in: chatIds } }, // Find chats where the _id matches any of the extracted chat IDs
+    //     { chatName: { $regex: req.query.search, $options: "i" } },
+    //   ],
+    // });
+    // const user=await User.findById(req.id);
     const chats = await Chat.find({
-      $or: [
+      $and: [
         { users: { $elemMatch: { $eq: req.id } } },
         { chatName: { $regex: req.query.search, $options: "i" } },
       ],
     })
       .populate({
         path: "users",
-        select: "name email image createdAt",
+        select: "name email image createdAt lastActive",
         options: { limit: 10 }, // Set limit to Infinity to populate all documents
       })
-      .populate("groupAdmin", "email name image createdAt")
+      .populate("groupAdmin", "email name image createdAt lastActive")
       .populate("latestMessage")
-      .populate("chatBlockedBy", "name image email createdAt")
+      .populate("chatBlockedBy", "name image email createdAt lastActive")
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(skip);
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
-      select: "name image email lastActive createdAt",
+      select: "name image email lastActive createdAt lastActive",
     });
     // Filter the populatedChats array based on the keyword
     let filteredChats: any = [];
@@ -127,7 +158,8 @@ export const fetchChats = async (
       const correspondingUnseenCount = unseenCount.find(
         (count: any) => count._id.toString() === chat._id.toString()
       );
-
+      //check if any user is online
+      const isAnyUserOnline = await checkIfAnyUserIsOnline(chat?.users, req.id);
       try {
         const { seenBy, isLatestMessageSeen, totalSeenCount } = await getSeenByInfo(
           chat._id,
@@ -144,6 +176,7 @@ export const fetchChats = async (
             seenBy,
             totalseenBy: totalSeenCount || 0,
           },
+          isOnline: isAnyUserOnline,
           unseenCount: correspondingUnseenCount
             ? correspondingUnseenCount.unseenMessagesCount
             : 0,
@@ -164,6 +197,9 @@ export const fetchChats = async (
         const correspondingUnseenCount = unseenCount.find(
           (count: any) => count._id.toString() === chat._id.toString()
         );
+        // Check if any user in the chat is online
+
+        const isAnyUserOnline = await checkIfAnyUserIsOnline(chat?.users, req.id);
 
         try {
           const { seenBy, isLatestMessageSeen, totalSeenCount } = await getSeenByInfo(
@@ -181,6 +217,7 @@ export const fetchChats = async (
               seenBy,
               totalseenBy: totalSeenCount || 0,
             },
+            isOnline: isAnyUserOnline,
             unseenCount: correspondingUnseenCount
               ? correspondingUnseenCount.unseenMessagesCount
               : 0,
@@ -194,6 +231,7 @@ export const fetchChats = async (
         }
       })
     );
+    // // Retrieve the IDs of the filtered users
 
     res.status(200).send({
       chats:
@@ -312,7 +350,23 @@ export const createGroupChat = async (
       isGroupChat: true,
       groupAdmin: req.id,
     });
+    //
+    // Create user-chat associations for each user
+    // await Promise.all(
+    //   users.map(async (userId: string) => {
+    //     // Check if the user exists
+    //     const userExists = await User.exists({ _id: userId });
+    //     if (!userExists) {
+    //       throw new CustomErrorHandler(`User with ID ${userId} does not exist`, 404);
+    //     }
 
+    //     // Create the user-chat association document
+    //     await UserChat.create({
+    //       chatId: groupChat._id,
+    //       userId: userId,
+    //     });
+    //   })
+    // );
     const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
       .populate("users", "-password")
       .populate("groupAdmin", "-password");
@@ -356,7 +410,6 @@ export const updateGroupNamePhoto = async (
 
       const cloudinaryResponse = await v2.uploader.upload(req.file.path, {
         folder: "messengaria",
-        format: "png", // Specify the format as PNG
       });
 
       imageUpdate = {
@@ -390,15 +443,14 @@ export const updateGroupNamePhoto = async (
     const message = generateUpdateMessage(
       currentUser,
       description,
-      groupName
-,
-      req.file?.path,
+      groupName,
+      req.file?.path
     );
     if (message.trim() !== "") {
       const updateGroupMessage = await sentGroupNotifyMessage({
         chatId: chatId,
         user: req.id,
-        message
+        message,
       });
       const updateGroupData = {
         message: { ...updateGroupMessage.toObject() },
@@ -451,8 +503,6 @@ export const removeFromGroup = async (
     const isAdminLeave = removedUser.groupAdmin.some((adminId) => adminId.equals(userId));
 
     if (isAdminLeave) {
-      console.log("An admin leaves the group");
-
       // If the removed user was in the groupAdmin array, update the groupAdmin array
       const newGroupAdmins = removedUser.groupAdmin.filter(
         (adminId) => !adminId.equals(userId)
@@ -487,7 +537,6 @@ export const removeFromGroup = async (
       // Check if all users have left the chat after admin leaves
       if (removedUser.users.length === 0) {
         await Chat.findByIdAndDelete(chatId).exec(); // Ensure the delete operation is awaited
-        console.log("Chat Deleted!");
       }
       res.json({ isAdminLeave: true, data: removedUser });
 
@@ -497,7 +546,6 @@ export const removeFromGroup = async (
     // Check if all users have left the chat, and if so, delete the chat
     if (removedUser.users.length === 0) {
       await Chat.findByIdAndDelete(chatId).exec(); // Ensure the delete operation is awaited
-      console.log("Chat Deleted!");
     }
 
     res.json({ data: removedUser });
@@ -851,8 +899,15 @@ export const getUsersInAChat = async (
     });
 
     const total = chat ? chat.users.length : 0;
+    // Check online status for each user
+    const usersWithOnlineStatus = await Promise.all(
+      (findChatQuery?.users || []).map(async (user: any) => {
+        const isOnline = await onlineUsersModel.findOne({ userId: user?._id });
+        return { ...user.toObject(), isOnline };
+      })
+    );
 
-    res.send({ users: findChatQuery ? findChatQuery.users : [], total, limit });
+    res.send({ users: usersWithOnlineStatus, total, limit });
   } catch (error) {
     next(error);
   }
@@ -938,6 +993,41 @@ export const getFilesInChat = async (
       totalDocuments,
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+
+//update oncallmembers count
+
+//onCallMembersCount
+
+export const onCallMembersCount = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const chat = await Chat.findById(req.body.chatId);
+    if (!chat) {
+      return next(new CustomErrorHandler("Chat not found!", 404));
+    }
+
+    // Update onCallMembers count based on join or leave action
+    // Update onCallMembers count based on join or leave action
+    if (req.body.type === "join") {
+      chat.onCallMembers += 1;
+    } else {
+      // Ensure not to decrease onCallMembers below 0
+      chat.onCallMembers = Math.max(chat.onCallMembers - 1, 0);
+    }
+
+    // Save the updated chat object
+    await chat.save();
+
+    res.send({ chat });
+  } catch (error) {
+    console.log({ error });
     next(error);
   }
 };

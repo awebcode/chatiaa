@@ -3,8 +3,10 @@ import { signIn, useSession } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useState } from "react";
 import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
+  const queryClient=useQueryClient()
   const { data: session } = useSession();
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
@@ -15,6 +17,9 @@ const Login = () => {
     });
 
     if (res?.error) return setError(res.error);
+      if (res?.ok) {
+        queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+      }
   };
 
   const handleGithubLogin = async () => {
@@ -22,6 +27,10 @@ const Login = () => {
       callbackUrl: "/",
     });
     if (res?.error) return setError(res.error);
+    if (res?.ok) {
+          queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+
+    }
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -42,7 +51,11 @@ const Login = () => {
         setloading(false);
         return setError(res.error)
       };
-      if (res?.ok) return router.push("/chat");
+      if (res?.ok)  {
+            queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+
+        router.push("/chat");
+      }
     } catch (error: any) {
       setError(error);
       setloading(false);

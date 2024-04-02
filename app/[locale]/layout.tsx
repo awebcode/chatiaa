@@ -9,9 +9,13 @@ import { unstable_setRequestLocale } from "next-intl/server";
 
 import SocketContextProvider from "@/context/SocketContextProvider";
 import NextAuthProvider from "@/providers/NextAuthProvider";
-import Navbar from "@/components/Navbar";
+
 import { ReactQueryClientProvider } from "@/providers/QueryProvider";
 import { MessageContextProvider } from "@/context/MessageContext";
+import { fetchUser } from "@/functions/serverActions";
+import SocketEvents from "./SocketEvents";
+import dynamic from "next/dynamic";
+const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
   title: "Messengaria - Connect and Chat",
@@ -80,7 +84,7 @@ export default async function LocaleLayout({
 }) {
   unstable_setRequestLocale(locale);
   let languages;
-
+  const user = await fetchUser();
   try {
     languages = (await import(`../../languages/${locale}.json` as string)).default;
   } catch (error) {
@@ -90,24 +94,25 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       {/* {locale} */}
-      <ReactQueryClientProvider>
-        <NextAuthProvider>
-          <SocketContextProvider>
+      <SocketContextProvider>
+        <ReactQueryClientProvider>
+          <NextAuthProvider>
             <body suppressHydrationWarning>
               {" "}
               <NextThemeProvider>
                 <NextIntlClientProvider locale={locale} messages={languages}>
                   <Navbar />
                   <MessageContextProvider>
+                    {user._id && <SocketEvents currentUser={user} />}
                     {children} {/* <IntlPolyfills /> */}
                   </MessageContextProvider>
                   <ToastProvider />
                 </NextIntlClientProvider>
               </NextThemeProvider>
             </body>
-          </SocketContextProvider>
-        </NextAuthProvider>
-      </ReactQueryClientProvider>
+          </NextAuthProvider>
+        </ReactQueryClientProvider>
+      </SocketContextProvider>
     </html>
   );
 }

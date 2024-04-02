@@ -13,6 +13,7 @@ import mongoose from "mongoose";
 import { getSocketConnectedUser, io } from "../index";
 import { getFileType } from "./functions";
 import { MessageSeenBy } from "../model/seenByModel";
+import { emitEventToGroupUsers } from "../common/groupSocket";
 //@access          Protected
 export const allMessages = async (
   req: Request | any,
@@ -210,17 +211,10 @@ export const sendMessage = async (
 
         // Send message to client
         if (chat?.isGroupChat) {
-          chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user.toString());
-            if (receiverId) {
-              io // //.to(chat?._id.toString())
-                .to(receiverId.socketId)
-                .emit("receiveMessage", {
-                  ...message.toObject(),
-                  receiverId: receiverId.id,
-                });
-            }
-          });
+           const emitData = message.toObject();
+           await emitEventToGroupUsers(io, "receiveMessage", chatId, emitData);
+          
+          
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
@@ -251,17 +245,8 @@ export const sendMessage = async (
       // Update latest message for the chat
       const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
       if (chat?.isGroupChat) {
-        chat?.users.forEach((user) => {
-          const receiverId = getSocketConnectedUser(user.toString());
-          if (receiverId) {
-            io //.to(chat?._id.toString())
-              .to(receiverId.socketId)
-              .emit("receiveMessage", {
-                ...message.toObject(),
-                receiverId: receiverId.id,
-              });
-          }
-        });
+           const emitData = message.toObject();
+           await emitEventToGroupUsers(io, "receiveMessage", chatId, emitData);
       } else {
         io.to(chat?._id.toString() as any)
           .to(receiverId)
@@ -556,17 +541,8 @@ export const replyMessage = async (
 
         // Send message to client
         if (chat?.isGroupChat) {
-          chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user.toString());
-            if (receiverId) {
-              io //.to(chat?._id.toString())
-                .to(receiverId.socketId)
-                .emit("replyMessage", {
-                  ...message.toObject(),
-                  receiverId: receiverId.id,
-                });
-            }
-          });
+             const emitData = message.toObject();
+             await emitEventToGroupUsers(io, "replyMessage", chatId, emitData);
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
@@ -611,17 +587,8 @@ export const replyMessage = async (
     const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
 
     if (chat?.isGroupChat) {
-      chat?.users.forEach((user) => {
-        const receiverId = getSocketConnectedUser(user.toString());
-        if (receiverId) {
-          io //.to(chat?._id.toString())
-            .to(receiverId.socketId)
-            .emit("replyMessage", {
-              ...message.toObject(),
-              receiverId: receiverId.id,
-            });
-        }
-      });
+       const emitData = message.toObject();
+       await emitEventToGroupUsers(io, "replyMessage", chatId, emitData);
     } else {
       io.to(chat?._id.toString() as any)
         .to(receiverId)
@@ -702,17 +669,8 @@ export const editMessage = async (
         const chat = await Chat.findByIdAndUpdate(chatId);
         // Send message to client
         if (chat?.isGroupChat) {
-          chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user.toString());
-            if (receiverId) {
-              io //.to(chat?._id.toString())
-                .to(receiverId.socketId)
-                .emit("editMessage", {
-                  ...editedChat.toObject(),
-                  receiverId: receiverId.id,
-                });
-            }
-          });
+           const emitData = editedChat.toObject();
+           await emitEventToGroupUsers(io, "editMessage", chatId, emitData);
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
@@ -759,17 +717,8 @@ export const editMessage = async (
     const chat = await Chat.findByIdAndUpdate(chatId);
     // Send message to client
     if (chat?.isGroupChat) {
-      chat?.users.forEach((user) => {
-        const receiverId = getSocketConnectedUser(user.toString());
-        if (receiverId) {
-          io //.to(chat?._id.toString())
-            .to(receiverId.socketId)
-            .emit("editMessage", {
-              ...editedChat.toObject(),
-              receiverId: receiverId.id,
-            });
-        }
-      });
+     const emitData = editedChat.toObject();
+           await emitEventToGroupUsers(io, "editMessage", chatId, emitData);
     } else {
       io.to(chat?._id.toString() as any)
         .to(receiverId)
@@ -812,17 +761,9 @@ export const addRemoveEmojiReactions = async (
           ).populate("reactBy", "name email image");
           // Send message to client
           if (chat?.isGroupChat) {
-            chat?.users.forEach((user) => {
-              const receiverId = getSocketConnectedUser(user.toString());
-              if (receiverId) {
-                io //.to(chat?._id.toString())
-                  .to(receiverId.socketId)
-                  .emit("addReactionOnMessage", {
-                    reaction,
-                    type: "update",
-                  });
-              }
-            });
+              const emitData = { reaction, type: "update" };
+              await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);
+            
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
@@ -841,17 +782,8 @@ export const addRemoveEmojiReactions = async (
 
           // Send message to client
           if (chat?.isGroupChat) {
-            chat?.users.forEach((user) => {
-              const receiverId = getSocketConnectedUser(user.toString());
-              if (receiverId) {
-                io //.to(chat?._id.toString())
-                  .to(receiverId.socketId)
-                  .emit("addReactionOnMessage", {
-                    reaction,
-                    type: "add",
-                  });
-              }
-            });
+            const emitData = { reaction, type: "add" };
+            await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
@@ -868,17 +800,8 @@ export const addRemoveEmojiReactions = async (
           return next(new CustomErrorHandler("reactionId cannot be empty!", 400));
         const reaction = await Reaction.findByIdAndDelete(reactionId);
         if (chat?.isGroupChat) {
-          chat?.users.forEach((user) => {
-            const receiverId = getSocketConnectedUser(user.toString());
-            if (receiverId) {
-              io //.to(chat?._id.toString())
-                .to(receiverId.socketId)
-                .emit("addReactionOnMessage", {
-                  reaction,
-                  type: "remove",
-                });
-            }
-          });
+           const emitData = { reaction, type: "remove" };
+           await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)

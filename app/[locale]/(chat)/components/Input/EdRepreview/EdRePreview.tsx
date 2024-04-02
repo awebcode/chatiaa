@@ -11,10 +11,10 @@ const EdRePreview = ({ setMessage }: { setMessage: Dispatch<string> }) => {
   const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
   const { user: currentUser } = useMessageState();
   return (
-    <div>
+    <div className="z-50">
       {" "}
       {isEdit && (
-        <div className="p-2 md:p-4  text-xs md:text-sm  rounded">
+        <div className="p-2 md:p-4  text-xs md:text-sm  rounded z-50">
           <div className="flexBetween">
             <div>
               <FaEdit className="inline mx-1 text-blue-500" />  Editing to

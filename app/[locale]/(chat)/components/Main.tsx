@@ -19,14 +19,14 @@ const Main = () => {
       {/* chat header */}
       <div className="z-50  overflow-hidden">
         {" "}
-        <ChatHeader />
+        {selectedChat&&<ChatHeader />} 
       </div>
       {/* Message */}
-      <div className="absolute py-4 bottom-20 w-full z-10">
+      <div className="absolute py-4 bottom-10 w-full z-10">
         <Messages />
       </div>
       {/* Inpute */}
-      <div className="w-full absolute bottom-0 z-auto">
+      <div className="w-full absolute bottom-0 z-20">
         {" "}
         <Input />
       </div>

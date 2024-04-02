@@ -32,4 +32,5 @@ chatRoute.get("/getFilesInChat/:chatId", authMiddleware_1.default, ChatControlle
 chatRoute.get("/getInitialFilesInChat/:chatId", authMiddleware_1.default, ChatController_1.getInitialFilesInChat);
 // getUsersInAChat;
 chatRoute.get("/getUsersInAChat/:chatId", authMiddleware_1.default, ChatController_1.getUsersInAChat);
+chatRoute.put("/updateOncallMembers", authMiddleware_1.default, ChatController_1.onCallMembersCount);
 exports.default = chatRoute;

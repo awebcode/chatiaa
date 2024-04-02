@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allUsers = exports.getUser = exports.login = exports.register = exports.deleteUser = exports.logout = exports.allUsersForAddgroupExclueWhoinAlreadyChat = exports.getProfile = void 0;
+exports.allUsers = exports.getUser = exports.login = exports.register = exports.getOnlineUsersInMyChats = exports.updateUser = exports.deleteUserByAdmin = exports.deleteUser = exports.logout = exports.allAdminUsers = exports.allUsersForAddgroupExclueWhoinAlreadyChat = exports.getProfile = void 0;
 const cloudinary_1 = require("cloudinary");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -20,6 +20,8 @@ const errorHandler_1 = require("../middlewares/errorHandler");
 const UserModel_1 = require("../model/UserModel");
 const ChatModel_1 = require("../model/ChatModel");
 const random_avatar_generator_1 = require("random-avatar-generator");
+const onlineUsersModel_1 = require("../model/onlineUsersModel");
+const AccountModel_1 = __importDefault(require("../model/AccountModel"));
 const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, password, email } = req.body;
     try {
@@ -31,15 +33,6 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         if (password.length < 6) {
             return next(new errorHandler_1.CustomErrorHandler("Password must be at least 6 charecters!", 400));
         }
-        // const url = await v2.uploader.upload(req.file.path);
-        // const localFilePath = req.file.path;
-        // fs.unlink(localFilePath, (err) => {
-        //   if (err) {
-        //     console.error(`Error deleting local file: ${err.message}`);
-        //   } else {
-        //     console.log(`Local file deleted: ${localFilePath}`);
-        //   }
-        // });
         // Hash the password
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         // Fetch avatar URL and upload it to Cloudinary
@@ -144,7 +137,6 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 ],
             }
             : {};
-        console.log(req.query);
         //when search for find group users then check only find users who exist in my chat
         const usersQuery = req.query.onGroupSearch === "true"
             ? {
@@ -160,7 +152,8 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             };
         const users = yield UserModel_1.User.find(usersQuery).limit(limit).skip(skip);
         const total = yield UserModel_1.User.countDocuments(usersQuery);
-        res.send({ users, total, limit });
+        const totalOnlineUsers = yield onlineUsersModel_1.onlineUsersModel.countDocuments();
+        res.send({ users, total, limit, totalOnlineUsers });
     }
     catch (error) {
         next(error);
@@ -196,6 +189,46 @@ const allUsersForAddgroupExclueWhoinAlreadyChat = (req, res, next) => __awaiter(
     }
 });
 exports.allUsersForAddgroupExclueWhoinAlreadyChat = allUsersForAddgroupExclueWhoinAlreadyChat;
+//all users for admin
+const allAdminUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const limit = parseInt(req.query.limit) || 4;
+    const skip = parseInt(req.query.skip) || 0;
+    try {
+        const adminUser = yield UserModel_1.User.findById(req.id);
+        if (!adminUser || adminUser.role !== "admin") {
+            return next(new errorHandler_1.CustomErrorHandler("You are not an admin", 401));
+        }
+        const keyword = req.query.search
+            ? {
+                $or: [
+                    { name: { $regex: req.query.search, $options: "i" } },
+                    { email: { $regex: req.query.search, $options: "i" } },
+                ],
+            }
+            : {};
+        // Find filtered users
+        let users = yield UserModel_1.User.find(Object.assign({}, keyword))
+            .limit(limit)
+            .skip(skip);
+        // Count total documents matching the keyword
+        const total = yield UserModel_1.User.countDocuments(Object.assign({}, keyword));
+        // Retrieve the IDs of the filtered users
+        const userIds = users.map((user) => user._id);
+        // Query onlineUsersModel for online status of filtered users
+        const onlineUsers = yield onlineUsersModel_1.onlineUsersModel.find({ userId: { $in: userIds } });
+        // Map the online status to userIds
+        const onlineUserIds = onlineUsers.map((user) => user.userId.toString());
+        // Merge online status into user data
+        users = users.map((user) => (Object.assign(Object.assign({}, user.toObject()), { isOnline: onlineUserIds.includes(user._id.toString()) })));
+        // Count total online users
+        const totalOnlineUsers = yield onlineUsersModel_1.onlineUsersModel.countDocuments();
+        res.send({ users, total, limit, totalOnlineUsers });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.allAdminUsers = allAdminUsers;
 const logout = (req, res, next) => {
     res.cookie("authToken", "", {
         expires: new Date(0),
@@ -211,6 +244,10 @@ const logout = (req, res, next) => {
 exports.logout = logout;
 const deleteUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const currentUser = yield UserModel_1.User.findById(req.id);
+        if (!currentUser) {
+            return next(new errorHandler_1.CustomErrorHandler("You are not authorized", 401));
+        }
         const { id: userId } = req;
         // Find the user by ID
         const user = yield UserModel_1.User.findById(userId);
@@ -226,6 +263,7 @@ const deleteUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         }
         // Delete the user from the database
         yield UserModel_1.User.findByIdAndDelete(userId);
+        yield AccountModel_1.default.findOneAndDelete({ userId });
         res.status(200).json({ message: "User and associated image deleted successfully" });
     }
     catch (error) {
@@ -233,3 +271,121 @@ const deleteUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.deleteUser = deleteUser;
+//Delete user by admin
+const deleteUserByAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const currentUser = yield UserModel_1.User.findById(req.id);
+        if (!currentUser) {
+            return next(new errorHandler_1.CustomErrorHandler("You are not authorized", 401));
+        }
+        if (currentUser.role !== "admin") {
+            return next(new errorHandler_1.CustomErrorHandler("You are not admin", 401));
+        }
+        const { userId } = req.params;
+        // Find the user by ID
+        const user = yield UserModel_1.User.findById(userId);
+        if (!user) {
+            return next(new errorHandler_1.CustomErrorHandler("No user found", 401));
+        }
+        // Check if the user has an associated image
+        if (user.image && user.provider === "credentials") {
+            // Extract the public_id from the image URL
+            const publicId = user.image.split("/").pop().split(".")[0];
+            // Delete the image from Cloudinary using the public_id
+            yield cloudinary_1.v2.uploader.destroy(publicId);
+        }
+        // Delete the user from the database
+        yield UserModel_1.User.findByIdAndDelete(userId);
+        yield AccountModel_1.default.findOneAndDelete({ userId });
+        res.status(200).json({ message: "User and associated image deleted successfully" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.deleteUserByAdmin = deleteUserByAdmin;
+// @access  Protected updateUser
+const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    try {
+        const { userId, name, password, bio, role } = req.body;
+        const currentUser = yield UserModel_1.User.findById(userId);
+        if (!currentUser) {
+            return next(new errorHandler_1.CustomErrorHandler("User not found!", 404));
+        }
+        // Update chat image if req.file.path exists
+        let imageUpdate;
+        if ((_b = req.file) === null || _b === void 0 ? void 0 : _b.path) {
+            // Check if chat.image exists, if so, remove the previous image from cloudinary
+            // Check if the user has an associated image
+            if (currentUser.image && currentUser.provider === "credentials") {
+                // Extract the public_id from the image URL
+                const publicId = currentUser.image.split("/").pop().split(".")[0];
+                // Delete the image from Cloudinary using the public_id
+                yield cloudinary_1.v2.uploader.destroy(publicId);
+            }
+            const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(req.file.path, {
+                folder: "messengaria",
+            });
+            imageUpdate = cloudinaryResponse.secure_url;
+        }
+        let hashedPassword;
+        if (password) {
+            // Hash the provided password
+            hashedPassword = yield bcrypt_1.default.hash(password, 10);
+        }
+        // Update user's name, bio, photo, and password if provided, otherwise keep the existing data
+        const updatedUser = yield UserModel_1.User.findByIdAndUpdate(userId, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (imageUpdate && { image: imageUpdate })), (name && { name: name })), (bio && { bio: bio })), (role && { role: role })), (hashedPassword && { password: hashedPassword })), { new: true });
+        res.json(updatedUser);
+    }
+    catch (error) {
+        console.log(error);
+        next(error);
+    }
+});
+exports.updateUser = updateUser;
+// getOnlineUsersInMyChats
+const getOnlineUsersInMyChats = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const limit = parseInt(req.query.limit) || 10; // Default limit to 10
+        const skip = parseInt(req.query.skip) || 0;
+        const searchTerm = req.query.search;
+        // Constructing the keyword for searching by username and email
+        const keyword = searchTerm
+            ? {
+                $or: [
+                    { name: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for name
+                    { email: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for email
+                ],
+            }
+            : {};
+        // Find chats where the current user is present and it's not a group chat
+        const userChats = yield ChatModel_1.Chat.find({ users: req.id, isGroupChat: false }).sort({
+            updatedAt: -1,
+        });
+        // Extract user IDs from these chats
+        const userIdsInChats = userChats.reduce((acc, chat) => {
+            chat.users.forEach((userId) => {
+                if (userId !== req.id && !acc.includes(userId)) {
+                    acc.push(userId);
+                }
+            });
+            return acc;
+        }, []);
+        // Find online users among the extracted user IDs with pagination, population, and sorting
+        const onlineUsers = yield onlineUsersModel_1.onlineUsersModel
+            .find(Object.assign({ userId: { $in: userIdsInChats } }, keyword))
+            .populate({ path: "userId", select: "name image email lastActive" }) // Populate user details
+            .sort({ updatedAt: -1 }) // Sort by updatedAt in descending order
+            .limit(limit)
+            .skip(skip);
+        // Count total online users matching the search criteria
+        const totalOnlineUsers = yield onlineUsersModel_1.onlineUsersModel.countDocuments(Object.assign({ userId: { $in: userIdsInChats } }, keyword));
+        // Send the list of online users along with total count
+        res.send({ onlineUsers, totalOnlineUsers, limit, skip });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getOnlineUsersInMyChats = getOnlineUsersInMyChats;

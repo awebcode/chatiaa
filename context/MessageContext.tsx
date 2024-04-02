@@ -16,6 +16,7 @@ const initialState: State = {
   totalMessagesCount: 0,
   totalChats: 0,
   chats: [],
+  callInfo:null
 };
 
 export const MessageContextProvider = ({ children }: { children: ReactNode }) => {

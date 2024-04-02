@@ -4,6 +4,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { ChatSkeleton } from "../mychats/ChatSkeleton";
 import NotifyMessage from "./typeMessages/NotifyRemoveMessage";
+import CallNotify from "./typeMessages/CallNotify";
 
 const TextMessage = dynamic(() => import("./typeMessages/TextMessage"), {
   // loading:()=><ChatSkeleton/>,
@@ -50,7 +51,7 @@ const MessageCard = ({
           } space-x-2`}
         >
           {/* Content Here */}
-          {message.type === "text" && (
+          {message?.type === "text" && (
             <TextMessage
               isCurrentUserMessage={isCurrentUserMessage}
               message={message}
@@ -58,7 +59,7 @@ const MessageCard = ({
               isUserOnline={isUserOnline}
             />
           )}
-          {message.type === "video" && (
+          {message?.type === "video" && (
             <VideoMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
@@ -66,7 +67,7 @@ const MessageCard = ({
               isUserOnline={isUserOnline}
             />
           )}
-          {message.type === "audio" && (
+          {message?.type === "audio" && (
             <VoiceMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
@@ -74,7 +75,7 @@ const MessageCard = ({
               isUserOnline={isUserOnline}
             />
           )}
-          {message.type === "image" && (
+          {message?.type === "image" && (
             <ImageMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
@@ -82,7 +83,7 @@ const MessageCard = ({
               isUserOnline={isUserOnline}
             />
           )}
-          {message.type === "application" && (
+          {message?.type === "application" && (
             <PdfMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
@@ -91,9 +92,18 @@ const MessageCard = ({
             />
           )}
         </div>
+        {/* call-notify */}
+        {message?.type === "call-notify" && (
+          <CallNotify
+            message={message}
+            isCurrentUserMessage={isCurrentUserMessage}
+            isLastSeenMessage={isLastSeenMessage}
+            isUserOnline={isUserOnline}
+          />
+        )}
       </div>{" "}
       {/* group types */}
-      {message.type === "notify" && (
+      {message?.type === "notify" && (
         <NotifyMessage
           message={message}
           isCurrentUserMessage={isCurrentUserMessage}

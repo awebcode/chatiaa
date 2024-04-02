@@ -11,6 +11,7 @@ import {
   getUsersInAChat,
   leaveFromChat,
   makeAdmin,
+  onCallMembersCount,
   removeFromAdmin,
   removeFromGroup,
   updateChatStatusAsBlockOrUnblock,
@@ -48,4 +49,6 @@ chatRoute.get("/getFilesInChat/:chatId", authMiddleware, getFilesInChat);
 chatRoute.get("/getInitialFilesInChat/:chatId", authMiddleware, getInitialFilesInChat);
 // getUsersInAChat;
 chatRoute.get("/getUsersInAChat/:chatId", authMiddleware, getUsersInAChat);
+chatRoute.put("/updateOncallMembers", authMiddleware, onCallMembersCount);
+
 export default chatRoute;

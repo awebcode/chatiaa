@@ -1,5 +1,5 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { Tuser } from "@/store/types";
 import Image from "next/image";
 import React, { useMemo } from "react";
@@ -23,14 +23,18 @@ import { PopoverArrow } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useRouter } from "@/navigation";
+import { handleSendCall } from "@/config/handleSendCall";
+import { useSocketContext } from "@/context/SocketContextProvider";
 
 const Card = ({ user }: { user: Tuser }) => {
+  const { socket } = useSocketContext();
+   const dispatch = useMessageDispatch();
   const router = useRouter();
   const { onlineUsers } = useOnlineUsersStore();
   const { selectedChat, user: currentUser } = useMessageState();
   const { theme } = useTheme();
   //check if user online or not
-  const isUserOnline = onlineUsers.some((u: any) => user?._id === u.id);
+  // const isUserOnline = onlineUsers.some((u: any) => user?._id === u.id);
   //make mutaion
   const makeAdminMutation = useMakeAdmin(selectedChat?.chatId as any, user);
   //leave mutaion
@@ -70,13 +74,13 @@ const Card = ({ user }: { user: Tuser }) => {
     {
       name: "Audio call",
       icon: <MdCall />,
-      action: () => console.log("Audio call clicked"),
+      action: () => handleSendCall("audio", currentUser, selectedChat, socket, dispatch),
       isHidden: false,
     },
     {
       name: "Video call",
       icon: <MdVideoCall />,
-      action: () => console.log("Video call clicked"),
+      action: () => handleSendCall("video", currentUser, selectedChat, socket, dispatch),
       isHidden: false,
     },
     {
@@ -137,7 +141,7 @@ const Card = ({ user }: { user: Tuser }) => {
 
           <span
             className={`absolute bottom-0 -right-1 rounded-full  p-[4px] ${
-              isUserOnline ? "bg-green-500" : "bg-rose-500"
+              user?.isOnline ? "bg-green-500" : "bg-rose-500"
             }`}
           ></span>
         </div>

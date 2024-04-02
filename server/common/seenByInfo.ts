@@ -1,5 +1,3 @@
-import { Request } from "express";
-import { Message } from "../model/MessageModel";
 import { MessageSeenBy } from "../model/seenByModel";
 import { ObjectId } from "mongoose";
 

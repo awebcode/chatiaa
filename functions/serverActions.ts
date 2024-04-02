@@ -65,7 +65,7 @@ export const allMessagesServerAction = async ({
 export const fetchUser = async () => {
   const res = await fetch(`${BaseUrl}/getUser`, {
     credentials: "include",
-    next: { tags: ["user"] },
+    next: { tags: ["my-profile"] },
     headers: {
       Cookie: `authToken=${
         cookies().get(
@@ -83,7 +83,7 @@ export const fetchUser = async () => {
 export const getProfile = async (userId:string) => {
   const res = await fetch(`${BaseUrl}/getProfile/${userId}`, {
     credentials: "include",
-    next: { tags: ["profile"] },
+    next: { tags: ["user-profile"] },
     headers: {
       Cookie: `authToken=${
         cookies().get(

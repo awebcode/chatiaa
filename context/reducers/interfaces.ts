@@ -35,20 +35,37 @@ export interface IMessage {
 export interface IChat {
   _id: string;
   chatId?: string;
-  latestMessage?: IMessage ;
+  latestMessage?: IMessage;
   isGroupChat: boolean;
   chatName: string;
 
   userInfo: Tuser;
-  groupInfo: { description: string; image: { url: string;  } };
+  groupInfo: { description: string; image: { url: string } };
   groupAdmin?: Tuser[];
   users: Tuser[];
   unseenCount: number;
   createdAt: string;
   chatBlockedBy: Tuser[];
-  image:{ url: string;  }
+  image: { url: string };
+  isOnline: boolean;
+  onCallMembers: number;
 }
+export interface ICall {
+  sender: Tuser;
+  receiver: Tuser;
+  rejectedBy: Tuser;
+  acceptedBy: Tuser;
+  chatId: string;
+  isGroupChat: boolean;
+  groupInfo: { image: string; groupName: string };
+  isIncomingCall: boolean;
+  isMyCall:boolean;
+  isAccept: boolean;
+  isReject: boolean;
 
+  isAccepted: boolean;
+  isRejected: boolean;
+}
 export interface State {
   user: Tuser | null;
   selectedChat: IChat | null;
@@ -57,6 +74,7 @@ export interface State {
   totalMessagesCount: number;
   totalChats: number;
   chats: IChat[];
+  callInfo: ICall | null;
 }
 
 export interface Action {

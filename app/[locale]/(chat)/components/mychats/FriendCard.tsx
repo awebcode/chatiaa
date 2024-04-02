@@ -28,15 +28,15 @@ import {
 } from "@/context/reducers/actions";
 import { MessagePreview } from "./PreviewMessage";
 import { IChat } from "@/context/reducers/interfaces";
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import SeenBy from "./status/SeenBy";
+import { Button } from "@/components/ui/button";
 const Modal = dynamic(() => import("./Modal"));
-const TypingIndicator = dynamic(() => import("../TypingIndicator"));
 
 const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
+  const router=useRouter()
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser, selectedChat } = useMessageState();
@@ -98,6 +98,8 @@ const FriendsCard: React.FC<{
         description: (chat as any)?.description,
         image: { url: (chat as any)?.image?.url },
       },
+      isOnline: chat?.isOnline,
+      onCallMembers: chat?.onCallMembers,
     };
 
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
@@ -111,7 +113,7 @@ const FriendsCard: React.FC<{
 
     //push group message seen by in message or latest message
     if (
-      chat?.isGroupChat &&
+      // chat?.isGroupChat &&
       (!chat?.latestMessage?.isSeen || chat?.latestMessage?.status !== "seen") &&
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
@@ -155,10 +157,12 @@ const FriendsCard: React.FC<{
     // queryclient.invalidateQueries({ queryKey: ["messages", chatId] });
   };
 
-  const isUserOnline = onlineUsers.some((u: any) =>
+  const isUserOnline = onlineUsers.some((u) =>
     chat.isGroupChat
-      ? chat.users.some((user: any) => user._id === u.id && user._id !== currentUser?._id)
-      : getSenderFull(currentUser, chat.users)?._id === u.id
+      ? chat.users.some(
+          (user: any) => user._id === u.userId && user._id !== currentUser?._id
+        )
+      : getSenderFull(currentUser, chat.users)?._id === u.userId
   );
 
   return (
@@ -188,14 +192,16 @@ const FriendsCard: React.FC<{
 
             <span
               className={`absolute bottom-0 right-0 rounded-full p-[6px] ${
-                isUserOnline ? "bg-green-500" : "bg-rose-500"
+                chat?.isOnline ? "bg-green-500" : "bg-rose-500"
               }`}
             ></span>
           </div>
 
           <div>
             <h3 className="text-xs md:text-sm font-bold">
-              {!chat.isGroupChat ? getSender(currentUser, chat.users) : chat.chatName}
+              {!chat.isGroupChat && chat.users
+                ? getSender(currentUser, chat.users)
+                : chat.chatName}
             </h3>
             <span
               className={`text-xs md:text-xs ${
@@ -244,22 +250,40 @@ const FriendsCard: React.FC<{
               {chat?.latestMessage?.content
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
+              {!chat?.isOnline && !chat?.isGroupChat && (
+                <span className="text-[10px]">
+                  LastActive:
+                  {moment(getSenderFull(currentUser, chat.users)?.lastActive).fromNow()}
+                </span>
+              )}
             </span>
           </div>
         </div>
         <div className="flex gap-5 items-center ">
           {/* Chat status */}
-          {chat?.isGroupChat ? (
-            <SeenBy chat={chat as any} currentUser={currentUser as any} />
+          {chat?.onCallMembers > 0 ? (
+            <Button
+              size={"lg"}
+              className="bg-green-500 hover:bg-green-600 text-gray-800"
+              onClick={() => router.push(`/call/${chat?.chatId}`)}
+            >
+              Join call
+            </Button>
           ) : (
-            RenderStatus(
-              chat,
-              chat?.latestMessage as any,
-              "onFriendListCard",
-              chat?.unseenCount,
-              false
-            )
+            // ) : chat?.isGroupChat ? (
+            //   <SeenBy chat={chat as any} currentUser={currentUser as any} />
+            // ) : (
+            //   RenderStatus(
+            //     chat,
+            //     chat?.latestMessage as any,
+            //     "onFriendListCard",
+            //     chat?.unseenCount,
+            //     false
+            //   )
+            // )}
+            <SeenBy chat={chat as any} currentUser={currentUser as any} />
           )}
+
           {}
           {/* Right chat dropdown */}
           <Popover>

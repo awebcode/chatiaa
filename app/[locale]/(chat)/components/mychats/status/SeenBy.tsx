@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/tooltip";
 import { IoIosCheckmarkCircle, IoIosCheckmarkCircleOutline } from "react-icons/io";
 import dynamic from "next/dynamic";
-const TooltipContentComponent = dynamic(() => import("../../messages/typeMessages/TooltipWrapper"));
+const TooltipContentComponent = dynamic(
+  () => import("../../messages/typeMessages/TooltipWrapper")
+);
 const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
   return (
     <div className="">
@@ -35,29 +37,37 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
         )}
         {/* seen */}
         {chat?.latestMessage?.status === "seen" &&
-          chat?.latestMessage?.seenBy?.slice(0, 5)?.map((user: any) => {
-            return (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className="h-4 w-4 rounded-full cursor-pointer " key={user?._id}>
-                      <Image
-                        src={user?.userId?.image || user?.image}
-                        height={1000}
-                        width={1000}
-                        alt="image"
-                        className="h-full w-full object-cover rounded"
-                        loading="lazy"
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContentComponent
-                    user={(user?.userId as any) || (user as any)}
-                  />
-                </Tooltip>
-              </TooltipProvider>
-            );
-          })}
+        chat?.latestMessage?.sender?._id !== currentUser?._id
+          ? null
+          : chat?.latestMessage?.status === "seen" &&
+            chat?.latestMessage?.sender?._id === currentUser?._id &&
+            chat?.latestMessage?.seenBy?.slice(0, 5)?.map((user: any) => {
+              return (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <div
+                        className="h-4 w-4 rounded-full cursor-pointer "
+                        key={user?._id}
+                      >
+                        <Image
+                          src={user?.userId?.image || user?.image}
+                          height={1000}
+                          width={1000}
+                          alt="image"
+                          className="h-full w-full object-cover rounded"
+                          loading="lazy"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContentComponent
+                      user={(user?.userId as any) || (user as any)}
+                      chat={chat}
+                    />
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            })}
         {chat?.latestMessage && chat?.latestMessage?.totalseenBy > 3 ? (
           <span className="text-xs">+{chat?.latestMessage?.totalseenBy - 3}</span>
         ) : null}
