@@ -15,7 +15,7 @@ const authMiddleware: any = async (
     req.cookies["next-auth.session-token"] ||
     req.cookies["__Secure-next-auth.session-token"];
   console.log({token})
-  if (token === "undefined") {
+  if (token === "undefined"&&process.env.NODE_ENV!=="production") {
     return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
   }
   if (!token) {
