@@ -24,6 +24,7 @@ import {
 } from "./common/groupSocket";
 import { onlineUsersModel } from "./model/onlineUsersModel";
 const app = express();
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
@@ -42,7 +43,6 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
-app.use(cors(corsOptions));
 app.use(cookieParser());
 cloudinaryConfig();
 
