@@ -142,8 +142,8 @@ export const authOptions: AuthOptions = {
       name: `__Secure-next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "none",
-        // path: "/",
+        sameSite: "lax",
+        path: "/",
         secure: true,
       },
     },
