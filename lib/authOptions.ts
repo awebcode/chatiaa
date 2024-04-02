@@ -138,13 +138,14 @@ export const authOptions: AuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   cookies: {
+    
     sessionToken: {
       name: `__Secure-next-auth.session-token`,
       options: {
-        httpOnly: false,
+        httpOnly: true,
         sameSite: "none",
         // path: "/",
-        secure: false,
+        secure: true,
       },
     },
 
