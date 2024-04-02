@@ -59,6 +59,7 @@ const DisplayReaction = ({
           {reactionsGroup.slice(0, 4).map((react, i) => {
             return (
               <Emoji
+                key={i}
                 size={isSmallDevice ? 12 : 16}
                 lazyLoad
                 emojiStyle={EmojiStyle.APPLE}

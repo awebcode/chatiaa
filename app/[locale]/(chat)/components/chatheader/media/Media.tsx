@@ -22,7 +22,7 @@ const Media = () => {
               data?.files?.length > 0 &&
               data?.files?.map((file: IMessage, index: number) => {
                 return (
-                  <div className="h-10 w-10 rounded-lg">
+                  <div className="h-10 w-10 rounded-lg" key={index}>
                     <Image
                       src={file.file.url}
                       alt="file"

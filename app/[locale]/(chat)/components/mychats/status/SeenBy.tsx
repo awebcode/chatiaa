@@ -43,12 +43,11 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
             chat?.latestMessage?.sender?._id === currentUser?._id &&
             chat?.latestMessage?.seenBy?.slice(0, 5)?.map((user: any) => {
               return (
-                <TooltipProvider>
+                <TooltipProvider key={user?.userId?._id}>
                   <Tooltip>
                     <TooltipTrigger>
                       <div
                         className="h-4 w-4 rounded-full cursor-pointer "
-                        key={user?._id}
                       >
                         <Image
                           src={user?.userId?.image || user?.image}

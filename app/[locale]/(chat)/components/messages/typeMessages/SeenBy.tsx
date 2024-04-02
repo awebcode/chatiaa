@@ -18,12 +18,12 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
       <div className="flex m-1 gap-1">
         {message?.seenBy?.map((user: any) => {
           return (
-            <TooltipProvider>
+            <TooltipProvider key={user?.userId?._id}>
               <Tooltip>
                 <TooltipTrigger>
-                  <div className="h-4 w-4 rounded-full cursor-pointer " key={user._id}>
+                  <div className="h-4 w-4 rounded-full cursor-pointer " >
                     <Image
-                      src={user?.userId?.image || user?.image}
+                      src={user?.userId?.image || user.userId?.image}
                       height={1000}
                       width={1000}
                       alt="image"

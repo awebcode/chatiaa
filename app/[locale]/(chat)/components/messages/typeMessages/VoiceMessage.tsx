@@ -31,7 +31,7 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
-export default function ({
+export default function VoiceMessage ({
   message,
   isLastSeenMessage,
   isUserOnline,
