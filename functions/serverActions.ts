@@ -76,7 +76,7 @@ export const fetchUser = async () => {
       };`,
     },
   });
-
+  //__Secure-next-auth.session-token
   return await res.json();
 };
 //get profile
