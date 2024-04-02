@@ -1,7 +1,6 @@
 "use client";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { SET_USER } from "@/context/reducers/actions";
-import { Tuser } from "@/store/types";
+
 import dynamic from "next/dynamic";
 import React, { useEffect } from "react";
 // const LeftSide = dynamic(() => import("../components/LeftSide"),{loading:()=><h1>Loader</h1>});
