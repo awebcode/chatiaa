@@ -10,7 +10,7 @@ class CustomErrorHandler extends Error {
     }
 }
 exports.CustomErrorHandler = CustomErrorHandler;
-const notFoundHandler = (next, req, res) => {
+const notFoundHandler = (req, res, next) => {
     next(new CustomErrorHandler(`Request ${req.url} not found!`, 404));
 };
 exports.notFoundHandler = notFoundHandler;

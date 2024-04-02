@@ -9,7 +9,7 @@ export class CustomErrorHandler extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 }
-export const notFoundHandler = (next: NextFunction, req: Request, res: Response) => {
+export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
   next(new CustomErrorHandler(`Request ${req.url} not found!`, 404));
 };
 interface AppError extends Error {
