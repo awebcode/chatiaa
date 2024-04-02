@@ -141,12 +141,13 @@ export const authOptions: AuthOptions = {
     sessionToken: {
       name: `__Secure-next-auth.session-token`,
       options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: true,
+        httpOnly: false,
+        sameSite: "none",
+        // path: "/",
+        secure: false,
       },
     },
+
   },
   pages: {
     signIn: "/login",
