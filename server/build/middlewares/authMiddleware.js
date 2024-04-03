@@ -35,7 +35,7 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             return next(new errorHandler_1.CustomErrorHandler("Unauthorized -Plese login and continue", 401));
         }
         console.log({ decoded, token, session, authToken: req.cookies.authToken });
-        if (decoded) {
+        if (!(token === null || token === void 0 ? void 0 : token.email) && decoded) {
             //it will needed when will access  data by server side next js
             req.id = decoded === null || decoded === void 0 ? void 0 : decoded.id;
             next();

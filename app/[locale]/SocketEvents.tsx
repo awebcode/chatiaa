@@ -136,9 +136,9 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   const handleSocketMessage = useCallback(
     async (data: any) => {
-       useIncomingMessageStore.setState({
-         isIncomingMessage: true,
-       });
+      useIncomingMessageStore.setState({
+        isIncomingMessage: true,
+      });
       //  update latest chat for both side
       console.log({ socketMessage: data });
 
@@ -158,9 +158,9 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         !data?.chat?.isGroupChat &&
         data.sender?._id === selectedChatRef.current?.userInfo._id
       ) {
-         useIncomingMessageStore.setState({
-           isIncomingMessage: true,
-         });
+        useIncomingMessageStore.setState({
+          isIncomingMessage: true,
+        });
         dispatch({
           type: UPDATE_LATEST_CHAT_MESSAGE,
           payload: { ...data, status: "seen" },
@@ -173,7 +173,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         });
 
         //send to db
-       
+
         const pushData = {
           chatId: data?.chat?._id,
           messageId: data?._id,
@@ -185,11 +185,11 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         //emit event to server to sender
         socket.emit("seenPushGroupMessage", pushData);
         //update my side visible the user who seen
-         dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
-         pushSeenByMutation.mutate({
-           chatId: data.chat?._id,
-           messageId: data?._id as any,
-         });
+        dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
+        pushSeenByMutation.mutate({
+          chatId: data.chat?._id,
+          messageId: data?._id as any,
+        });
         const updateStatusData = {
           chatId: data?.chat._id,
           status: "seen",
@@ -206,9 +206,9 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         //play sound
         soundRef.current?.play();
         showNotification(data.sender.name, data.sender.image, data.content);
-         useIncomingMessageStore.setState({
-           isIncomingMessage: true,
-         });
+        useIncomingMessageStore.setState({
+          isIncomingMessage: true,
+        });
         dispatch({
           type: UPDATE_LATEST_CHAT_MESSAGE,
           payload: { ...data, status: "delivered" },
@@ -251,9 +251,9 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
           data?.sender?._id !== currentUserRef.current?._id
         ) {
           //update receiver side
-           useIncomingMessageStore.setState({
-             isIncomingMessage: true,
-           });
+          useIncomingMessageStore.setState({
+            isIncomingMessage: true,
+          });
           dispatch({
             type: UPDATE_LATEST_CHAT_MESSAGE,
             payload: { ...data, status: "seen" },
@@ -285,7 +285,6 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
           await updateMessageStatus(updateStatusData);
           updateAllMessageStatusAsSeen(data.chat?._id).catch(console.error);
         } else {
- 
           if (
             data.chat.status !== "seen" &&
             data.chat.users?.some((user: any) =>
@@ -613,36 +612,36 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         payload: { ...data.message, status: "seen" },
       });
 
-      socketRef?.current?.emit("seenMessage", {
-        receiverId: data.message.sender._id,
-        chatId: data.chatId,
-        messageId: data.message._id,
-        status: "seen",
-      });
-
       //send to db
+      if (data.message.sender._id !== currentUserRef?.current?._id) {
+        socketRef?.current?.emit("seenMessage", {
+          receiverId: data.message.sender._id,
+          chatId: data.chatId,
+          messageId: data.message._id,
+          status: "seen",
+        });
+        const pushData = {
+          chatId: data?.chatId,
+          messageId: data.message?._id as any,
+          user: currentUserRef.current,
+          status: "seen",
+          onClickByseen: "false",
+        };
 
-      const pushData = {
-        chatId: data?.chatId,
-        messageId: data.message?._id as any,
-        user: currentUserRef.current,
-        status: "seen",
-        onClickByseen: "false",
-      };
-
-      //emit event to server to sender
-      socket.emit("seenPushGroupMessage", pushData);
-      //update my side visible the user who seen
-      dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
-      pushSeenByMutation.mutate({
-        chatId: data?.chatId,
-        messageId: data.message?._id as any,
-      });
-      const updateStatusData = {
-        chatId: data?.chatId,
-        status: "seen",
-      };
-      updateMessageStatus(updateStatusData);
+        //emit event to server to sender
+        socket.emit("seenPushGroupMessage", pushData);
+        //update my side visible the user who seen
+        dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
+        pushSeenByMutation.mutate({
+          chatId: data?.chatId,
+          messageId: data.message?._id as any,
+        });
+        const updateStatusData = {
+          chatId: data?.chatId,
+          status: "seen",
+        };
+        updateMessageStatus(updateStatusData);
+      }
     }
   }, []);
   useEffect(() => {
@@ -759,7 +758,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       playIncomingCallSound.stop();
     };
   }, [callInfo]);
- //
+  //
   const playMycallingSound = new Howl({
     src: ["/audio/iphone_ring.mp3"],
     volume: 1,

@@ -39,7 +39,7 @@ const authMiddleware: any = async (
 
     console.log({ decoded, token, session, authToken: req.cookies.authToken });
 
-    if (decoded) {
+    if (!token?.email&&decoded) {
       //it will needed when will access  data by server side next js
       (req as any).id = decoded?.id;
       next();
