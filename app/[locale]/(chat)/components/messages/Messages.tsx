@@ -15,6 +15,7 @@ import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actio
 import TypingIndicator from "../TypingIndicator";
 import { BaseUrl } from "@/config/BaseUrl";
 import { IMessage } from "@/context/reducers/interfaces";
+import { getSession } from "next-auth/react";
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
@@ -37,7 +38,6 @@ export default function Messages() {
         isIncomingMessage: false,
       });
     }
-    
   }, [isIncomingMessage]);
 
   useEffect(() => {
@@ -47,10 +47,15 @@ export default function Messages() {
       try {
         setLoading(true);
         // await new Promise((resolve) => setTimeout(resolve, 100));
+        const authToken = await getSession();
+
         const res = await fetch(
           `${BaseUrl}/allmessages/${isSelectedChat?.chatId}?page=${page}&limit=10`,
           {
             credentials: "include",
+            headers: {
+              Cookie: `authToken=${(authToken as any)?.accessToken}`,
+            },
           }
         );
         const data = await res.json();
@@ -81,10 +86,14 @@ export default function Messages() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const authToken = await getSession();
         const res = await fetch(
           `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
           {
             credentials: "include",
+            headers: {
+              Cookie: `authToken=${(authToken as any)?.accessToken}`,
+            },
             // cache: "reload",
           }
         );
@@ -161,7 +170,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
- 
+
   return (
     <div
       id="CustomscrollableTarget"

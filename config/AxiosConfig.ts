@@ -10,7 +10,7 @@ axiosClient.interceptors.request.use(async(config) => {
   const authToken =await getSession()
   console.log({authToken})
   if (authToken) {
-    config.headers.Authorization = `Bearer ${authToken?.accessToken}`;
+    config.headers.Authorization = `Bearer ${(authToken as any)?.accessToken}`;
   }
   return config;
 });

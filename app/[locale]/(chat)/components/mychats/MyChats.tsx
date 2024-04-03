@@ -12,6 +12,7 @@ import SkeletonContainer from "./SkeletonContainer";
 import { BaseUrl } from "@/config/BaseUrl";
 import { SET_CHATS } from "@/context/reducers/actions";
 import { Button } from "@/components/ui/button";
+import { getSession } from "next-auth/react";
 
 const MyFriends = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,11 +36,15 @@ const MyFriends = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+         const authToken = await getSession();
         const res = await fetch(
           `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
           {
             credentials: "include",
             cache: "no-cache",
+            headers: {
+              Cookie: `authToken=${(authToken as any)?.accessToken}`,
+            },
             // next: { revalidate: 0 },
             // cache: "reload",
           }
@@ -63,11 +68,15 @@ const MyFriends = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+         const authToken = await getSession();
         const res = await fetch(
           `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
           {
             credentials: "include",
-            cache:"no-cache",
+            cache: "no-cache",
+            headers: {
+              Cookie: `authToken=${(authToken as any)?.accessToken}`,
+            },
             // next:{revalidate:0}
           }
         );
