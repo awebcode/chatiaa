@@ -116,13 +116,15 @@ export const authOptions: AuthOptions = {
     async session({ session, token }: any) {
       await connectDb();
       if (token) {
-        session.user.id = token.id;
+        session.user._id = token.id;
         session.accessToken = token.accessToken;
 
         const loggedUser = await User.findById(token.id);
 
         if (loggedUser) {
           session.user.role = loggedUser.role || "user";
+          session.user.bio = loggedUser.bio;
+          session.user.lastActive = loggedUser.lastActive;
         }
       }
 
@@ -137,17 +139,7 @@ export const authOptions: AuthOptions = {
     maxAge: 60 * 60 * 24, //expires at 24 hour
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // cookies: {
-  //   sessionToken: {
-  //     name: `__Secure-next-auth.session-token`,
-  //     options: {
-  //       expires: new Date(Date.now() + 6 * 60 * 60 * 1000),
-  //       secure: true,
-  //       sameSite: "none",
-  //       httpOnly: true,
-  //     },
-  //   },
-  // },
+
   pages: {
     signIn: "/login",
     error: "/error",

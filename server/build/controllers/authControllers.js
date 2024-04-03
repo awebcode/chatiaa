@@ -93,6 +93,7 @@ exports.login = login;
 const getUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Access the authenticated user from the request
+        //with serverside in next js req.id not work you can use getserversession for accessing user
         const { id } = req;
         const user = yield UserModel_1.User.findOne({ _id: id });
         if (!user) {

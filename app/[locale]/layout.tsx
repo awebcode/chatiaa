@@ -15,6 +15,8 @@ import { MessageContextProvider } from "@/context/MessageContext";
 import { fetchUser } from "@/functions/serverActions";
 import SocketEvents from "./SocketEvents";
 import dynamic from "next/dynamic";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
@@ -84,12 +86,14 @@ export default async function LocaleLayout({
 }) {
   unstable_setRequestLocale(locale);
   let languages;
-  const user = await fetchUser();
+  // const user = await fetchUser();
+  const data = await getServerSession(authOptions);
   try {
     languages = (await import(`../../languages/${locale}.json` as string)).default;
   } catch (error) {
     notFound();
   }
+  // console.log({userT:user})
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -103,7 +107,7 @@ export default async function LocaleLayout({
                 <NextIntlClientProvider locale={locale} messages={languages}>
                   <Navbar />
                   <MessageContextProvider>
-                    {user._id && <SocketEvents currentUser={user} />}
+                    {(data?.user as any)._id && <SocketEvents currentUser={data?.user as any} />}
                     {children} {/* <IntlPolyfills /> */}
                   </MessageContextProvider>
                   <ToastProvider />

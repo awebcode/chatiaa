@@ -89,8 +89,8 @@ interface CustomRequest extends Request {
 const getUser: any = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     // Access the authenticated user from the request
+     //with serverside in next js req.id not work you can use getserversession for accessing user
     const { id } = req;
-
     const user = await User.findOne({ _id: id });
 
     if (!user) {

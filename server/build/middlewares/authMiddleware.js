@@ -10,23 +10,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const errorHandler_1 = require("./errorHandler");
-const next_1 = require("next-auth/next");
-const serverAuthOptions_1 = require("../config/serverAuthOptions");
+const jwt_1 = require("next-auth/jwt"); //for decoding next-auth_session_token
+const jwt_2 = require("next-auth/jwt");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        const session = yield (0, next_1.getServerSession)(req, res, serverAuthOptions_1.serverAuthOptions);
-        if (session && session.user) {
-            console.log({ session: session.user.id });
+        const token = yield (0, jwt_2.getToken)({ req, secret: process.env.NEXTAUTH_SECRET });
+        // const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
+        const decoded = yield (0, jwt_1.decode)({
+            token: req.cookies.authToken,
+            secret: process.env.NEXTAUTH_SECRET,
+        });
+        if (!(token === null || token === void 0 ? void 0 : token.email) && !(decoded === null || decoded === void 0 ? void 0 : decoded.sub)) {
+            return next(new errorHandler_1.CustomErrorHandler("Unauthorized -Plese login and continue", 401));
         }
-        if (session && session.user) {
-            req.id = (_a = session.user) === null || _a === void 0 ? void 0 : _a.id;
+        //  console.log({decoded, token, session, authToken: req.cookies.authToken });
+        if (decoded) {
+            //it will needed when will access  data by server side next js
+            req.id = decoded === null || decoded === void 0 ? void 0 : decoded.id;
+            next();
         }
-        next();
+        else if (token === null || token === void 0 ? void 0 : token.email) {
+            req.id = token === null || token === void 0 ? void 0 : token.id;
+            next();
+        }
     }
     catch (error) {
         console.log({ authMiddleware: error });
-        next(new errorHandler_1.CustomErrorHandler("Unauthorized - Invalid token", 401));
+        return next(new errorHandler_1.CustomErrorHandler("Unauthorized - Invalid token", 401));
     }
 });
 exports.default = authMiddleware;

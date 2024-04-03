@@ -74,6 +74,7 @@ const FriendsCard: React.FC<{
 
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
+    console.log({isFriend})
     const chatData = {
       chatId: chat?._id,
       chatName: chat?.chatName,
@@ -164,7 +165,7 @@ const FriendsCard: React.FC<{
         )
       : getSenderFull(currentUser, chat.users)?._id === u.userId
   );
-
+console.log({chat})
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">

@@ -776,7 +776,6 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       playMycallingSound.stop();
     };
   }, [callInfo]);
-
   return (
     <>
       {callInfo?.isMyCall && <MyCallPage />}
