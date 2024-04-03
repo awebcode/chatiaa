@@ -6,7 +6,7 @@ import cors from "cors";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 import connectDb from "./config/connectDb";
 import cloudinaryConfig from "./config/cloudinaryConfig";
-import NextAuth from "next-auth"
+
 import { config } from "dotenv";
 import authRoute from "./routes/authRoutes";
 import chatRoute from "./routes/chatRoutes";
@@ -23,23 +23,12 @@ import {
   markMessageAsDeliverdAfteronlineFriend,
 } from "./common/groupSocket";
 import { onlineUsersModel } from "./model/onlineUsersModel";
-import { authOptions } from "./config/auth/authOptions";
 const app = express();
 
 
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
-app.use((req, res, next) => {
-  // if (!req.url.startsWith(baseUrl)) {
-  //   return next();
-  // }
-  // Fill in the "nextauth" [catch all route parameter](https://nextjs.org/docs/routing/dynamic-routes#catch-all-routes)
-  // req.query.nextauth = req.url // start with request url
-  //   .slice(baseUrl.length) // make relative to baseUrl
-  //   .replace(/\?.*/, "") // remove query part, use only path part
-  //   .split("/"); // as array of strings
-  NextAuth(authOptions);
-});
+
 const server = createServer(app);
 export const io = new Server(server, {
   cors: {

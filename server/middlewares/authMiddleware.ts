@@ -1,17 +1,21 @@
 import { Request, Response, NextFunction } from "express";
 import { CustomErrorHandler } from "./errorHandler";
 import { decode } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
 interface AuthenticatedRequest extends Request {
   id: number | string;
 }
+import { config } from "dotenv";
 const authMiddleware: any = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
+  config()
+  // const session = await getServerSession();
+  // console.log({session})
   const token =
     req.header("Authorization")?.split(" ")[1] ||
-    req.cookies.authToken ||
     req.cookies["next-auth.session-token"] ||
     req.cookies["__Secure-next-auth.session-token"];
   console.log({ token: req.headers, cookies: req.cookies });
