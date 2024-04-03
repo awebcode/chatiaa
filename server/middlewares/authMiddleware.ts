@@ -19,7 +19,7 @@ const authMiddleware: any = async (
       req.cookies.authToken ||
       (req.headers.authorization && req.headers.authorization.split(" ")[1]);
     let decoded: any;
-
+    console.log({authToken})
     if (authToken) {
       decoded = await decode({
         token: authToken,

@@ -41,7 +41,6 @@ const MyFriends = () => {
           `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
           {
             credentials: "include",
-            cache: "no-cache",
             headers: {
               Cookie: `authToken=${(authToken as any)?.accessToken}`,
             },
@@ -73,7 +72,6 @@ const MyFriends = () => {
           `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
           {
             credentials: "include",
-            cache: "no-cache",
             headers: {
               Cookie: `authToken=${(authToken as any)?.accessToken}`,
             },
