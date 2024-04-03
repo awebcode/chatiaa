@@ -13,6 +13,7 @@ import { BaseUrl } from "@/config/BaseUrl";
 import { SET_CHATS } from "@/context/reducers/actions";
 import { Button } from "@/components/ui/button";
 import { getSession } from "next-auth/react";
+import { axiosClient } from "@/config/AxiosConfig";
 
 const MyFriends = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,19 +37,12 @@ const MyFriends = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-         const authToken = await getSession();
-        const res = await fetch(
+        const {data} = await axiosClient.get(
           `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
           {
-            credentials: "include",
-            headers: {
-              Cookie: `authToken=${(authToken as any)?.accessToken}`,
-            },
-            // next: { revalidate: 0 },
-            // cache: "reload",
+          withCredentials:true
           }
         );
-        const data = await res.json();
           dispatch({
             type: SET_CHATS,
             payload: { chats: data.chats, total: data.total },
@@ -67,18 +61,12 @@ const MyFriends = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-         const authToken = await getSession();
-        const res = await fetch(
-          `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
-          {
-            credentials: "include",
-            headers: {
-              Cookie: `authToken=${(authToken as any)?.accessToken}`,
-            },
-            // next:{revalidate:0}
-          }
-        );
-        const data = await res.json();
+         const { data } = await axiosClient.get(
+           `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
+           {
+             withCredentials: true,
+           }
+         );
         dispatch({ type: SET_CHATS, payload: { chats: data.chats, total: data.total,onScrollingData:"true" } });
       } catch (error) {
         console.log({ error });

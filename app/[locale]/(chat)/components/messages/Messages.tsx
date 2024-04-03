@@ -16,6 +16,7 @@ import TypingIndicator from "../TypingIndicator";
 import { BaseUrl } from "@/config/BaseUrl";
 import { IMessage } from "@/context/reducers/interfaces";
 import { getSession } from "next-auth/react";
+import { axiosClient } from "@/config/AxiosConfig";
 export default function Messages() {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
@@ -47,18 +48,13 @@ export default function Messages() {
       try {
         setLoading(true);
         // await new Promise((resolve) => setTimeout(resolve, 100));
-        const authToken = await getSession();
 
-        const res = await fetch(
+        const {data} = await axiosClient.get(
           `${BaseUrl}/allmessages/${isSelectedChat?.chatId}?page=${page}&limit=10`,
           {
-            credentials: "include",
-            headers: {
-              Cookie: `authToken=${(authToken as any)?.accessToken}`,
-            },
+          withCredentials:true
           }
         );
-        const data = await res.json();
         // console.log({ res: data });
 
         if (messages.length < 10 && isMounted) {
@@ -86,18 +82,12 @@ export default function Messages() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const authToken = await getSession();
-        const res = await fetch(
-          `${BaseUrl}/allmessages/${selectedChat?.chatId}?page=${page}&limit=10`,
+        const { data } = await axiosClient.get(
+          `${BaseUrl}/allmessages/${isSelectedChat?.chatId}?page=${page}&limit=10`,
           {
-            credentials: "include",
-            headers: {
-              Cookie: `authToken=${(authToken as any)?.accessToken}`,
-            },
-            // cache: "reload",
+            withCredentials: true,
           }
         );
-        const data = await res.json();
 
         dispatch({ type: SET_MESSAGES, payload: data.messages });
         dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
