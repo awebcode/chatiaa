@@ -86,8 +86,8 @@ export default async function LocaleLayout({
 }) {
   unstable_setRequestLocale(locale);
   let languages;
-  // const user = await fetchUser();
-  const data = await getServerSession(authOptions);
+  const user = await fetchUser();
+  // const data = await getServerSession(authOptions);
   try {
     languages = (await import(`../../languages/${locale}.json` as string)).default;
   } catch (error) {
@@ -107,7 +107,7 @@ export default async function LocaleLayout({
                 <NextIntlClientProvider locale={locale} messages={languages}>
                   <Navbar />
                   <MessageContextProvider>
-                    {(data?.user as any)._id && <SocketEvents currentUser={data?.user as any} />}
+                    {(user as any)._id && <SocketEvents currentUser={user as any} />}
                     {children} {/* <IntlPolyfills /> */}
                   </MessageContextProvider>
                   <ToastProvider />
