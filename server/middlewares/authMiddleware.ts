@@ -9,18 +9,12 @@ const authMiddleware: any = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("Headers:", req.headers); // Log headers to check Authorization header
-  console.log("Cookies:", req.cookies); // Log cookies to check authToken and other relevant cookies
-  console.log("NODE_ENV:", process.env.NODE_ENV); // Log NODE_ENV to ensure it's set correctly
-  console.log("NEXTAUTH_SECRET:", process.env.NEXTAUTH_SECRET); // Log NEXTAUTH_SECRET to ensure it's set correctly
-  console.log("Token:", JSON.stringify(req.headers.token)); // Log the token object as a string
-  console.log("Cookies:", JSON.stringify(req.cookies)); // Log cookies to check authToken and other relevant cookies
-
   const token =
-    // req.header("Authorization")?.split(" ")[1] ||
+    req.header("Authorization")?.split(" ")[1] ||
     req.cookies.authToken ||
     req.cookies["next-auth.session-token"] ||
     req.cookies["__Secure-next-auth.session-token"];
+  console.log({ token: req.headers, cookies: req.cookies });
 
   if (token === "undefined") {
     return next(new CustomErrorHandler("Unauthorized - No token provided", 401));

@@ -2,12 +2,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import clientPromise from "@/lib/clientPromise";
-import connectDb from "@/lib/connectDb";
-import { User } from "@/lib/models/UserModel";
-import AccountModel from "@/lib/models/AccountModel";
 import { AuthOptions } from "next-auth";
 import bcrypt from "bcrypt";
+import { User } from "../../model/UserModel";
+import AccountModel from "../../model/AccountModel";
+import clientPromise from "./clientPromise";
+import connectDb from "../connectDb";
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
 
@@ -104,17 +104,16 @@ export const authOptions: AuthOptions = {
       //same account with different provider
     },
 
-    async jwt({ token, user, account, profile,trigger,isNewUser,session }: any) {
-        console.log({ token, user, account, profile, trigger, isNewUser, session });
+    async jwt({ token, user, account, profile, trigger, isNewUser, session }: any) {
+      console.log({ token, user, account, profile, trigger, isNewUser, session });
 
       //  await connectDb();
       // Persist the OAuth access_token and or the user id to the token right after signin
       if (account) {
-
         token.accessToken = account.access_token;
-       if(user){
-         token.id = user.id;
-       }
+        if (user) {
+          token.id = user.id;
+        }
       }
       return Promise.resolve(token);
     },
@@ -139,7 +138,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   jwt: {
-    maxAge: 60 * 60 * 24*5, //expires at 5 days 24 hour
+    maxAge: 60 * 60 * 24 * 5, //expires at 5 days 24 hour
   },
   secret: process.env.NEXTAUTH_SECRET,
   // cookies: {

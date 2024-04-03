@@ -21,6 +21,7 @@ const cors_1 = __importDefault(require("cors"));
 const errorHandler_1 = require("./middlewares/errorHandler");
 const connectDb_1 = __importDefault(require("./config/connectDb"));
 const cloudinaryConfig_1 = __importDefault(require("./config/cloudinaryConfig"));
+const next_auth_1 = __importDefault(require("next-auth"));
 const dotenv_1 = require("dotenv");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
@@ -33,9 +34,21 @@ const ChatModel_1 = require("./model/ChatModel");
 const mongoose_1 = require("mongoose");
 const groupSocket_1 = require("./common/groupSocket");
 const onlineUsersModel_1 = require("./model/onlineUsersModel");
+const authOptions_1 = require("./config/auth/authOptions");
 const app = (0, express_1.default)();
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "100mb" }));
+app.use((req, res, next) => {
+    // if (!req.url.startsWith(baseUrl)) {
+    //   return next();
+    // }
+    // Fill in the "nextauth" [catch all route parameter](https://nextjs.org/docs/routing/dynamic-routes#catch-all-routes)
+    // req.query.nextauth = req.url // start with request url
+    //   .slice(baseUrl.length) // make relative to baseUrl
+    //   .replace(/\?.*/, "") // remove query part, use only path part
+    //   .split("/"); // as array of strings
+    (0, next_auth_1.default)(authOptions_1.authOptions);
+});
 const server = (0, http_1.createServer)(app);
 exports.io = new socket_io_1.Server(server, {
     cors: {
