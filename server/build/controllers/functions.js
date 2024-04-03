@@ -20,6 +20,7 @@ const sentSocketTextMessage = (newMessage) => __awaiter(void 0, void 0, void 0, 
             content: newMessage.content,
             chat: newMessage.chat,
             type: "text",
+            tempMessageId: newMessage.tempMessageId,
         };
         let message;
         message = yield MessageModel_1.Message.create(data);

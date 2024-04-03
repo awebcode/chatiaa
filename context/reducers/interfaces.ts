@@ -30,6 +30,7 @@ export interface IMessage {
   seenBy: Tuser[];
   totalseenBy: number;
   isSeen: boolean;
+  tempMessageId:string
 }
 
 export interface IChat {

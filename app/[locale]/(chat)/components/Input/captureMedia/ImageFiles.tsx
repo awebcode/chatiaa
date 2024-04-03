@@ -7,7 +7,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { TabsContent } from "@/components/ui/tabs";
-import { useMessageState } from "@/context/MessageContext";
+import { fileTypeChecker, updateSenderMessagesUI } from "@/config/functions";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { editMessage, replyMessage, sentMessage } from "@/functions/messageActions";
 import useEditReplyStore from "@/store/useEditReply";
 import { CameraIcon } from "@radix-ui/react-icons";
@@ -35,6 +36,7 @@ const ImageFiles = ({
   const { user: currentUser, messages, selectedChat } = useMessageState();
   const [loading, setloading] = useState<boolean>(false);
   const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
+  const dispatch = useMessageDispatch();
   const sentFileMessage = async () => {
     if (!isEdit || !isReply) {
       try {
@@ -42,13 +44,30 @@ const ImageFiles = ({
 
         setloading(true);
         const formData = new FormData();
-        capturedImage.forEach((file: any) => {
-          formData.append("files", file);
+        // Loop through files and update UI and formData for each file
+        capturedImage.forEach(async (file) => {
+          const fileType: string = fileTypeChecker(file);
+
+          try {
+            const tempMessageId = await updateSenderMessagesUI(
+              currentUser,
+              selectedChat,
+              file,
+              fileType,
+              dispatch
+            );
+            formData.append("files", file  );
+            formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
+          } catch (error) {
+            console.error("Error updating sender messages UI:", error);
+          }
         });
         formData.append("content", "");
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
+           document.getElementById("closeFileDialog")?.click();
+           document.getElementById("cameraDialog")?.click();
         const res = await sentMessage(formData);
         if (res.status === 200) {
           document.getElementById("closeFileDialog")?.click();
@@ -74,13 +93,30 @@ const ImageFiles = ({
         setloading(true);
         const formData = new FormData();
 
-        capturedImage.forEach((file) => {
-          formData.append("files", file);
+        // Loop through files and update UI and formData for each file
+        capturedImage.forEach(async (file) => {
+          const fileType: string = fileTypeChecker(file);
+
+          try {
+            const tempMessageId = await updateSenderMessagesUI(
+              currentUser,
+              selectedChat,
+              file,
+              fileType,
+              dispatch
+            );
+            formData.append("files", file);
+            formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
+          } catch (error) {
+            console.error("Error updating sender messages UI:", error);
+          }
         });
         formData.append("messageId", isEdit?._id);
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
+           document.getElementById("closeFileDialog")?.click();
+           document.getElementById("cameraDialog")?.click();
         const res = await editMessage(formData);
        if (res.success) {
          setloading(false);
@@ -108,13 +144,30 @@ const ImageFiles = ({
         setloading(true);
         const formData = new FormData();
 
-        capturedImage.forEach((file) => {
-          formData.append("files", file);
+        // Loop through files and update UI and formData for each file
+        capturedImage.forEach(async (file) => {
+          const fileType: string = fileTypeChecker(file);
+
+          try {
+            const tempMessageId = await updateSenderMessagesUI(
+              currentUser,
+              selectedChat,
+              file,
+              fileType,
+              dispatch
+            );
+            formData.append("files", file);
+            formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
+          } catch (error) {
+            console.error("Error updating sender messages UI:", error);
+          }
         });
         formData.append("messageId", isReply?._id);
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
+           document.getElementById("closeFileDialog")?.click();
+           document.getElementById("cameraDialog")?.click();
         const res = await replyMessage(formData);
         if (res.success) {
           setloading(false);
@@ -134,6 +187,9 @@ const ImageFiles = ({
       }
     }
      // socket.emit("sentMessage", socketData);
+
+     document.getElementById("closeFileDialog")?.click();
+     document.getElementById("cameraDialog")?.click();
    };
   return (
     <div>

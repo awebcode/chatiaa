@@ -86,7 +86,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 exports.accessChat = accessChat;
 const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log({ fetchChats: req.id });
+        // console.log({fetchChats:req.id})
         const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * limit;

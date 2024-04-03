@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
+    tempMessageId:String, //for update user/sender ui instantly
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     content: { type: String, trim: true, default: "" },
     type: { type: String, required: true },

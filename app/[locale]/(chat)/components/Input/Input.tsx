@@ -13,10 +13,12 @@ import { useTypingStore } from "@/store/useTyping";
 import useEditReplyStore from "@/store/useEditReply";
 import { useClickAway } from "@uidotdev/usehooks";
 import { useSocketContext } from "@/context/SocketContextProvider";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useQueryClient } from "@tanstack/react-query";
 import TypingIndicator from "../TypingIndicator";
 import { editMessage, replyMessage } from "@/functions/messageActions";
+import { SET_MESSAGES } from "@/context/reducers/actions";
+import { v4 } from "uuid";
 
 const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"));
 const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"));
@@ -36,6 +38,7 @@ const Input = () => {
   const [openEmoji, setOpenEmoji] = useState(false);
   // Function to handle emoji click
   const clickOutsideEmojiRef: any = useClickAway(() => setOpenEmoji(false));
+  const dispatch = useMessageDispatch();
   const onEmojiClick = (e: Temoji) => {
     // Render the Emoji component and get its value
 
@@ -106,6 +109,7 @@ const Input = () => {
   const sentMessage = useCallback(() => {
     const socketData = {
       senderId: currentUser?._id,
+
       receiverId: selectedChat?.userInfo._id,
       chatId: selectedChat?.chatId,
       content: message,
@@ -113,7 +117,11 @@ const Input = () => {
       image: currentUser?.image,
       isGroupChat: selectedChat?.isGroupChat,
       groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
+      sender: currentUser,
+      // chat:selectedChat,
+      tempMessageId:v4() ///for update sender ui instantly 
     };
+    dispatch({ type: SET_MESSAGES, payload: socketData });
     socket.emit("sentMessage", socketData);
     setMessage("");
   }, [message, socket]);

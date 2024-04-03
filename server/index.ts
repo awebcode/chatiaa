@@ -182,6 +182,7 @@ io.on("connection", (socket: Socket) => {
       chat: message.chatId,
       sender: message.senderId,
       content: message.content,
+      tempMessageId: message.tempMessageId,
     });
     if (message.isGroupChat) {
       await emitEventToGroupUsers(io, "receiveMessage", message.chatId, data);

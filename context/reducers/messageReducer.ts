@@ -366,7 +366,19 @@ export const messageReducer = (state: State, action: Action): State => {
       if (Array.isArray(action.payload)) {
         updatedMessages = [...state.messages, ...action.payload];
       } else {
-        updatedMessages = [action.payload, ...state.messages];
+     const existingMessageIndex = state.messages.findIndex(
+       (m) => m.tempMessageId === action.payload.tempMessageId
+     );
+     console.log({existingMessageIndex})
+
+     if (existingMessageIndex !== -1) {
+       // Update the existing message
+       updatedMessages = [...state.messages];
+       updatedMessages[existingMessageIndex] = action.payload;
+     } else {
+       // Add the new message to the messages array
+       updatedMessages = [action.payload, ...state.messages];
+     }
       }
       return { ...state, messages: updatedMessages };
     case SET_TOTAL_MESSAGES_COUNT:

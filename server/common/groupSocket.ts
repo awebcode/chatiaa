@@ -16,6 +16,8 @@ export const emitEventToGroupUsers = async (
 
   chatUsers?.users.forEach(async (chatUserId: any) => {
     const receiverId = await getSocketConnectedUser(chatUserId.toString());
+      console.log({ data });
+
     if (receiverId) {
       const { userId, socketId } = receiverId;
       const id = userId.toString();

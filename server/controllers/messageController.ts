@@ -68,28 +68,30 @@ export const allMessages = async (
           .populate({
             path: "reactBy",
             select: "name image email",
-            options:{limit:10}
+            options: { limit: 10 },
           })
           .sort({ updatedAt: -1 })
           .exec();
-         //seenBy
-         const seenBy = await MessageSeenBy.find({ messageId: message._id })
-           .populate({
-             path: "userId",
-             select: "name image email",
-             options: { limit: 10 },
-           })
-           .sort({ updatedAt: -1 })
-           .exec();
+        //seenBy
+        const seenBy = await MessageSeenBy.find({ messageId: message._id })
+          .populate({
+            path: "userId",
+            select: "name image email",
+            options: { limit: 10 },
+          })
+          .sort({ updatedAt: -1 })
+          .exec();
         //total seen by
-         const totalseenBy = await MessageSeenBy.countDocuments({ messageId: message._id })
-          
+        const totalseenBy = await MessageSeenBy.countDocuments({
+          messageId: message._id,
+        });
+
         return {
           ...message.toObject(),
           reactions,
           reactionsGroup,
           totalReactions,
-          seenBy:seenBy,
+          seenBy: seenBy,
           totalseenBy,
         };
       })
@@ -131,7 +133,6 @@ export const getMessageReactions = async (
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
-    console.log(req.query);
     const reactions = await Reaction.find(
       req.query.emoji === "all" || req.query.emoji === ""
         ? {
@@ -169,7 +170,7 @@ export const sendMessage = async (
 
   try {
     if (type === "file") {
-      const fileUploadPromises = req.files.map(async (file: Express.Multer.File) => {
+      const fileUploadPromises = req.files.map(async (file: Express.Multer.File,index:number) => {
         const fileType = await getFileType(file);
 
         const url = await v2.uploader.upload(file.path, {
@@ -186,6 +187,13 @@ export const sendMessage = async (
             //  console.log(`Local file deleted: ${localFilePath}`);
           }
         });
+        //temporary messageid for update user ui instantly
+      const tempMessageId =
+        typeof req.body.tempMessageId === "string"
+          ? req.body.tempMessageId
+          : req.body.tempMessageId[index];
+
+
         const newFileMessage = {
           sender: req.id,
           file: { public_Id: url.public_id, url: url.url },
@@ -196,6 +204,7 @@ export const sendMessage = async (
               : file.mimetype === "image/svg+xml"
               ? "image"
               : fileType,
+          tempMessageId,
         };
 
         // Create and populate message
@@ -210,15 +219,14 @@ export const sendMessage = async (
         const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
 
         // Send message to client
+        const emitData = message.toObject();
+
         if (chat?.isGroupChat) {
-           const emitData = message.toObject();
-           await emitEventToGroupUsers(io, "receiveMessage", chatId, emitData);
-          
-          
+          await emitEventToGroupUsers(io, "receiveMessage", chatId, { ...emitData });
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
-            .emit("receiveMessage", { ...message, receiverId });
+            .emit("receiveMessage", { ...emitData, receiverId });
         }
         return message;
       });
@@ -245,8 +253,8 @@ export const sendMessage = async (
       // Update latest message for the chat
       const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
       if (chat?.isGroupChat) {
-           const emitData = message.toObject();
-           await emitEventToGroupUsers(io, "receiveMessage", chatId, emitData);
+        const emitData = message.toObject();
+        await emitEventToGroupUsers(io, "receiveMessage", chatId, emitData);
       } else {
         io.to(chat?._id.toString() as any)
           .to(receiverId)
@@ -381,10 +389,10 @@ export const updateChatMessageAsDeliveredController = async (
           latestMessage: chat.latestMessage._id,
         });
 
-         await Message.updateMany(
-           { chat: chat._id, status: { $in: ["unseen", "unsent"] } },
-           { status: "delivered" }
-         );
+        await Message.updateMany(
+          { chat: chat._id, status: { $in: ["unseen", "unsent"] } },
+          { status: "delivered" }
+        );
       }
     });
 
@@ -466,7 +474,6 @@ export const updateMessageStatusAsUnsent = async (
   }
 };
 
-
 //reply Message
 
 export const replyMessage = async (
@@ -482,74 +489,84 @@ export const replyMessage = async (
 
     let message: any;
     if (type === "file") {
-      const fileUploadPromises = req.files.map(async (file: Express.Multer.File) => {
-        const fileType = await getFileType(file);
+      const fileUploadPromises = req.files.map(
+        async (file: Express.Multer.File, index: number) => {
+          const fileType = await getFileType(file);
 
-        const url = await v2.uploader.upload(file.path, {
-          resource_type: "raw",
-          folder: "messengaria_2024",
-          format: file.mimetype === "image/svg+xml" ? "png" : "",
-        });
+          const url = await v2.uploader.upload(file.path, {
+            resource_type: "raw",
+            folder: "messengaria_2024",
+            format: file.mimetype === "image/svg+xml" ? "png" : "",
+          });
 
-        const localFilePath = file.path;
-        fs.unlink(localFilePath, (err) => {
-          if (err) {
-            console.error(`Error deleting local file: ${err.message}`);
+          const localFilePath = file.path;
+          fs.unlink(localFilePath, (err) => {
+            if (err) {
+              console.error(`Error deleting local file: ${err.message}`);
+            } else {
+              //  console.log(`Local file deleted: ${localFilePath}`);
+            }
+          });
+          //temporary messageid for update user ui instantly
+          const tempMessageId =
+            typeof req.body.tempMessageId === "string"
+              ? req.body.tempMessageId
+              : req.body.tempMessageId[index];
+          // Create and populate message
+          message = await Message.create({
+            sender: req.id,
+            isReply: { repliedBy: req.id, messageId },
+            image: { public_Id: url.public_id, url: url.url },
+
+            file: { public_Id: url.public_id, url: url.url },
+            chat: chatId,
+            type:
+              file.mimetype === "audio/mp3"
+                ? "audio"
+                : file.mimetype === "image/svg+xml"
+                ? "image"
+                : fileType,
+            tempMessageId,
+          });
+
+          message = await message
+            .populate([
+              {
+                path: "isReply.messageId",
+                select: "content file type",
+                populate: { path: "sender", select: "name image email" },
+              },
+              {
+                path: "isReply.repliedBy",
+                select: "name image email",
+              },
+            ])
+            .populate("chat");
+
+          message = await User.populate(message, {
+            path: "chat.users",
+            select: "name image email",
+          });
+          // Update latest message for the chat
+          const chat = await Chat.findByIdAndUpdate(chatId, {
+            latestMessage: message,
+          });
+
+          // Send message to client
+          if (chat?.isGroupChat) {
+            const emitData = message.toObject();
+            await emitEventToGroupUsers(io, "replyMessage", chatId, {
+              ...emitData,
+              chat,
+            });
           } else {
-            //  console.log(`Local file deleted: ${localFilePath}`);
+            io.to(chat?._id.toString() as any)
+              .to(receiverId)
+              .emit("replyMessage", { ...message, receiverId });
           }
-        });
-
-        // Create and populate message
-        message = await Message.create({
-          sender: req.id,
-          isReply: { repliedBy: req.id, messageId },
-          image: { public_Id: url.public_id, url: url.url },
-
-          file: { public_Id: url.public_id, url: url.url },
-          chat: chatId,
-          type:
-            file.mimetype === "audio/mp3"
-              ? "audio"
-              : file.mimetype === "image/svg+xml"
-              ? "image"
-              : fileType,
-        });
-
-        message = await message
-          .populate([
-            {
-              path: "isReply.messageId",
-              select: "content file type",
-              populate: { path: "sender", select: "name image email" },
-            },
-            {
-              path: "isReply.repliedBy",
-              select: "name image email",
-            },
-          ])
-          .populate("chat");
-
-        message = await User.populate(message, {
-          path: "chat.users",
-          select: "name image email",
-        });
-        // Update latest message for the chat
-        const chat = await Chat.findByIdAndUpdate(chatId, {
-          latestMessage: message,
-        });
-
-        // Send message to client
-        if (chat?.isGroupChat) {
-             const emitData = message.toObject();
-             await emitEventToGroupUsers(io, "replyMessage", chatId, emitData);
-        } else {
-          io.to(chat?._id.toString() as any)
-            .to(receiverId)
-            .emit("replyMessage", { ...message, receiverId });
+          return message;
         }
-        return message;
-      });
+      );
 
       // Wait for all file uploads to complete
       await Promise.all(fileUploadPromises);
@@ -585,14 +602,15 @@ export const replyMessage = async (
     });
 
     const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+    //send to client
+    const emitData = message.toObject();
 
     if (chat?.isGroupChat) {
-       const emitData = message.toObject();
-       await emitEventToGroupUsers(io, "replyMessage", chatId, emitData);
+      await emitEventToGroupUsers(io, "replyMessage", chatId, emitData);
     } else {
       io.to(chat?._id.toString() as any)
         .to(receiverId)
-        .emit("replyMessage", { ...message, receiverId });
+        .emit("replyMessage", { ...emitData, receiverId });
     }
 
     res.status(200).json({ success: true, message });
@@ -610,10 +628,9 @@ export const editMessage = async (
 ) => {
   try {
     const { messageId, chatId, content, type, receiverId } = req.body;
-    if (!messageId)
-      {
-        return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
-      }
+    if (!messageId) {
+      return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
+    }
     const isLastMessage = await Chat.findOne({ _id: chatId, latestMessage: messageId });
     const prevMessage: any = await Message.findById(messageId);
     //delete Previous Image
@@ -623,7 +640,7 @@ export const editMessage = async (
     let editedChat: any;
 
     if (type === "file") {
-      const fileUploadPromises = req.files.map(async (file: Express.Multer.File) => {
+      const fileUploadPromises = req.files.map(async (file: Express.Multer.File,index:number) => {
         const fileType = await getFileType(file);
 
         const url = await v2.uploader.upload(file.path, {
@@ -640,7 +657,11 @@ export const editMessage = async (
             //  console.log(`Local file deleted: ${localFilePath}`);
           }
         });
-
+        //temporary messageid for update user ui instantly
+        const tempMessageId =
+          typeof req.body.tempMessageId === "string"
+            ? req.body.tempMessageId
+            : req.body.tempMessageId[index];
         editedChat = await Message.findByIdAndUpdate(
           messageId,
           {
@@ -653,6 +674,7 @@ export const editMessage = async (
                 : file.mimetype === "image/svg+xml"
                 ? "image"
                 : fileType,
+            tempMessageId,
           },
           { new: true }
         )
@@ -669,8 +691,8 @@ export const editMessage = async (
         const chat = await Chat.findByIdAndUpdate(chatId);
         // Send message to client
         if (chat?.isGroupChat) {
-           const emitData = editedChat.toObject();
-           await emitEventToGroupUsers(io, "editMessage", chatId, emitData);
+          const emitData = editedChat.toObject();
+          await emitEventToGroupUsers(io, "editMessage", chatId, emitData);
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
@@ -683,12 +705,12 @@ export const editMessage = async (
       await Promise.all(fileUploadPromises);
       res.status(200).json({ message: "Edit Message sucessfully" });
     } else {
-      if (!messageId || !content){
+      if (!messageId || !content) {
         return next(
           new CustomErrorHandler("messageId or content  cannot be empty!", 400)
         );
       }
-        
+
       const message = await Message.findOne({ _id: messageId });
       if (message?.file?.public_Id) {
         await v2.uploader.destroy(message.file.public_Id);
@@ -716,17 +738,18 @@ export const editMessage = async (
     }
     const chat = await Chat.findByIdAndUpdate(chatId);
     // Send message to client
+      const emitData = editedChat.toObject();
+
     if (chat?.isGroupChat) {
-     const emitData = editedChat.toObject();
-           await emitEventToGroupUsers(io, "editMessage", chatId, emitData);
+      await emitEventToGroupUsers(io, "editMessage", chatId, emitData);
     } else {
       io.to(chat?._id.toString() as any)
         .to(receiverId)
-        .emit("editMessage", { ...editedChat, receiverId });
+        .emit("editMessage", { ...emitData, receiverId });
     }
     res.status(200).json({ success: true, editedChat });
   } catch (error) {
-    console.log({error})
+    console.log({ error });
     next(error);
   }
 };
@@ -761,9 +784,8 @@ export const addRemoveEmojiReactions = async (
           ).populate("reactBy", "name email image");
           // Send message to client
           if (chat?.isGroupChat) {
-              const emitData = { reaction, type: "update" };
-              await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);
-            
+            const emitData = { reaction, type: "update" };
+            await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
@@ -800,8 +822,8 @@ export const addRemoveEmojiReactions = async (
           return next(new CustomErrorHandler("reactionId cannot be empty!", 400));
         const reaction = await Reaction.findByIdAndDelete(reactionId);
         if (chat?.isGroupChat) {
-           const emitData = { reaction, type: "remove" };
-           await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);
+          const emitData = { reaction, type: "remove" };
+          await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);
         } else {
           io.to(chat?._id.toString() as any)
             .to(receiverId)
@@ -820,6 +842,3 @@ export const addRemoveEmojiReactions = async (
     next(error);
   }
 };
-
-
-

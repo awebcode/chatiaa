@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Message = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const messageSchema = new mongoose_1.default.Schema({
+    tempMessageId: String, //for update user/sender ui instantly
     sender: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
     content: { type: String, trim: true, default: "" },
     type: { type: String, required: true },

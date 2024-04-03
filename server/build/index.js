@@ -156,6 +156,7 @@ exports.io.on("connection", (socket) => {
             chat: message.chatId,
             sender: message.senderId,
             content: message.content,
+            tempMessageId: message.tempMessageId,
         });
         if (message.isGroupChat) {
             yield (0, groupSocket_1.emitEventToGroupUsers)(exports.io, "receiveMessage", message.chatId, data);

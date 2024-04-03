@@ -142,7 +142,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       //  update latest chat for both side
       console.log({ socketMessage: data });
 
-      if (selectedChatRef.current?.chatId === data.chat._id) {
+      if (selectedChatRef.current?.chatId === data.chat?._id) {
         useIncomingMessageStore.setState({
           isIncomingMessage: true,
         });
@@ -225,7 +225,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         };
         await updateMessageStatus(updateStatusData);
       } else {
-        if (data.chat.isGroupChat && data.sender?._id !== currentUserRef.current?._id) {
+        if (data.chat?.isGroupChat && data.sender?._id !== currentUserRef.current?._id) {
           //update group
           const pushData = {
             chatId: data?.chat?._id,

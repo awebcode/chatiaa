@@ -8,15 +8,19 @@ import {
 } from "@/components/ui/dialog";
 import { FiLink } from "react-icons/fi";
 import dynamic from "next/dynamic";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { Button } from "@/components/ui/button";
 import { editMessage, replyMessage, sentMessage } from "@/functions/messageActions";
 import useEditReplyStore from "@/store/useEditReply";
+import { SET_MESSAGES } from "@/context/reducers/actions";
+import { v4 } from "uuid";
+import { fileTypeChecker, updateSenderMessagesUI } from "@/config/functions";
 
 const ImageList = dynamic(() => import("./ListImage"));
 const ActiveFile = dynamic(() => import("./ActiveFile"));
 const InputList = dynamic(() => import("./InputList"));
 const ImageCapture: React.FC = () => {
+  const dispatch=useMessageDispatch()
   const { user: currentUser, messages, selectedChat } = useMessageState();
 
   const [files, setFiles] = useState<File[]>([]);
@@ -51,13 +55,29 @@ const ImageCapture: React.FC = () => {
 
         setloading(true);
         const formData = new FormData();
-        files.forEach((file) => {
-          formData.append("files", file);
+        // Loop through files and update UI and formData for each file
+        files.forEach(async (file) => {
+          const fileType: string = fileTypeChecker(file);
+
+          try {
+            const tempMessageId = await updateSenderMessagesUI(
+              currentUser,
+              selectedChat,
+              file,
+              fileType,
+              dispatch
+            );
+            formData.append("files", file);
+            formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
+          } catch (error) {
+            console.error("Error updating sender messages UI:", error);
+          }
         });
         formData.append("content", "");
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
+           document.getElementById("closeFileDialog")?.click();
         const res = await sentMessage(formData);
         if (res.status === 200) {
           document.getElementById("closeFileDialog")?.click();
@@ -81,15 +101,31 @@ const ImageCapture: React.FC = () => {
         setloading(true);
         const formData = new FormData();
 
-        files.forEach((file) => {
-          formData.append("files", file);
+        // Loop through files and update UI and formData for each file
+        files.forEach(async (file) => {
+          const fileType: string = fileTypeChecker(file);
+
+          try {
+            const tempMessageId = await updateSenderMessagesUI(
+              currentUser,
+              selectedChat,
+              file,
+              fileType,
+              dispatch
+            );
+            formData.append("files", file);
+            formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
+          } catch (error) {
+            console.error("Error updating sender messages UI:", error);
+          }
         });
         formData.append("messageId", isEdit?._id);
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
+          document.getElementById("closeFileDialog")?.click();
         const res = await editMessage(formData);
-       if (res.success) {
+        if (res.success) {
           document.getElementById("closeFileDialog")?.click();
           setFiles([]);
           setloading(false);
@@ -112,20 +148,36 @@ const ImageCapture: React.FC = () => {
         setloading(true);
         const formData = new FormData();
 
-        files.forEach((file) => {
-          formData.append("files", file);
+        // Loop through files and update UI and formData for each file
+        files.forEach(async (file) => {
+          const fileType: string = fileTypeChecker(file);
+
+          try {
+            const tempMessageId = await updateSenderMessagesUI(
+              currentUser,
+              selectedChat,
+              file,
+              fileType,
+              dispatch
+            );
+            formData.append("files", file);
+            formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
+          } catch (error) {
+            console.error("Error updating sender messages UI:", error);
+          }
         });
         formData.append("messageId", isReply?._id);
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
+          document.getElementById("closeFileDialog")?.click();
         const res = await replyMessage(formData);
-       if (res.success) {
-         document.getElementById("closeFileDialog")?.click();
-         setFiles([]);
-         setloading(false);
-         cancelReply();
-       }
+        if (res.success) {
+          document.getElementById("closeFileDialog")?.click();
+          setFiles([]);
+          setloading(false);
+          cancelReply();
+        }
       } catch (error) {
         setloading(false);
       } finally {
@@ -135,7 +187,7 @@ const ImageCapture: React.FC = () => {
         cancelReply();
       }
     }
-
+ document.getElementById("closeFileDialog")?.click();
     // socket.emit("sentMessage", socketData);
   };
 

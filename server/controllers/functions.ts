@@ -6,6 +6,7 @@ type TnewMessage = {
   sender: string;
   content: string;
   chat: string;
+  tempMessageId: string;
 };
 export const sentSocketTextMessage = async (newMessage: TnewMessage) => {
   try {
@@ -14,6 +15,7 @@ export const sentSocketTextMessage = async (newMessage: TnewMessage) => {
       content: newMessage.content,
       chat: newMessage.chat,
       type: "text",
+      tempMessageId: newMessage.tempMessageId,
     };
     let message: any;
     message = await Message.create(data);

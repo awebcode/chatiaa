@@ -71,7 +71,7 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 .populate({
                 path: "reactBy",
                 select: "name image email",
-                options: { limit: 10 }
+                options: { limit: 10 },
             })
                 .sort({ updatedAt: -1 })
                 .exec();
@@ -85,7 +85,9 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 .sort({ updatedAt: -1 })
                 .exec();
             //total seen by
-            const totalseenBy = yield seenByModel_1.MessageSeenBy.countDocuments({ messageId: message._id });
+            const totalseenBy = yield seenByModel_1.MessageSeenBy.countDocuments({
+                messageId: message._id,
+            });
             return Object.assign(Object.assign({}, message.toObject()), { reactions,
                 reactionsGroup,
                 totalReactions, seenBy: seenBy, totalseenBy });
@@ -125,7 +127,6 @@ const getMessageReactions = (req, res, next) => __awaiter(void 0, void 0, void 0
         const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * limit;
-        console.log(req.query);
         const reactions = yield reactModal_1.Reaction.find(req.query.emoji === "all" || req.query.emoji === ""
             ? {
                 messageId,
@@ -157,7 +158,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
     try {
         if (type === "file") {
-            const fileUploadPromises = req.files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+            const fileUploadPromises = req.files.map((file, index) => __awaiter(void 0, void 0, void 0, function* () {
                 const fileType = yield (0, functions_1.getFileType)(file);
                 const url = yield cloudinary_1.v2.uploader.upload(file.path, {
                     resource_type: "raw",
@@ -173,6 +174,10 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                         //  console.log(`Local file deleted: ${localFilePath}`);
                     }
                 });
+                //temporary messageid for update user ui instantly
+                const tempMessageId = typeof req.body.tempMessageId === "string"
+                    ? req.body.tempMessageId
+                    : req.body.tempMessageId[index];
                 const newFileMessage = {
                     sender: req.id,
                     file: { public_Id: url.public_id, url: url.url },
@@ -182,6 +187,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                         : file.mimetype === "image/svg+xml"
                             ? "image"
                             : fileType,
+                    tempMessageId,
                 };
                 // Create and populate message
                 let message = yield MessageModel_1.Message.create(newFileMessage);
@@ -193,14 +199,14 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 // Update latest message for the chat
                 const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
                 // Send message to client
+                const emitData = message.toObject();
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    const emitData = message.toObject();
-                    yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "receiveMessage", chatId, emitData);
+                    yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "receiveMessage", chatId, Object.assign({}, emitData));
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId)
-                        .emit("receiveMessage", Object.assign(Object.assign({}, message), { receiverId }));
+                        .emit("receiveMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
                 }
                 return message;
             }));
@@ -397,7 +403,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         }
         let message;
         if (type === "file") {
-            const fileUploadPromises = req.files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+            const fileUploadPromises = req.files.map((file, index) => __awaiter(void 0, void 0, void 0, function* () {
                 const fileType = yield (0, functions_1.getFileType)(file);
                 const url = yield cloudinary_1.v2.uploader.upload(file.path, {
                     resource_type: "raw",
@@ -413,6 +419,10 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                         //  console.log(`Local file deleted: ${localFilePath}`);
                     }
                 });
+                //temporary messageid for update user ui instantly
+                const tempMessageId = typeof req.body.tempMessageId === "string"
+                    ? req.body.tempMessageId
+                    : req.body.tempMessageId[index];
                 // Create and populate message
                 message = yield MessageModel_1.Message.create({
                     sender: req.id,
@@ -425,6 +435,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                         : file.mimetype === "image/svg+xml"
                             ? "image"
                             : fileType,
+                    tempMessageId,
                 });
                 message = yield message
                     .populate([
@@ -450,7 +461,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 // Send message to client
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                     const emitData = message.toObject();
-                    yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "replyMessage", chatId, emitData);
+                    yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "replyMessage", chatId, Object.assign(Object.assign({}, emitData), { chat }));
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
@@ -491,14 +502,15 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             select: "name image email",
         });
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+        //send to client
+        const emitData = message.toObject();
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-            const emitData = message.toObject();
             yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "replyMessage", chatId, emitData);
         }
         else {
             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                 .to(receiverId)
-                .emit("replyMessage", Object.assign(Object.assign({}, message), { receiverId }));
+                .emit("replyMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
         }
         res.status(200).json({ success: true, message });
     }
@@ -523,7 +535,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         }
         let editedChat;
         if (type === "file") {
-            const fileUploadPromises = req.files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+            const fileUploadPromises = req.files.map((file, index) => __awaiter(void 0, void 0, void 0, function* () {
                 const fileType = yield (0, functions_1.getFileType)(file);
                 const url = yield cloudinary_1.v2.uploader.upload(file.path, {
                     resource_type: "raw",
@@ -539,6 +551,10 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                         //  console.log(`Local file deleted: ${localFilePath}`);
                     }
                 });
+                //temporary messageid for update user ui instantly
+                const tempMessageId = typeof req.body.tempMessageId === "string"
+                    ? req.body.tempMessageId
+                    : req.body.tempMessageId[index];
                 editedChat = yield MessageModel_1.Message.findByIdAndUpdate(messageId, {
                     content: "",
                     isEdit: { editedBy: req.id },
@@ -548,6 +564,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                         : file.mimetype === "image/svg+xml"
                             ? "image"
                             : fileType,
+                    tempMessageId,
                 }, { new: true })
                     .populate("sender isEdit.editedBy", "name email image")
                     .populate("chat");
@@ -601,14 +618,14 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         }
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
         // Send message to client
+        const emitData = editedChat.toObject();
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-            const emitData = editedChat.toObject();
             yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "editMessage", chatId, emitData);
         }
         else {
             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                 .to(receiverId)
-                .emit("editMessage", Object.assign(Object.assign({}, editedChat), { receiverId }));
+                .emit("editMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
         }
         res.status(200).json({ success: true, editedChat });
     }

@@ -160,7 +160,7 @@ export default function Messages() {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-
+// console.log({messages})
   return (
     <div
       id="CustomscrollableTarget"
@@ -211,7 +211,7 @@ export default function Messages() {
               return (
                 <MessageCard
                   message={message}
-                  key={message?._id + Date.now() + Math.floor(Math.random() * 1000)}
+                  key={message?._id+message?.tempMessageId + Date.now() + Math.floor(Math.random() * 100)}
                   isLastSeenMessage={index === findLastSeenMessageIndex(messages)}
                 />
               );

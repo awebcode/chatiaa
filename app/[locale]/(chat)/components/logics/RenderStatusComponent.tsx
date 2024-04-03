@@ -2,6 +2,8 @@ import Image from "next/image";
 import { IoIosCheckmarkCircle, IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { useMessageState } from "@/context/MessageContext";
 import { IChat, IMessage } from "@/context/reducers/interfaces";
+import { RxTimer } from "react-icons/rx";
+import { BiLoaderCircle } from "react-icons/bi";
 export const RenderStatus = (
   chat:IChat,
   message: IMessage,
@@ -65,11 +67,19 @@ export const RenderStatus = (
       );
       break;
     default:
-      statusDiv = (
-        <div className="h-5 w-5 relative">
-          {/* Render default content or handle additional statuses */}
-        </div>
-      );
+      !message._id && message.type === "text" //when message instanly update sender side without server response
+        ? (statusDiv = (
+            <div className="h-5 w-5 relative">
+              <RxTimer className="h-5 w-5 text-gray-500 rounded-full relative" />
+            </div>
+          ))
+        : !message._id && message.type !== "text"
+        ? (statusDiv = (
+            <div className="h-6 w-6 relative ">
+              <BiLoaderCircle className="animate-spin h-6 w-6 text-blue-600 rounded-full relative"/>
+            </div>
+          ))
+        : null;
       break;
   }
 
