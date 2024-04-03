@@ -16,8 +16,8 @@ export const getChats = async ({
   pageParam: any;
   queryKey: any;
 }) => {
-  const { data } = await axios.get(
-    `${BaseUrl}/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${10}`,
+  const { data } = await axiosClient.get(
+    `/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${10}`,
     {
       headers: { "Content-Type": "application/json" },
       withCredentials: true,
@@ -119,8 +119,8 @@ export const getFilesInChat = async ({
   pageParam: any;
   queryKey: any;
 }) => {
-  const { data } = await axios.get(
-    `${BaseUrl}/getFilesInChat/${queryKey[0]}?filter=${
+  const { data } = await axiosClient.get(
+    `/getFilesInChat/${queryKey[0]}?filter=${
       queryKey[1]
     }&skip=${pageParam}&limit=${10}`,
     {
@@ -139,8 +139,8 @@ export const getUsersInAChat = async ({
   pageParam: any;
   queryKey: any;
 }) => {
-  const { data } = await axios.get(
-    `${BaseUrl}/getUsersInAChat/${queryKey[0]}?search=${
+  const { data } = await axiosClient.get(
+    `/getUsersInAChat/${queryKey[0]}?search=${
       queryKey[1]
     }&skip=${pageParam}&limit=${10}`,
     {

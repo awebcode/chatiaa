@@ -8,6 +8,7 @@ import { User } from "@/lib/models/UserModel";
 import AccountModel from "@/lib/models/AccountModel";
 import { AuthOptions } from "next-auth";
 import bcrypt from "bcrypt";
+import { cookies } from "next/headers";
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
 
@@ -125,6 +126,11 @@ export const authOptions: AuthOptions = {
           session.user.role = loggedUser.role || "user";
           session.user.bio = loggedUser.bio;
           session.user.lastActive = loggedUser.lastActive;
+          session.accessToken= cookies().get(
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.session-token"
+            : "next-auth.session-token"
+        )?.value
         }
       }
 

@@ -14,20 +14,24 @@ const authMiddleware: any = async (
 ) => {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-     const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
+    const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
+    const authToken =
+      req.cookies.authToken ||
+      (req.headers.authorization && req.headers.authorization.split(" ")[1]);
     let decoded: any;
-    
-    if (req.cookies.authToken) {
+
+    if (authToken) {
       decoded = await decode({
-      token: req.cookies.authToken,
-      secret: process.env.NEXTAUTH_SECRET!,
-    });}
+        token: authToken,
+        secret: process.env.NEXTAUTH_SECRET!,
+      });
+    }
 
     if (!token?.email && !decoded?.sub) {
       return next(new CustomErrorHandler("Unauthorized -Plese login and continue", 401));
     }
 
-      console.log({decoded, token, session, authToken: req.cookies.authToken });
+    console.log({ decoded, token, session, authToken: req.cookies.authToken });
 
     if (decoded) {
       //it will needed when will access  data by server side next js
@@ -39,7 +43,7 @@ const authMiddleware: any = async (
     }
   } catch (error) {
     console.log({ authMiddleware: error });
-   return next(new CustomErrorHandler("Unauthorized - Invalid token", 401));
+    return next(new CustomErrorHandler("Unauthorized - Invalid token", 401));
   }
 };
 

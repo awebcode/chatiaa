@@ -18,10 +18,12 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     try {
         const token = yield (0, jwt_2.getToken)({ req, secret: process.env.NEXTAUTH_SECRET });
         const session = yield (0, next_1.getServerSession)(req, res, serverAuthOptions_1.serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
+        const authToken = req.cookies.authToken ||
+            (req.headers.authorization && req.headers.authorization.split(" ")[1]);
         let decoded;
-        if (req.cookies.authToken) {
+        if (authToken) {
             decoded = yield (0, jwt_1.decode)({
-                token: req.cookies.authToken,
+                token: authToken,
                 secret: process.env.NEXTAUTH_SECRET,
             });
         }
