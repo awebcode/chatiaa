@@ -104,25 +104,20 @@ export const authOptions: AuthOptions = {
       //same account with different provider
     },
 
-    async jwt({ token, user, account, profile,trigger,isNewUser,session }: any) {
-        console.log({ token, user, account, profile, trigger, isNewUser, session });
-
+    async jwt({ token, user }: any) {
       //  await connectDb();
       // Persist the OAuth access_token and or the user id to the token right after signin
-      if (account) {
-
-        token.accessToken = account.access_token;
-       if(user){
-         token.id = user.id;
-       }
+      if (user) {
+        token.accessToken = user.access_token;
+        token.id = user.id;
       }
       return Promise.resolve(token);
     },
-    async session({ session, token }:any) {
+    async session({ session, token }: any) {
       await connectDb();
       if (token) {
         session.user.id = token.id;
-        session.accessToken = session.accessToken;
+        session.accessToken = token.accessToken;
 
         const loggedUser = await User.findById(token.id);
 
@@ -139,7 +134,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   jwt: {
-    maxAge: 60 * 60 * 24*5, //expires at 5 days 24 hour
+    maxAge: 60 * 60 * 24, //expires at 24 hour
   },
   secret: process.env.NEXTAUTH_SECRET,
   // cookies: {
