@@ -14,6 +14,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Button } from "@/components/ui/button";
 import { PopoverArrow, PopoverClose, PopoverContent } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
+import { axiosClient } from "@/config/AxiosConfig";
 
 const ReactionLists = ({
   message,
@@ -46,12 +47,11 @@ const ReactionLists = ({
   }, []);
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(
-        `${BaseUrl}/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
-        { credentials: "include" }
+      const data = await axiosClient.get(
+        `/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
+        { withCredentials:true }
       );
-      const data = await res.json();
-      setData(data);
+      setData(data as any);
     };
     if (messageId !== "" && page === 1) {
       fetchData();
@@ -59,14 +59,11 @@ const ReactionLists = ({
   }, [activeTab, messageId]);
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(
-        `${BaseUrl}/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
-        {
-          credentials: "include",
-        }
-      );
-      const data = await res.json();
-      setData((prev) => [...prev, data]);
+       const data = await axiosClient.get(
+         `/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
+         { withCredentials: true }
+       );
+      setData((prev) => [...prev, data as any]);
     };
     if (page > 1) {
       fetchData();
