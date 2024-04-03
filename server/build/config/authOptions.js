@@ -13,8 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authOptions = void 0;
-const UserModel_1 = require("../../model/UserModel");
-const connectDb_1 = __importDefault(require("../connectDb"));
+const UserModel_1 = require("../model/UserModel");
+const connectDb_1 = __importDefault(require("./connectDb"));
 exports.authOptions = {
     providers: [],
     callbacks: {

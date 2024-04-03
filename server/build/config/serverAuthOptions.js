@@ -12,10 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authOptions = void 0;
-const UserModel_1 = require("../../model/UserModel");
-const connectDb_1 = __importDefault(require("../connectDb"));
-exports.authOptions = {
+exports.serverAuthOptions = void 0;
+const UserModel_1 = require("../model/UserModel");
+const connectDb_1 = __importDefault(require("./connectDb"));
+exports.serverAuthOptions = {
     providers: [],
     callbacks: {
         jwt({ token, user, account }) {

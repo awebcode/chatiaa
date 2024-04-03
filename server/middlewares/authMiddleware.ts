@@ -1,37 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import { CustomErrorHandler } from "./errorHandler";
 import { decode } from "next-auth/jwt";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
+import { NextAuthOptions } from "next-auth";
+import { serverAuthOptions } from "../config/serverAuthOptions";
 interface AuthenticatedRequest extends Request {
   id: number | string;
 }
-import { config } from "dotenv";
 const authMiddleware: any = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
-  config()
-  // const session = await getServerSession();
-  // console.log({session})
-  const token =
-    req.header("Authorization")?.split(" ")[1] ||
-    req.cookies["next-auth.session-token"] ||
-    req.cookies["__Secure-next-auth.session-token"];
-  console.log({ token: req.headers, cookies: req.cookies });
-
-  if (token === "undefined") {
-    return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
-  }
-  if (!token) {
-    return next(new CustomErrorHandler("Unauthorized - No token provided", 401));
-  }
   try {
-    const decoded = await decode({
-      token,
-      secret: process.env.NEXTAUTH_SECRET!,
-    });
-    (req as any).id = decoded?.id;
+    const session = await getServerSession(req, res, serverAuthOptions);
+
+    if (session && session.user) {
+      console.log({ session: (session as any).user.id });
+    }
+    if (session && session.user) {
+   (req as any).id = (session as any).user?.id;
+   }
 
     next();
   } catch (error) {
