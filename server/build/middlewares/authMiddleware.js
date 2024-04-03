@@ -11,19 +11,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const errorHandler_1 = require("./errorHandler");
 const jwt_1 = require("next-auth/jwt"); //for decoding next-auth_session_token
+const next_1 = require("next-auth/next");
+const serverAuthOptions_1 = require("../config/serverAuthOptions");
 const jwt_2 = require("next-auth/jwt");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = yield (0, jwt_2.getToken)({ req, secret: process.env.NEXTAUTH_SECRET });
-        // const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
-        const decoded = yield (0, jwt_1.decode)({
-            token: req.cookies.authToken,
-            secret: process.env.NEXTAUTH_SECRET,
-        });
+        const session = yield (0, next_1.getServerSession)(req, res, serverAuthOptions_1.serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
+        let decoded;
+        if (req.cookies.authToken) {
+            decoded = yield (0, jwt_1.decode)({
+                token: req.cookies.authToken,
+                secret: process.env.NEXTAUTH_SECRET,
+            });
+        }
         if (!(token === null || token === void 0 ? void 0 : token.email) && !(decoded === null || decoded === void 0 ? void 0 : decoded.sub)) {
             return next(new errorHandler_1.CustomErrorHandler("Unauthorized -Plese login and continue", 401));
         }
-        //  console.log({decoded, token, session, authToken: req.cookies.authToken });
+        console.log({ decoded, token, session, authToken: req.cookies.authToken });
         if (decoded) {
             //it will needed when will access  data by server side next js
             req.id = decoded === null || decoded === void 0 ? void 0 : decoded.id;

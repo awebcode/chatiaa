@@ -14,17 +14,20 @@ const authMiddleware: any = async (
 ) => {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-    // const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
-    const decoded = await decode({
+     const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
+    let decoded: any;
+    
+    if (req.cookies.authToken) {
+      decoded = await decode({
       token: req.cookies.authToken,
       secret: process.env.NEXTAUTH_SECRET!,
-    });
+    });}
 
     if (!token?.email && !decoded?.sub) {
       return next(new CustomErrorHandler("Unauthorized -Plese login and continue", 401));
     }
 
-    //  console.log({decoded, token, session, authToken: req.cookies.authToken });
+      console.log({decoded, token, session, authToken: req.cookies.authToken });
 
     if (decoded) {
       //it will needed when will access  data by server side next js
