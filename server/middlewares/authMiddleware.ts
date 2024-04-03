@@ -19,8 +19,14 @@ const authMiddleware: any = async (
       req.cookies.authToken ||
       (req.headers.authorization && req.headers.authorization.split(" ")[1]);
     let decoded: any;
-    console.log({authToken})
+    console.log({ authToken, secret: process.env.NEXTAUTH_SECRET! });
+   
     if (authToken) {
+      if (authToken === "undefined") {
+          return next(
+            new CustomErrorHandler("Unauthorized -No token provided", 401)
+          );
+       }
       decoded = await decode({
         token: authToken,
         secret: process.env.NEXTAUTH_SECRET!,

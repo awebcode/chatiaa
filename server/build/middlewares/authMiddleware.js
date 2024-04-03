@@ -21,8 +21,11 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         const authToken = req.cookies.authToken ||
             (req.headers.authorization && req.headers.authorization.split(" ")[1]);
         let decoded;
-        console.log({ authToken });
+        console.log({ authToken, secret: process.env.NEXTAUTH_SECRET });
         if (authToken) {
+            if (authToken === "undefined") {
+                return next(new errorHandler_1.CustomErrorHandler("Unauthorized -No token provided", 401));
+            }
             decoded = yield (0, jwt_1.decode)({
                 token: authToken,
                 secret: process.env.NEXTAUTH_SECRET,
