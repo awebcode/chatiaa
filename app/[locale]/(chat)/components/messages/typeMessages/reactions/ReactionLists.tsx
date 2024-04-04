@@ -32,7 +32,7 @@ const ReactionLists = ({
   isCurrentUserMessage: boolean;
   isOpenReactionListModal: boolean;
   setIsOpenReactionListModal: Dispatch<boolean>;
-  handleRemoveReact: (messageId: string, reactionId: string,emoji:string) => void;
+  handleRemoveReact: (messageId: string, reactionId: string,emoji:string) => Promise<any>;
   reactionsGroup: ReactionGroup[];
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
@@ -44,7 +44,7 @@ const ReactionLists = ({
   //BEST WILL BE REACT INFINITE SCROLL BASE ON ACTIVE TAB
   useEffect(() => {
     setData(message.reactions);
-  }, []);
+  }, [message]);
   // useEffect(() => {
   //   const fetchData = async () => {
   //     const data = await axiosClient.get(

@@ -20,6 +20,7 @@ import { authOptions } from "@/lib/authOptions";
 const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
+  
   title: "Messengaria - Connect and Chat",
   creator: "Md Asikur Rahman",
   authors: [{ name: "Md Asikur Rahman", url: "https://asikur.vercel.app" }],
@@ -31,7 +32,6 @@ export const metadata: Metadata = {
   openGraph: {
     url: "https://messengaria.vercel.app",
     siteName: "Messengaria",
-
     type: "website",
     title: "Messengaria - Connect and Chat",
     description:

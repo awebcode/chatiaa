@@ -487,7 +487,6 @@ export const messageReducer = (state: State, action: Action): State => {
 
     //reaction add/remove/update handler
     case ADD_REACTION_ON_MESSAGE:
-      console.log({ actionPayloadReact: action.payload });
       return {
         ...state,
         // Update messages array based on message type
@@ -502,12 +501,10 @@ export const messageReducer = (state: State, action: Action): State => {
             const existingReactionIndex = updatedReactions.findIndex(
               (m) => m.tempReactionId === action.payload.reaction.tempReactionId
             );
-            if (
-              action.payload.type === "add" &&
-              !updatedReactions.some(
+            //&&
+            if (action.payload.type === "add" && !updatedReactions.find(
                 (u) => u.reactBy._id === action.payload.reaction.reactBy._id
-              )
-            ) {
+              )?._id) { ///if tempreactionId but no id exists then
               let updatedReactionsGroup = Array.isArray(message.reactionsGroup)
                 ? [...message.reactionsGroup]
                 : [];

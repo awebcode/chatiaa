@@ -126,11 +126,11 @@ export const authOptions: AuthOptions = {
           session.user.role = loggedUser.role || "user";
           session.user.bio = loggedUser.bio;
           session.user.lastActive = loggedUser.lastActive;
-          session.accessToken= cookies().get(
-          process.env.NODE_ENV === "production"
-            ? "__Secure-next-auth.session-token"
-            : "next-auth.session-token"
-        )?.value
+          session.accessToken = cookies().get(
+            process.env.NODE_ENV === "production"
+              ? "__Secure-next-auth.session-token"
+              : "next-auth.session-token"
+          )?.value;
         }
       }
 
@@ -142,7 +142,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   jwt: {
-    maxAge: 60 * 60 * 24, //expires at 24 hour
+    maxAge: 1000 * 60 * 60 * 24 * 30, //expires at 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
 

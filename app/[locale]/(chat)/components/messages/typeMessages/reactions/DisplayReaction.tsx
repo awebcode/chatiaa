@@ -35,13 +35,14 @@ const DisplayReaction = ({
   });
   const handleRemoveReact = async (messageId: string, reactionId: string,emoji:string) => {
     //update sender ui without delay
-     if (!messageId || !emoji) return;
+     if (!messageId || !emoji||!reactionId) return;
      const tempReactionId = v4();
     dispatch({
       type: ADD_REACTION_ON_MESSAGE,
       payload: {
         reaction: {
-          _id:reactionId,
+          _id: reactionId,
+          reactionId,
           emoji,
           messageId,
           reactBy: currentUser,
@@ -89,7 +90,10 @@ const DisplayReaction = ({
               />
             );
           })}
-          <span className="text-xs">{message.totalReactions}</span>
+
+          {message.totalReactions > 0 && (
+            <span className="text-xs">{message.totalReactions}</span>
+          )}
         </PopoverTrigger>
         <ReactionLists
           messageId={messageId}
