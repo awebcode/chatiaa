@@ -103,7 +103,8 @@ const ImageFiles = ({
               selectedChat,
               file,
               fileType,
-              dispatch
+              dispatch,
+              isEdit
             );
             formData.append("files", file);
             formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
@@ -154,7 +155,8 @@ const ImageFiles = ({
               selectedChat,
               file,
               fileType,
-              dispatch
+              dispatch,
+              isReply
             );
             formData.append("files", file);
             formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file

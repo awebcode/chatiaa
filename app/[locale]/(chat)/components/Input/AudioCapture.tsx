@@ -1,17 +1,16 @@
-
-
-
 import React, { useEffect, useRef, useState } from "react";
 import { FaMicrophone, FaPauseCircle, FaPlay, FaStop, FaTrash } from "react-icons/fa";
 import { MdSend } from "react-icons/md";
 import WaveSurfer from "wavesurfer.js";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { formatTime } from "@/functions/formatTime";
 import { sentMessage } from "@/functions/messageActions";
+import { updateSenderMessagesUI } from "@/config/functions";
 
 function CaptureAudio({ hide }: any) {
-  const { selectedChat } = useMessageState();
+  const { selectedChat, user: currentUser } = useMessageState();
+  const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const [isRecording, setIsRecording] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState<any>(null);
@@ -124,9 +123,8 @@ function CaptureAudio({ hide }: any) {
           type: "audio/mp3",
         });
         setRecordedStopAudio(audioFile);
-       
-      })
-  }
+      });
+    }
   };
 
   useEffect(() => {
@@ -163,68 +161,75 @@ function CaptureAudio({ hide }: any) {
   const sendRecording = async () => {
     if (!isRecording && recordedStopAudio) {
       try {
-       setloading(true);
-       const formData = new FormData();
-       formData.append("files", recordedStopAudio);
-       formData.append("content", "");
-       formData.append("type", "file");
-       formData.append("chatId", selectedChat?.chatId as any);
-       formData.append("receiverId", selectedChat?.userInfo?._id as any);
+        setloading(true);
+        const formData = new FormData();
+        formData.append("files", recordedStopAudio);
+        formData.append("content", "");
+        formData.append("type", "file");
+        formData.append("chatId", selectedChat?.chatId as any);
+        formData.append("receiverId", selectedChat?.userInfo?._id as any);
 
-       const res = await sentMessage(formData);
-       if (res.status === 200) {
-         setloading(false);
-         hide(false);
-       }
-    } catch (error) {
-       setloading(false);
-    }finally{
-       setloading(false);
-       hide(false);
-    }
+        const res = await sentMessage(formData);
+        if (res.status === 200) {
+          setloading(false);
+          hide(false);
+        }
+      } catch (error) {
+        setloading(false);
+      } finally {
+        setloading(false);
+        hide(false);
+      }
     } else {
-       try {
-         
-         mediaRecorderRef.current.stop();
-         setIsRecording(false);
+      try {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
         //  waveform.stop();
 
-         const audioChunks: any = [];
-         mediaRecorderRef.current.addEventListener("dataavailable", (event: any) => {
-           if (event.data.size > 0) {
-             audioChunks.push(event.data);
-           }
-         });
+        const audioChunks: any = [];
+        mediaRecorderRef.current.addEventListener("dataavailable", (event: any) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        });
 
-         mediaRecorderRef.current.addEventListener("stop", async () => {
-           const audioBlob = new Blob(audioChunks, { type: "audio/mp3" });
-           const audioFile: any = new File([audioBlob], "audio.mp3", {
-             type: "audio/mp3",
-           });
+        mediaRecorderRef.current.addEventListener("stop", async () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/mp3" });
+          const audioFile: any = new File([audioBlob], "audio.mp3", {
+            type: "audio/mp3",
+          });
           //  setRecordedAudio(audioFile);
-setloading(true);
-           const formData = new FormData();
-           formData.append("files", audioFile);
-           formData.append("content", "");
-           formData.append("type", "file");
-           formData.append("chatId", selectedChat?.chatId as any);
-           formData.append("receiverId", selectedChat?.userInfo?._id as any);
-
-           const res = await sentMessage(formData);
-           console.log({res})
-           if (res.message) {
-             setloading(false);
-             hide(false);
-           }
-         });
-       } catch (e) {
-         setloading(false);
-         console.log(e);
-       } finally {
-         setloading(false);
+          setloading(true);
+           const tempMessageId = await updateSenderMessagesUI(
+             currentUser,
+             selectedChat,
+             audioFile,
+             "audio",
+             dispatch
+           );
+          const formData = new FormData();
+         
+          formData.append("files", audioFile);
+          formData.append("content", "");
+          formData.append("type", "file");
+          formData.append("chatId", selectedChat?.chatId as any);
+          formData.append("receiverId", selectedChat?.userInfo?._id as any);
+          formData.append("tempMessageId", tempMessageId as string);
+          hide(false);
+          const res = await sentMessage(formData);
+          if (res.message) {
+            setloading(false);
+            hide(false);
+          }
+        });
+      } catch (e) {
+        setloading(false);
+        console.log(e);
+      } finally {
+        setloading(false);
         //  hide(false);
-       }
-   }
+      }
+    }
   };
   return (
     <div className="flex text-2xl w-full z-50 justify-end items-center">

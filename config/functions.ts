@@ -1,5 +1,5 @@
 import { SET_MESSAGES } from "@/context/reducers/actions";
-import { IChat } from "@/context/reducers/interfaces";
+import { IChat, IMessage } from "@/context/reducers/interfaces";
 import { Tuser } from "@/store/types";
 import { v4 } from "uuid";
 
@@ -21,34 +21,40 @@ export const fileTypeChecker = (file: FileData): string => {
   }
 };
 
-
-
-
-
 //send files and update sender/user ui
 
 interface IMessageData {
-    senderId: string;
-    receiverId: string;
-    chatId: string;
-    content: string;
-    file: { url: string };
-    type: string;
-    image: string;
-    isGroupChat: boolean ;
-    groupChatId: string | null;
-    sender: Tuser;
-    tempMessageId: string
+  senderId: string;
+  receiverId: string;
+  chatId: string;
+  content: string;
+  file: { url: string };
+  type: string;
+  image: string;
+  isGroupChat: boolean;
+  groupChatId: string | null;
+  sender: Tuser;
+  tempMessageId: string;
+  isReply: {
+    messageId: IMessage | null;
+    repliedBy: Tuser | null;
+  } | null;
+  isEdit: {
+    messageId: IMessage | null;
+    editedBy: Tuser | null;
+  } | null;
 }
-export const updateSenderMessagesUI = async(
+export const updateSenderMessagesUI = async (
   currentUser: Tuser | null,
   selectedChat: IChat | null,
   file: File,
   fileType: string,
-  dispatch: (action: any) => void
+  dispatch: (action: any) => void,
+  isReply?: IMessage,
+  isEdit?: IMessage
 ) => {
   if (!currentUser || !selectedChat) return;
-  const  tempMessageId= v4();
+  const tempMessageId = v4();
   const messageData: IMessageData = {
     senderId: currentUser._id,
     receiverId: selectedChat.userInfo._id,
@@ -61,8 +67,12 @@ export const updateSenderMessagesUI = async(
     groupChatId: selectedChat.isGroupChat ? selectedChat.chatId : (null as any),
     sender: currentUser,
     tempMessageId,
+    isReply: isReply?._id ? { messageId: isReply, repliedBy: currentUser } : null,
+    isEdit: isEdit?._id
+      ? { messageId: isEdit, editedBy: currentUser }
+      : null,
   };
 
   dispatch({ type: SET_MESSAGES, payload: messageData });
-  return  tempMessageId 
+  return tempMessageId;
 };

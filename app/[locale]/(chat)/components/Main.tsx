@@ -23,12 +23,12 @@ const Main = () => {
       </div>
       {/* Message */}
       <div className="absolute py-4 bottom-10 w-full z-10">
-        <Messages />
+        {selectedChat && <Messages />}
       </div>
       {/* Inpute */}
       <div className="w-full absolute bottom-0 z-20">
         {" "}
-        <Input />
+        {selectedChat && <Input />}
       </div>
     </div>
   );
