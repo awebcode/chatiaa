@@ -53,7 +53,6 @@ export const getSender = (loggedUser: Tuser | any, users: Tuser[]): string => {
 };
 
 export const getSenderFull = (loggedUser: Tuser | any, users: Tuser[]): Tuser | any => {
-  console.log({loggedUser,users})
   
   if (!loggedUser || !users) {
     return;

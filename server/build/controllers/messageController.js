@@ -437,8 +437,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                             : fileType,
                     tempMessageId,
                 });
-                message = yield message
-                    .populate([
+                message = yield message.populate([
                     {
                         path: "isReply.messageId",
                         select: "content file type",
@@ -448,31 +447,42 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                         path: "isReply.repliedBy",
                         select: "name image email",
                     },
-                ])
-                    .populate("chat");
-                message = yield UserModel_1.User.populate(message, {
-                    path: "chat.users",
-                    select: "name image email",
-                });
+                    // {
+                    //   path: "chat",
+                    // },
+                ]);
+                message = yield UserModel_1.User.populate(message, [
+                    {
+                        path: "chat.users",
+                        select: "name image email",
+                        options: { limit: 10 },
+                    },
+                    {
+                        path: "sender",
+                        select: "name image email",
+                    },
+                ]);
                 // Update latest message for the chat
                 const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, {
                     latestMessage: message,
                 });
                 // Send message to client
+                const emitData = message.toObject();
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    const emitData = message.toObject();
                     yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "replyMessage", chatId, Object.assign(Object.assign({}, emitData), { chat }));
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId)
-                        .emit("replyMessage", Object.assign(Object.assign({}, message), { receiverId }));
+                        .emit("replyMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
                 }
-                return message;
+                return emitData;
             }));
             // Wait for all file uploads to complete
+            // Wait for all file uploads to complete
             yield Promise.all(fileUploadPromises);
-            res.status(200).json({ message: "Reply Message sucessfully" });
+            // Send response only after all file uploads are completed
+            // res.status(200).json({ message: "Replied files send successfully" });
         }
         else {
             message = yield MessageModel_1.Message.create({
@@ -481,6 +491,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 content,
                 type: "text",
                 chat: chatId,
+                tempMessageId: req.body.tempMessageId,
             });
         }
         message = yield MessageModel_1.Message.findOne(message._id)
@@ -577,16 +588,16 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 }
                 const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
                 // Send message to client
+                const emitData = editedChat.toObject();
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    const emitData = editedChat.toObject();
                     yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "editMessage", chatId, emitData);
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId)
-                        .emit("editMessage", Object.assign(Object.assign({}, editedChat), { receiverId }));
+                        .emit("editMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
                 }
-                return editedChat;
+                return emitData;
             }));
             // Wait for all file uploads to complete
             yield Promise.all(fileUploadPromises);
@@ -605,6 +616,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 content,
                 type: "text",
                 file: null,
+                tempMessageId: req.body.tempMessageId,
             }, { new: true })
                 .populate("sender isEdit.editedBy", "name email image")
                 .populate("chat");
@@ -617,8 +629,9 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: editedChat });
         }
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
-        // Send message to client
+        // Send message to cliento
         const emitData = editedChat.toObject();
+        console.log({ tempMessageId: req.body.tempMessageId, editedChat });
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
             yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "editMessage", chatId, emitData);
         }
@@ -638,7 +651,7 @@ exports.editMessage = editMessage;
 //addRemoveEmojiReaction
 const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { messageId, emoji, type, reactionId, receiverId, chatId } = req.body;
+        const { messageId, emoji, type, reactionId, receiverId, chatId, tempReactionId } = req.body;
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
         switch (type) {
             case "add": {
@@ -651,7 +664,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                 });
                 if (existingReaction) {
                     // Emoji update logic
-                    const reaction = yield reactModal_1.Reaction.findOneAndUpdate({ messageId, reactBy: req.id }, { $set: { emoji } }, { new: true, upsert: true }).populate("reactBy", "name email image");
+                    const reaction = yield reactModal_1.Reaction.findOneAndUpdate({ messageId, reactBy: req.id }, { emoji }, { new: true }).populate("reactBy", "name email image");
                     // Send message to client
                     if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                         const emitData = { reaction, type: "update" };
@@ -670,6 +683,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                         messageId,
                         emoji,
                         reactBy: req.id,
+                        tempReactionId,
                     });
                     const reaction = yield react.populate("reactBy", "name email image");
                     // Send message to client

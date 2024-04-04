@@ -1,14 +1,12 @@
 import { Input } from "@/components/ui/input";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { getFilesInChat, getUsersInAChat } from "@/functions/chatActions";
+import {  getUsersInAChat } from "@/functions/chatActions";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
-import React, { useEffect, useMemo, useState } from "react";
+import React, {  useMemo, useState } from "react";
 import Card from "./Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SET_GROUP_USERS_ON_FETCHING } from "@/context/reducers/actions";
-import { Button } from "@/components/ui/button";
 import AddMembers from "./add/AddMembers";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 const Members = () => {
@@ -38,7 +36,6 @@ const Members = () => {
   const users = useMemo(() => {
    return data?.pages.flatMap((page) => page?.users);
   },[data]);
-  console.log({ pages: data?.pages });
   //SET_GROUP_USERS_ON_FETCHING on group
   // useEffect(() => {
   //   if (users) {

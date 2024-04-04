@@ -81,7 +81,7 @@ export default function AudioFile({
     <div className="relative flex items-center gap-2 ">
       {/* Remove/Replay/Emoji */}
       <TooltipWrapper message={message} />
-      <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+      {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
       <RiDownloadCloudFill
         className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
         onClick={() => handleDownload(message?.file?.url)}

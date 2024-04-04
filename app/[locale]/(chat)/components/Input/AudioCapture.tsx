@@ -5,8 +5,10 @@ import WaveSurfer from "wavesurfer.js";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { formatTime } from "@/functions/formatTime";
-import { sentMessage } from "@/functions/messageActions";
+import { editMessage, replyMessage, sentMessage } from "@/functions/messageActions";
 import { updateSenderMessagesUI } from "@/config/functions";
+import useEditReplyStore from "@/store/useEditReply";
+import { IMessage } from "@/context/reducers/interfaces";
 
 function CaptureAudio({ hide }: any) {
   const { selectedChat, user: currentUser } = useMessageState();
@@ -24,7 +26,7 @@ function CaptureAudio({ hide }: any) {
   const audioRef = useRef<HTMLAudioElement | any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | any>(null);
   const waveFormRef = useRef<HTMLDivElement | any>(null);
-
+  const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
   useEffect(() => {
     const waveSurfer = WaveSurfer.create({
       container: waveFormRef.current,
@@ -199,28 +201,58 @@ function CaptureAudio({ hide }: any) {
             type: "audio/mp3",
           });
           //  setRecordedAudio(audioFile);
-          setloading(true);
+         const handleMessageAction = async (
+           formData: FormData,
+           endpoint: (formData: FormData) => Promise<IMessage & { message: string }>
+         ): Promise<void> => {
+           setloading(true);
            const tempMessageId = await updateSenderMessagesUI(
              currentUser,
              selectedChat,
              audioFile,
              "audio",
-             dispatch
+             dispatch,
+             isReply,
+             isEdit
            );
-          const formData = new FormData();
-         
-          formData.append("files", audioFile);
-          formData.append("content", "");
-          formData.append("type", "file");
-          formData.append("chatId", selectedChat?.chatId as any);
-          formData.append("receiverId", selectedChat?.userInfo?._id as any);
-          formData.append("tempMessageId", tempMessageId as string);
-          hide(false);
-          const res = await sentMessage(formData);
-          if (res.message) {
-            setloading(false);
-            hide(false);
+           formData.append("tempMessageId", tempMessageId as string);
+           hide(false);
+           cancelEdit();
+           cancelReply()
+           const res = await endpoint(formData);
+           if (res.message) {
+             setloading(false);
+             hide(false);
+           }
+         };
+
+          if (!isEdit && !isReply) {
+            const formData = new FormData();
+            formData.append("files", audioFile);
+            formData.append("content", "");
+            formData.append("type", "file");
+            formData.append("chatId", selectedChat?.chatId as any);
+            formData.append("receiverId", selectedChat?.userInfo?._id as any);
+            await handleMessageAction(formData, sentMessage);
+          } else if (isReply) {
+            const formData = new FormData();
+            formData.append("messageId", isReply._id);
+            formData.append("files", audioFile);
+            formData.append("type", "file");
+            formData.append("chatId", selectedChat?.chatId as any);
+            formData.append("receiverId", selectedChat?.userInfo?._id as any);
+            await handleMessageAction(formData, replyMessage);
+          } else if (isEdit) {
+            const formData = new FormData();
+            formData.append("messageId", isEdit._id);
+            formData.append("files", audioFile);
+            formData.append("type", "file");
+            formData.append("chatId", selectedChat?.chatId as any);
+            formData.append("receiverId", selectedChat?.userInfo?._id as any);
+            await handleMessageAction(formData, editMessage);
           }
+
+        
         });
       } catch (e) {
         setloading(false);
@@ -232,7 +264,7 @@ function CaptureAudio({ hide }: any) {
     }
   };
   return (
-    <div className="flex text-2xl w-full z-50 justify-end items-center">
+    <div className="flex text-2xl w-full  z-50 justify-end items-center">
       <div className="pt-1">
         <FaTrash
           className="text-xs md:text-sm cursor-pointer"

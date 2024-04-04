@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { HiDotsVertical, HiOutlineEmojiHappy } from "react-icons/hi";
 import { BsReply } from "react-icons/bs";
-import { useClickAway } from "@uidotdev/usehooks";
+
 import useEditReplyStore from "@/store/useEditReply";
 import { IMessage } from "@/context/reducers/interfaces";
 import EditUnModal from "./unedremove/EditUnModal";
 import ReactModal from "./reaction/ReactModal";
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Popover } from "@/components/ui/popover";
+
 const RREsystem = ({
   message,
   isCurrentUserMessage,
@@ -15,19 +15,14 @@ const RREsystem = ({
   message: IMessage;
   isCurrentUserMessage: boolean;
 }) => {
-  const { onReply, onEdit, cancelReply, cancelEdit, isReply, isEdit } =
+  const { onReply, isReply} =
     useEditReplyStore();
-  const [openEdRemoveDialog, setopenEdRemoveDialog] = useState(false);
-  const clickOutsideEdRemoveDialog: any = useClickAway(() => {
-    setopenEdRemoveDialog(false);
-  });
+  
 
   //emoji
   const [isOpenReactModal, setIsOpenReactModal] = useState(false);
 
-  const clickOutsideReactModal: any = useClickAway(() => {
-    setIsOpenReactModal(false);
-  });
+  
   return (
     <div className="">
       <div

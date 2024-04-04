@@ -118,6 +118,7 @@ const ImageFiles = ({
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
            document.getElementById("closeFileDialog")?.click();
            document.getElementById("cameraDialog")?.click();
+             cancelEdit();
         const res = await editMessage(formData);
        if (res.success) {
          setloading(false);
@@ -169,7 +170,8 @@ const ImageFiles = ({
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
            document.getElementById("closeFileDialog")?.click();
-           document.getElementById("cameraDialog")?.click();
+        document.getElementById("cameraDialog")?.click();
+         cancelReply();
         const res = await replyMessage(formData);
         if (res.success) {
           setloading(false);

@@ -71,7 +71,7 @@ const FullScreenPreview = ({ file }: { file: { url: string; type: string } }) =>
             >
               &times;
             </div>
-            <div className="flex gap-2 items-center absolute bottom-0 md:bottom-4 right-4">
+            <div className="flex gap-2 items-center justify-center absolute top-10 md:top-8 left-[50%] right-[50%] translate-x-[-50%] ">
               <Button
                 size={"lg"}
                 className="cursor-pointer bg-blue-500 hover:bg-blue-700"

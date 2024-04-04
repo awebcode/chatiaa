@@ -5,12 +5,14 @@ const EmojiModal = dynamic(() => import("./EmojiModal"));
 import { MdAdd } from "react-icons/md";
 import { useClickAway, useMediaQuery } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { addRemoveEmojiReactions } from "@/functions/messageActions";
-import { EmojiBottomSheet } from "./SheetBottomEmoji";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useTheme } from "next-themes";
+
+import { ADD_REACTION_ON_MESSAGE } from "@/context/reducers/actions";
+import { v4 } from "uuid";
 
 const ReactModal = ({
   message,
@@ -21,24 +23,44 @@ const ReactModal = ({
   message: IMessage;
   isCurrentUserMessage: boolean;
 }) => {
-  const {theme}=useTheme()
+  const dispatch = useMessageDispatch();
+
   //emoji
-  const { selectedChat } = useMessageState();
+  const { selectedChat, user: currentUser } = useMessageState();
   const [isOpenEmojiModal, setIsOpenEmojiModal] = useState(false);
   const clickEmojiOutsideRef: any = useClickAway(() => {
-    setIsOpenEmojiModal(false)
-  })
+    setIsOpenEmojiModal(false);
+  });
   const onEmojiClick = async (
     e: { emoji: string; unified: string },
     messageId: string
   ) => {
+    if(!messageId||!e.emoji)return
+    const tempReactionId = v4();
+    //update sender ui without delay
+    dispatch({
+      type: ADD_REACTION_ON_MESSAGE,
+      payload: {
+        reaction: {
+          emoji: e.emoji,
+          messageId,
+          reactBy: currentUser,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          tempReactionId,
+        },
+        type: "add",
+      },
+    });
     const data = {
       emoji: e.emoji,
       messageId,
       chatId: selectedChat?.chatId,
       receiverId: selectedChat?.userInfo?._id,
       type: "add",
+      tempReactionId,
     };
+
     const res = await addRemoveEmojiReactions(data);
     if (res.success) {
     }
@@ -49,7 +71,6 @@ const ReactModal = ({
       align={isCurrentUserMessage ? "end" : "start"}
       className={`md:absolute md:-top-16 flex justify-center items-center p-2 flex-row-reverse bg-gray-200 dark:bg-gray-800`}
     >
-      
       {["🙂", "😢", "🥰", "😂", "😜"].map((v, i: number) => {
         return (
           <div key={i} className=" flex items-center gap-1">

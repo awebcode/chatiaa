@@ -115,6 +115,10 @@ export default function VoiceMessage ({
             )}
           </div>
           <div className={"relative "}>
+             {/* reply */}
+            <div className="pt-6">
+              <RepliedMessage message={message} currentUser={currentUser as any} />
+            </div>
             <div className={"w-28 md:w-60"} ref={waveformRef}></div>
 
             <div
@@ -125,8 +129,6 @@ export default function VoiceMessage ({
               <span className="text-sm font-medium">
                 {playing ? currentTime : totalTime}
               </span>
-              {/* Reply */}
-              <RepliedMessage message={message} currentUser={currentUser as any} />
               {/* REACTIONS */}
               {message.reactions?.length > 0 && (
                 <DisplayReaction
@@ -143,7 +145,7 @@ export default function VoiceMessage ({
                 isLastSeenMessage={isLastSeenMessage}
                 isUserOnline={isUserOnline}
               />
-              <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+              {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
               <RiDownloadCloudFill
                 className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
                 onClick={() => handleDownload(message?.file?.url)}

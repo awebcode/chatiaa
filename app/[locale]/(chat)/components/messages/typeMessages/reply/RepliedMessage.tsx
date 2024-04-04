@@ -15,7 +15,7 @@ const RepliedMessage = ({
   currentUser: Tuser;
 }) => {
   return (
-    <div>
+    <div className=" w-full">
       {message && message.isReply ? (
         <>
           <div className="p-1  border-l-2 border-violet-600 rounded shadow-md cursor-pointer">

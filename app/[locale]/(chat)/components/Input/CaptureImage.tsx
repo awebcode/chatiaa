@@ -124,7 +124,8 @@ const ImageCapture: React.FC = () => {
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
-          document.getElementById("closeFileDialog")?.click();
+        document.getElementById("closeFileDialog")?.click();
+         cancelEdit();
         const res = await editMessage(formData);
         if (res.success) {
           document.getElementById("closeFileDialog")?.click();
@@ -173,7 +174,8 @@ const ImageCapture: React.FC = () => {
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
-          document.getElementById("closeFileDialog")?.click();
+        document.getElementById("closeFileDialog")?.click();
+         cancelReply();
         const res = await replyMessage(formData);
         if (res.success) {
           document.getElementById("closeFileDialog")?.click();

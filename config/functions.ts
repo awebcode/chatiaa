@@ -17,7 +17,7 @@ export const fileTypeChecker = (file: FileData): string => {
   } else if (file.type.startsWith("application/")) {
     return "application";
   } else {
-    return ""; // Handle other types if needed
+    return "text"; // Handle other types if needed
   }
 };
 
@@ -28,7 +28,7 @@ interface IMessageData {
   receiverId: string;
   chatId: string;
   content: string;
-  file: { url: string };
+  file: { url: string } | null;
   type: string;
   image: string;
   isGroupChat: boolean;
@@ -47,11 +47,11 @@ interface IMessageData {
 export const updateSenderMessagesUI = async (
   currentUser: Tuser | null,
   selectedChat: IChat | null,
-  file: File,
+  file: File | null,
   fileType: string,
   dispatch: (action: any) => void,
-  isReply?: IMessage,
-  isEdit?: IMessage
+  isReply?: IMessage | null,
+  isEdit?: IMessage | null
 ) => {
   if (!currentUser || !selectedChat) return;
   const tempMessageId = v4();
@@ -60,19 +60,23 @@ export const updateSenderMessagesUI = async (
     receiverId: selectedChat.userInfo._id,
     chatId: selectedChat.chatId as any,
     content: "",
-    file: { url: URL.createObjectURL(file) },
-    type: fileType,
+    file: file ? { url: URL.createObjectURL(file) } : null,
+    type: fileType || "text",
     image: currentUser.image,
     isGroupChat: selectedChat.isGroupChat || false,
     groupChatId: selectedChat.isGroupChat ? selectedChat.chatId : (null as any),
     sender: currentUser,
     tempMessageId,
-    isReply: isReply?._id ? { messageId: isReply, repliedBy: currentUser } : null,
-    isEdit: isEdit?._id
-      ? { messageId: isEdit, editedBy: currentUser }
-      : null,
+    isReply: isReply?._id ? { messageId: isReply , repliedBy: currentUser } : null,
+    isEdit: isEdit?._id ? { messageId: isEdit, editedBy: currentUser } : null,
   };
-
-  dispatch({ type: SET_MESSAGES, payload: messageData });
+  // console.log({isEdit,isReply})
+  dispatch({
+    type: SET_MESSAGES,
+    payload: {
+      ...messageData,
+      addMessageType: isReply ? "replyMessage" : isEdit ? "editMessage" : "text",
+    },
+  });
   return tempMessageId;
 };

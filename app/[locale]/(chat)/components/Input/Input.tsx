@@ -3,22 +3,23 @@ import { CiMicrophoneOn } from "react-icons/ci";
 import { AiOutlineSmile } from "react-icons/ai"; // Emoji icon
 import { MdSend } from "react-icons/md"; // Send icon
 import dynamic from "next/dynamic";
-
-const CaptureAudio = dynamic(() => import("./AudioCapture"));
-const ImageCapture = dynamic(() => import("./CaptureImage"));
+import { TbClockEdit } from "react-icons/tb";
+// const CaptureAudio = dynamic(() => import("./AudioCapture"));
+// const ImageCapture = dynamic(() => import("./CaptureImage"));
+import CaptureAudio from "./AudioCapture";
+import ImageCapture from "./CaptureImage";
 
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
-import { useTypingStore } from "@/store/useTyping";
 import useEditReplyStore from "@/store/useEditReply";
 import { useClickAway } from "@uidotdev/usehooks";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { useQueryClient } from "@tanstack/react-query";
-import TypingIndicator from "../TypingIndicator";
 import { editMessage, replyMessage } from "@/functions/messageActions";
-import { SET_MESSAGES } from "@/context/reducers/actions";
+import { ADD_REPLY_MESSAGE, SET_MESSAGES } from "@/context/reducers/actions";
 import { v4 } from "uuid";
+import { updateSenderMessagesUI } from "@/config/functions";
+import { FaReply } from "react-icons/fa";
 
 const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"));
 const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"));
@@ -119,7 +120,7 @@ const Input = () => {
       groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
       sender: currentUser,
       // chat:selectedChat,
-      tempMessageId:v4() ///for update sender ui instantly 
+      tempMessageId: v4(), ///for update sender ui instantly
     };
     dispatch({ type: SET_MESSAGES, payload: socketData });
     socket.emit("sentMessage", socketData);
@@ -130,11 +131,24 @@ const Input = () => {
     if (!selectedChat?.chatId && !isEdit) {
       return;
     }
+    const tempMessageId = await updateSenderMessagesUI(
+      currentUser,
+      selectedChat,
+      null,
+      "text",
+      dispatch,
+      null,
+      {...isEdit,content:message} as any
+    );
+    console.log({isEdit,isReply})
     const formData = new FormData();
+    formData.append("tempMessageId", tempMessageId as string);
     formData.append("messageId", isEdit?._id as any);
     formData.append("content", message);
     formData.append("chatId", selectedChat?.chatId as any);
     formData.append("receiverId", selectedChat?.userInfo?._id as any);
+    cancelEdit();
+    setMessage("");
     const res = await editMessage(formData);
     if (res.success) {
       cancelEdit();
@@ -146,11 +160,32 @@ const Input = () => {
     if (!selectedChat?.chatId && !isReply) {
       return;
     }
+    const tempMessageId = v4()
+    const dispatchData = {
+      senderId: currentUser?._id,
+      receiverId: selectedChat?.userInfo._id,
+      chatId: selectedChat?.chatId,
+      content: message,
+      type: "text",
+      image: currentUser?.image,
+      isGroupChat: selectedChat?.isGroupChat,
+      groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
+      sender: currentUser,
+      isReply: { ...isReply, repliedBy: currentUser, messageId:isReply },
+      // chat:selectedChat,
+      tempMessageId, ///for update sender ui instantly
+    };
+    dispatch({ type: ADD_REPLY_MESSAGE, payload: dispatchData });
     const formData = new FormData();
-    formData.append("messageId", isReply?._id as any);
+    formData.append("tempMessageId", tempMessageId as string);
+    formData.append("messageId", isReply?._id as string);
     formData.append("content", message);
-    formData.append("chatId", selectedChat?.chatId as any);
-    formData.append("receiverId", selectedChat?.userInfo?._id as any);
+    formData.append("chatId", selectedChat?.chatId as string);
+    formData.append("receiverId", selectedChat?.userInfo?._id as string);
+
+    cancelReply();
+    setMessage("");
+
     const res = await replyMessage(formData);
     if (res.success) {
       cancelReply();
@@ -183,9 +218,12 @@ const Input = () => {
   }, [isReply]);
   if (audioRecorder) {
     return (
-      <div className="w-full bg-gray-100 h-12 dark:bg-gray-800 rounded p-2 flex items-center justify-center">
-        <CaptureAudio hide={setAudioRecorder} />
-      </div>
+      <>
+        <EdRePreview setMessage={setMessage} />{" "}
+        <div className="w-full bg-gray-100 h-full dark:bg-gray-800 rounded p-5 flex items-center justify-center">
+          <CaptureAudio hide={setAudioRecorder} />
+        </div>
+      </>
     );
   }
   if (selectedChat?.chatBlockedBy && selectedChat?.chatBlockedBy?.length > 0) {
@@ -220,13 +258,13 @@ const Input = () => {
           <div className="p-1">
             {/* Right side icon */}
             {isReply ? (
-              <MdSend
+              <FaReply
                 className="text-blue-600 cursor-pointer"
                 size={20}
                 onClick={() => replySubmit()}
               />
             ) : isEdit ? (
-              <MdSend
+              <TbClockEdit
                 className="text-blue-600 cursor-pointer"
                 size={20}
                 onClick={() => editSubmit()}

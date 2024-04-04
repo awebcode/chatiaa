@@ -43,6 +43,10 @@ function PdfMessage({
           }`}
         >
           <div className={"relative"}>
+            {/* reply */}
+            <div className="pt-6">
+              <RepliedMessage message={message} currentUser={currentUser as any} />
+            </div>
             <div className="h-20 w-40">
               {" "}
               <span className="flex">
@@ -55,8 +59,7 @@ function PdfMessage({
                 onClick={() => handleDownload(message?.file?.url)}
               />
             </div>
-            {/* Reply */}
-            <RepliedMessage message={message} currentUser={currentUser as any} />
+           
             {/* REACTIONS */}
             {message.reactions?.length > 0 && (
               <DisplayReaction

@@ -8,6 +8,7 @@ exports.Reaction = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 // Create a Mongoose Schema for Reactions
 const reactionSchema = new mongoose_1.default.Schema({
+    tempReactionId: String,
     emoji: { type: String, required: true }, // Emoji associated with the reaction
     reactBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User", required: true }, // User who reacted
     messageId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "Message", required: true }, // Reference to the reacted message

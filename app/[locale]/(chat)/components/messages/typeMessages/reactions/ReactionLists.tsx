@@ -32,7 +32,7 @@ const ReactionLists = ({
   isCurrentUserMessage: boolean;
   isOpenReactionListModal: boolean;
   setIsOpenReactionListModal: Dispatch<boolean>;
-  handleRemoveReact: (messageId: string, reactionId: string) => void;
+  handleRemoveReact: (messageId: string, reactionId: string,emoji:string) => void;
   reactionsGroup: ReactionGroup[];
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
@@ -45,18 +45,18 @@ const ReactionLists = ({
   useEffect(() => {
     setData(message.reactions);
   }, []);
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await axiosClient.get(
-        `/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
-        { withCredentials:true }
-      );
-      setData(data as any);
-    };
-    if (messageId !== "" && page === 1) {
-      fetchData();
-    }
-  }, [activeTab, messageId]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const data = await axiosClient.get(
+  //       `/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
+  //       { withCredentials:true }
+  //     );
+  //     setData(data?.data as any);
+  //   };
+  //   if (messageId !== "" && page === 1) {
+  //     fetchData();
+  //   }
+  // }, [activeTab, messageId]);
   useEffect(() => {
     const fetchData = async () => {
        const data = await axiosClient.get(
@@ -100,6 +100,7 @@ const ReactionLists = ({
 
     container?.scrollTo({ top: 0, behavior: "smooth" });
   };
+
   return (
     <PopoverContent
       align={isCurrentUserMessage ? "end" : "start"}
@@ -109,7 +110,11 @@ const ReactionLists = ({
       <PopoverClose className="float-right">
         <MdClose />
       </PopoverClose>
-      <PopoverArrow fill={theme === "dark" ? "#1f2937" : "#e5e7eb"} height={12} width={12}/>
+      <PopoverArrow
+        fill={theme === "dark" ? "#1f2937" : "#e5e7eb"}
+        height={12}
+        width={12}
+      />
 
       <h1 className="text-xs md:text-sm p-3 border-b-2 mb-6 border-violet-600">
         Reactions ({message.totalReactions})
@@ -182,7 +187,7 @@ const ReactionLists = ({
           scrollThreshold={1}
         >
           <div className="flex flex-col  gap-y-2 w-full">
-            {data?.map((reaction, i) => {
+            {data?.length>0&&data?.map((reaction, i) => {
               return (
                 <Card
                   key={reaction._id + Date.now() + Math.random() * 1000}

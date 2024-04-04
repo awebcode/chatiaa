@@ -19,7 +19,6 @@ const emitEventToGroupUsers = (io, event, chatId, data) => __awaiter(void 0, voi
     const chatUsers = yield ChatModel_1.Chat.findById(chatId);
     chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((chatUserId) => __awaiter(void 0, void 0, void 0, function* () {
         const receiverId = yield (0, __1.getSocketConnectedUser)(chatUserId.toString());
-        console.log({ data });
         if (receiverId) {
             const { userId, socketId } = receiverId;
             const id = userId.toString();

@@ -329,13 +329,19 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   // Reply Message Handler
   const handleReplyMessage = useCallback((message: any) => {
     // Implementation for handling replyMessage event
-    dispatch({ type: ADD_REPLY_MESSAGE, payload: message });
+    dispatch({
+      type: ADD_REPLY_MESSAGE,
+      payload: { ...message, addMessageType: "replyMessage" },
+    }); //ADD_REPLY_MESSAGE
   }, []);
 
   // Edit Message Handler
   const handleEditMessage = useCallback((message: any) => {
     // Implementation for handling editMessage event
-    dispatch({ type: ADD_EDITED_MESSAGE, payload: message });
+    dispatch({
+      type: SET_MESSAGES,
+      payload: { ...message, addMessageType: "editSocketMessage" },
+    }); //ADD_EDITED_MESSAGE
   }, []);
 
   // Add Reaction on Message Handler

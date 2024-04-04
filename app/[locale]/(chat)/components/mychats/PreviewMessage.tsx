@@ -11,7 +11,9 @@ export function MessagePreview({
 }: {
   chat: IChat;
   currentUser: Tuser;
-}) {
+  }) {
+   const isCurrentUserSender =
+    chat?.latestMessage?.sender?._id === currentUser?._id
   const senderName =
     chat?.latestMessage?.sender?._id === currentUser?._id
       ? "You"
@@ -20,7 +22,7 @@ export function MessagePreview({
   switch (chat?.latestMessage?.type) {
     case "image":
       previewContent = (
-        <span className={`${!chat?.latestMessage?.isSeen ? "font-bold" : ""}`}>
+        <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
           {senderName} sent an{" "}
           <CiImageOn className="text-blue-500 text-lg inline mx-[1px]" />
           image
@@ -29,7 +31,7 @@ export function MessagePreview({
       break;
     case "audio":
       previewContent = (
-        <span className={`${!chat?.latestMessage?.isSeen ? "font-bold" : ""}`}>
+        <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
           {senderName} sent an{" "}
           <AiOutlineAudio className="text-blue-500 text-lg inline mx-[1px]" /> audio
         </span>
@@ -37,7 +39,7 @@ export function MessagePreview({
       break;
     case "video":
       previewContent = (
-        <span className={`${!chat?.latestMessage?.isSeen ? "font-bold" : ""}`}>
+        <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
           {senderName} sent a{" "}
           <MdOutlineOndemandVideo className="text-blue-500 text-lg inline mx-[1px]" />{" "}
           video
@@ -46,7 +48,7 @@ export function MessagePreview({
       break;
     case "application":
       previewContent = (
-        <span className={`${!chat?.latestMessage?.isSeen ? "font-bold" : ""}`}>
+        <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
           {senderName} sent a{" "}
           <PiFilePdf className="text-blue-500 text-lg inline mx-[1px]" /> Pdf file
         </span>
@@ -58,7 +60,7 @@ export function MessagePreview({
           <span
             className={`${
               chat.isGroupChat&&chat?.latestMessage?.content &&
-              !chat?.latestMessage?.isSeen &&
+              !chat?.latestMessage?.isSeen&&!isCurrentUserSender &&
               chat?.latestMessage?.sender?._id !== currentUser?._id
                 ? "font-bold"
                 :chat?.latestMessage?.status !== "seen"? "font-bold":""

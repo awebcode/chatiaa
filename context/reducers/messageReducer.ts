@@ -366,21 +366,46 @@ export const messageReducer = (state: State, action: Action): State => {
       if (Array.isArray(action.payload)) {
         updatedMessages = [...state.messages, ...action.payload];
       } else {
-     const existingMessageIndex = state.messages.findIndex(
-       (m) => m.tempMessageId === action.payload.tempMessageId
-     );
-     console.log({existingMessageIndex})
+        const existingMessageIndex = state.messages.findIndex((m) => {
+          if (m.tempMessageId === action.payload.tempMessageId) {
+            return true;
+          }
+          if (action.payload.isEdit && m._id === action.payload.isEdit?.messageId?._id) {
+            return true;
+          }
 
-     if (existingMessageIndex !== -1) {
-       // Update the existing message
-       updatedMessages = [...state.messages];
-       updatedMessages[existingMessageIndex] = action.payload;
-     } else {
-       // Add the new message to the messages array
-       updatedMessages = [action.payload, ...state.messages];
-     }
+          return m._id === action.payload._id;
+        });
+
+        if (existingMessageIndex !== -1) {
+          // Update the existing message
+          updatedMessages = [...state.messages];
+          const { isEdit, file, content, createdAt } = action.payload;
+          if (
+            ["editMessage", "editSocketMessage"].includes(action.payload.addMessageType)
+          ) {
+            //add editmessage
+            updatedMessages[existingMessageIndex] = {
+              ...updatedMessages[existingMessageIndex],
+              isEdit,
+              file,
+              content:
+                action.payload.addMessageType === "editSocketMessage"
+                  ? content
+                  : isEdit.messageId.content,
+              createdAt,
+            };
+          } else {
+            updatedMessages[existingMessageIndex] = action.payload;
+          }
+        } else {
+          // Add the new message to the messages array
+          if (action.payload.addMessageType !== "editMessage") {
+            updatedMessages = [action.payload, ...state.messages];
+          } //
+        }
       }
-      return { ...state, messages: updatedMessages };
+      return { ...state, messages: updatedMessages as any };
     case SET_TOTAL_MESSAGES_COUNT:
       return {
         ...state,
@@ -410,8 +435,6 @@ export const messageReducer = (state: State, action: Action): State => {
       };
 
     case UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND:
-      console.log({ UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND: state?.chats });
-
       return {
         ...state,
         // Update messages array to replace the existing message with the edited one
@@ -431,11 +454,27 @@ export const messageReducer = (state: State, action: Action): State => {
       };
 
     case ADD_REPLY_MESSAGE:
+      const existingMessageIndex = state.messages.findIndex((m) => {
+        return m.tempMessageId === action.payload.tempMessageId;
+      });
+
+      let updatedReplyMessages;
+        console.log({replyaction:action.payload})
+
+      if (existingMessageIndex !== -1) {
+        // If the message exists, update it
+        updatedReplyMessages = [...state.messages];
+        updatedReplyMessages[existingMessageIndex] = action.payload;
+      } else {
+        // If the message doesn't exist, prepend the new reply message to the messages array
+        updatedReplyMessages = [action.payload, ...state.messages];
+      }
+
       return {
         ...state,
-        // Update messages array to include the new reply message
-        messages: [action.payload, ...state.messages],
+        messages: updatedReplyMessages,
       };
+
     // Handle adding edited message
     case ADD_EDITED_MESSAGE:
       return {
@@ -448,17 +487,27 @@ export const messageReducer = (state: State, action: Action): State => {
 
     //reaction add/remove/update handler
     case ADD_REACTION_ON_MESSAGE:
+      console.log({ actionPayloadReact: action.payload });
       return {
         ...state,
         // Update messages array based on message type
         messages: state.messages.map((message) => {
-          if (message._id === action.payload.reaction.messageId) {
+          if (message._id === action.payload.reaction?.messageId) {
             // If the message ID matches, update the reactions
             const updatedReactions = Array.isArray(message.reactions)
               ? [...message.reactions]
               : [];
-            if (action.payload.type === "add") {
-              updatedReactions.unshift(action.payload.reaction); // Add the new reaction to the beginning of the array
+
+            let totalReactions = message.totalReactions || 1;
+            const existingReactionIndex = updatedReactions.findIndex(
+              (m) => m.tempReactionId === action.payload.reaction.tempReactionId
+            );
+            if (
+              action.payload.type === "add" &&
+              !updatedReactions.some(
+                (u) => u.reactBy._id === action.payload.reaction.reactBy._id
+              )
+            ) {
               let updatedReactionsGroup = Array.isArray(message.reactionsGroup)
                 ? [...message.reactionsGroup]
                 : [];
@@ -472,23 +521,43 @@ export const messageReducer = (state: State, action: Action): State => {
                 // If the emoji already exists, increment its count
                 updatedReactionsGroup[emojiIndex] = {
                   ...updatedReactionsGroup[emojiIndex],
-                  count: updatedReactionsGroup[emojiIndex].count + 1,
+                  count:
+                    existingReactionIndex !== -1
+                      ? updatedReactionsGroup[emojiIndex].count
+                      : updatedReactionsGroup[emojiIndex].count + 1,
                 };
               } else {
                 // If the emoji doesn't exist, add a new entry
-                updatedReactionsGroup.push({
-                  _id: action.payload.reaction.emoji,
-                  count: 1,
-                });
+                if (
+                  !updatedReactions.some(
+                    (u) => u.reactBy._id === action.payload.reaction.reactBy._id
+                  )
+                ) {
+                  updatedReactionsGroup.push({
+                    _id: action.payload.reaction.emoji,
+                    count: 1,
+                  });
+                }
               }
-
+              //updatedReactions
+              if (existingReactionIndex !== -1) {
+                updatedReactions[existingReactionIndex] = action.payload.reaction; // just update when id available bcz previously sender updated ui
+              } else {
+                totalReactions + 1;
+                updatedReactions.unshift(action.payload.reaction);
+              } // Add the new reaction to the beginning of the array}
               return {
                 ...message,
-                totalReactions: message.totalReactions + 1,
+                totalReactions,
                 reactions: updatedReactions,
                 reactionsGroup: updatedReactionsGroup,
               };
-            } else if (action.payload.type === "update") {
+            } else if (
+              action.payload.type === "update" ||
+              updatedReactions.some(
+                (u) => u.reactBy._id === action.payload.reaction.reactBy._id
+              )
+            ) {
               // For update type, replace the existing reaction with the updated one
               const updatedReactions = message.reactions.map((reaction) =>
                 reaction._id === action.payload.reaction._id
@@ -559,7 +628,7 @@ export const messageReducer = (state: State, action: Action): State => {
               }
               return {
                 ...message,
-                totalReactions: message.totalReactions - 1,
+                totalReactions: totalReactions - 1,
                 reactions: updatedReactions,
                 reactionsGroup: updatedReactionsGroup as any,
               };
@@ -774,7 +843,6 @@ export const messageReducer = (state: State, action: Action): State => {
         ...state,
         chats: state.chats.map((chat) => {
           if (chat._id === action.payload.chatId) {
-           
             return {
               ...chat,
               onCallMembers:

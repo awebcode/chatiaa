@@ -14,6 +14,8 @@ export type Tuser = {
 
 export type Reaction = {
   _id: string;
+  tempReactionId: string;
+
   emoji: string;
   reactBy: Tuser;
 

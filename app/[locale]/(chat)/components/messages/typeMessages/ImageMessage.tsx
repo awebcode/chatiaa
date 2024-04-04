@@ -39,38 +39,41 @@ function ImageMessage({
               : "dark:bg-outgoing-background rounded-br-3xl bg-gray-300"
           }`}
         >
-          <div className={"relative"}>
-            <Image
-              src={`${message.file.url}`}
-              alt={"Unknown file"}
-              className={"rounded-lg w-auto h-auto"}
-              height={300}
-              width={300}
-              loading="lazy"
-            />
-            <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
-            <RiDownloadCloudFill
-              className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
-              onClick={() => handleDownload(message?.file?.url)}
-            />
-            {/* Reply */}
-            <RepliedMessage message={message} currentUser={currentUser as any} />
-            {/* REACTIONS */}
-            {message.reactions?.length > 0 && (
-              <DisplayReaction
-                message={message}
-                reactions={message.reactions}
-                isCurrentUserMessage={isCurrentUserMessage}
-                reactionsGroup={message.reactionsGroup}
+          <div className={""}>
+            <div className={"relative"}>
+              {/* Reply */}
+              <div className="pt-6"><RepliedMessage message={message} currentUser={currentUser as any} /></div>
+              <Image
+                src={`${message.file.url}`}
+                alt={"Unknown file"}
+                className={"rounded-lg w-auto h-auto"}
+                height={300}
+                width={300}
+                loading="lazy"
               />
-            )}
-            {/* message status */}
-            <Status
-              isCurrentUserMessage={isCurrentUserMessage}
-              message={message}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
-            />
+              <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+              <RiDownloadCloudFill
+                className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+                onClick={() => handleDownload(message?.file?.url)}
+              />
+
+              {/* REACTIONS */}
+              {message.reactions?.length > 0 && (
+                <DisplayReaction
+                  message={message}
+                  reactions={message.reactions}
+                  isCurrentUserMessage={isCurrentUserMessage}
+                  reactionsGroup={message.reactionsGroup}
+                />
+              )}
+              {/* message status */}
+              <Status
+                isCurrentUserMessage={isCurrentUserMessage}
+                message={message}
+                isLastSeenMessage={isLastSeenMessage}
+                isUserOnline={isUserOnline}
+              />
+            </div>
           </div>
         </div>
       </div>

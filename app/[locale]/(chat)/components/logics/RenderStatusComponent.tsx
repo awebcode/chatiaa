@@ -69,14 +69,17 @@ export const RenderStatus = (
     default:
       !message._id && message.type === "text" //when message instanly update sender side without server response
         ? (statusDiv = (
-            <div className="h-5 w-5 relative">
-              <RxTimer className="h-5 w-5 text-gray-500 rounded-full relative" />
+            // <div className="h-5 w-5 relative">
+            //   <RxTimer className="h-5 w-5 text-gray-500 rounded-full relative" />
+            // </div>
+            <div className="h-5 w-5 relative ">
+              <BiLoaderCircle className="animate-spin h-5 w-5 text-blue-600 rounded-full relative" />
             </div>
           ))
         : !message._id && message.type !== "text"
         ? (statusDiv = (
             <div className="h-6 w-6 relative ">
-              <BiLoaderCircle className="animate-spin h-6 w-6 text-blue-600 rounded-full relative"/>
+              <BiLoaderCircle className="animate-spin h-6 w-6 text-blue-600 rounded-full relative" />
             </div>
           ))
         : null;
