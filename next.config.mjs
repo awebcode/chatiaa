@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 import nextIntl from "next-intl/plugin";
-import nodeExternals from "webpack-node-externals"
 const withNextIntl = nextIntl();
 
 const nextConfig = {
@@ -21,6 +20,17 @@ const nextConfig = {
       test: /\.node/,
       use: "raw-loader",
     });
+    config.module.rules.push({
+       test: /\.(mp3)$/,
+       use: {
+         loader: "file-loader",
+         options: {
+           name: "[name].[ext]",
+           publicPath: "/_next/static/sounds/",
+           outputPath: "static/sounds/",
+         },
+       },
+     });
     return config;
   },
 };
