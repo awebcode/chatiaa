@@ -369,9 +369,9 @@ export const updateUser = async (
         // Delete the image from Cloudinary using the public_id
         await v2.uploader.destroy(publicId);
       }
-
       const cloudinaryResponse = await v2.uploader.upload(req.file.path, {
         folder: "messengaria",
+      
       });
 
       imageUpdate = cloudinaryResponse.secure_url;

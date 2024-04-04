@@ -5,6 +5,11 @@ const cloudinaryConfig = () => {
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET,
+    enhance_image_tag: true,
+
+    static_image_support: false,
+
+    secure: true,
   });
 };
 
