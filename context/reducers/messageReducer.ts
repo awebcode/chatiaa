@@ -376,7 +376,7 @@ export const messageReducer = (state: State, action: Action): State => {
 
           return m._id === action.payload._id;
         });
-         console.log({payload:action.payload})
+        //  console.log({payload:action.payload})
         if (existingMessageIndex !== -1) {
           // Update the existing message
           updatedMessages = [...state.messages];
