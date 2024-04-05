@@ -1,16 +1,15 @@
-// import React from "react";
-// import PrefetchMessages from "../../components/messages/PrefetchMessages";
-// import ChatHeader from "../../components/chatheader/ChatHeader";
-// import Input from "../../components/Input/Input";
+import React from "react";
 
-// const page = ({ params }: { params: { chatId: string } }) => {
-//   return (
-//       <div>
-//           {/* <ChatHeader/> */}
-//           <PrefetchMessages chatId={params.chatId} />
-//           <Input/>
-//     </div>
-//   );
-// };
+const page = ({ params }: { params: { chatId: string } }) => {
+  return (
+    <div>
+      {/* <ChatHeader/> */}
+      {/* <PrefetchMessages chatId={params.chatId} />
+          <Input/> */}
 
-// export default page;
+      <h1>Waiting for next update!</h1>
+    </div>
+  );
+};
+
+export default page;
