@@ -29,14 +29,15 @@ const ChatHeader = () => {
 
  
 
-  const clearselectedChat = () => {
-    router.back()
-
+  const clearselectedChat = async() => {
+    window.history.pushState(null, "", "/chat");
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat")
+    //  await router.replace("/chat")
+
   };
-  // if (!selectedChat) return;
+  if (!selectedChat) return;
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
       <div className="flex items-center gap-2">

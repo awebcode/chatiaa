@@ -25,7 +25,6 @@ export default function Messages({ chatId }: { chatId: string }) {
   const router = useRouter();
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const { isIncomingMessage } = useIncomingMessageStore();
   const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
   const prevMessageRef = useRef(0);
@@ -119,6 +118,8 @@ export default function Messages({ chatId }: { chatId: string }) {
        router.push("/chat");
      }
    }, [roomId]);
+  
+   
   // console.log({messages})
   return (
     <div
@@ -183,12 +184,13 @@ export default function Messages({ chatId }: { chatId: string }) {
 
         {selectedChat &&
           !isLoading &&
+          !isFetching&&
           totalMessagesCount > 0 &&
           totalMessagesCount === messages?.length && (
             <NoChatProfile selectedChat={selectedChat as any} />
           )}
         {/* when selectedChat have no chat */}
-        {selectedChat&&messages.length === 0 && !isLoading && (
+        {selectedChat&&!isLoading&& !isFetching && data?.pages[0]?.total === 0 &&  (
           <NoChatProfile selectedChat={selectedChat as any} />
         )}
         <div
