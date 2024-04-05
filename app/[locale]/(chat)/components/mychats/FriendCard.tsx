@@ -187,7 +187,7 @@ const FriendsCard: React.FC<{
                   ? getSenderFull(currentUser, chat.users)?.image
                   : (chat as any)?.image?.url || "/vercel.svg"
               }
-              loading="lazy"
+              // loading="lazy"
             />
 
             <span
