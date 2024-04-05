@@ -164,8 +164,9 @@ const Login = () => {
               </svg>
               <span>
                 {loading ? (
-                  <div className="flex justify-center items-center mt-6 ">
-                    <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />signing...
+                  <div className="flex items-center gap-x-1">
+                    <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
+                    signing...
                   </div>
                 ) : (
                   "Login"
