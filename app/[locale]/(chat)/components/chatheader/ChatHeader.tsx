@@ -30,12 +30,12 @@ const ChatHeader = () => {
  
 
   const clearselectedChat = () => {
+    router.push(`/chat`)
+
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
-    router.replace(`/chat`)
     localStorage.removeItem("selectedChat")
   };
-  console.log({selectedChat})
   // if (!selectedChat) return;
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">

@@ -98,9 +98,10 @@ const FriendsCard: React.FC<{
       isOnline: chat?.isOnline,
       onCallMembers: chat?.onCallMembers,
     };
+    router.push(`?chatId=${chat?._id}`);
+
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
-    router.prefetch(`?chatId=${chat?._id}`);
 
 
     // if (chat.isGroupChat) {
@@ -247,7 +248,8 @@ const FriendsCard: React.FC<{
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
               {!chat?.isOnline && !chat?.isGroupChat && (
-                <span className="text-[8px] md:text-[10px]  font-thin block  md:ml-2 md:flex gap-x-1">
+                <span className="text-[8px] md:text-[10px]  font-thin block  md:ml-2 md:inline ">
+                 <span className="mr-1">last active</span>
                   {moment(getSenderFull(currentUser, chat.users)?.lastActive).fromNow()}
                 </span>
               )}
