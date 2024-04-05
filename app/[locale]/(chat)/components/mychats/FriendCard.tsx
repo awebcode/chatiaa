@@ -99,7 +99,7 @@ const FriendsCard: React.FC<{
       onCallMembers: chat?.onCallMembers,
     };
     router.push(`?chatId=${chat?._id}`);
-
+// router.replace
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
 

@@ -30,7 +30,7 @@ const ChatHeader = () => {
  
 
   const clearselectedChat = () => {
-    router.push(`/chat`)
+    router.back()
 
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
