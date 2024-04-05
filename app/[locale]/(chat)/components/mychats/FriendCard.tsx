@@ -245,8 +245,8 @@ const FriendsCard: React.FC<{
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
               {!chat?.isOnline && !chat?.isGroupChat && (
-                <span className="text-[8px] md:text-[10px]  font-thin block md:inline md:ml-2">
-                  LastActive:
+                <span className="text-[8px] md:text-[10px]  font-thin block  md:ml-2 md:flex gap-x-1">
+                 
                   {moment(getSenderFull(currentUser, chat.users)?.lastActive).fromNow()}
                 </span>
               )}

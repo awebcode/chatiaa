@@ -137,7 +137,7 @@ export default function Messages({ chatId }: { chatId: string }) {
         endMessage={
           !isLoading && (
             <div className="text-center text-2xl text-green-400 pt-10">
-              You have viewed all messages!
+              {/* You have viewed all messages! */}
             </div>
           )
         }
