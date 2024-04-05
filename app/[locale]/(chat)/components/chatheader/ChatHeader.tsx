@@ -1,10 +1,8 @@
 "use client";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import Image from "next/image";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { BsThreeDots } from "react-icons/bs";
-import { useClickAway } from "@uidotdev/usehooks";
 import { MdCall, MdVideoCall } from "react-icons/md";
 import dynamic from "next/dynamic";
 import { useRouter } from "@/navigation";
@@ -12,8 +10,6 @@ import moment from "moment";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import {
   CLEAR_MESSAGES,
-  SENT_CALL_INVITATION,
-  SET_MESSAGES,
   SET_SELECTED_CHAT,
 } from "@/context/reducers/actions";
 import { useTypingStore } from "@/store/useTyping";
@@ -25,55 +21,22 @@ const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"));
 
 const ChatHeader = () => {
   const { socket } = useSocketContext();
-  const router = useRouter();
+  const router = useRouter()
   const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
-  const { onlineUsers } = useOnlineUsersStore();
   const { typingUsers } = useTypingStore();
-  const [open, setOpen] = useState(false);
-  const [openVideoCall, setOpenVideoCall] = useState(false);
-  const isUserOnline = onlineUsers.some((u) =>
-    selectedChat?.isGroupChat
-      ? selectedChat?.users.some(
-          (user: any) => user._id === u.userId && user._id !== currentUser?._id
-        )
-      : selectedChat?.userInfo?._id === u.userId
-  );
+  const isUserOnline = selectedChat?.isOnline as boolean
 
-  const videoCallModalRef: any = useClickAway(() => {
-    setOpenVideoCall(false);
-  });
+ 
 
   const clearselectedChat = () => {
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
+    router.replace(`/chat`)
+    localStorage.removeItem("selectedChat")
   };
-  //call
-
-  //handle send call
-  // function handleSendCall(callType: any) {
-  //  const callData = {
-  //    sender: currentUser,
-  //    isGroupChat: selectedChat?.isGroupChat,
-  //    groupInfo:{image:selectedChat?.groupInfo?.image?.url,groupName:selectedChat?.chatName},
-  //    chatId: selectedChat?.chatId,
-  //    receiver: selectedChat?.userInfo,
-  //  };
-  //   // router.push(`/call/${selectedChat?.chatId}`);
-  //   dispatch({type:SENT_CALL_INVITATION,payload:callData})
-  //   socket.emit("sent_call_invitation", callData);
-
-  //    socket.emit("user-on-call-message", {
-  //      message: `${
-  //        currentUser?.name +
-  //        `📱 Was started a ${selectedChat?.isGroupChat ? "room call" : "call"} `
-  //      }`,
-  //      chatId: selectedChat?.chatId,
-  //      user: currentUser,
-  //      type: "call-notify",
-  //    });
-  // }
-  if (!selectedChat) return;
+  console.log({selectedChat})
+  // if (!selectedChat) return;
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
       <div className="flex items-center gap-2">
@@ -106,8 +69,11 @@ const ChatHeader = () => {
               />
 
               <span
-                className={`absolute bottom-0 -right-1 rounded-full  p-[6px] ${
-                  selectedChat?.isOnline ? "bg-green-500" : "bg-rose-500"
+                className={`absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-[6px] ${
+                 selectedChat?.isOnline
+                      ? "bg-green-500"
+                      : "bg-rose-500"
+                   
                 }`}
               ></span>
             </div>
@@ -149,15 +115,19 @@ const ChatHeader = () => {
                   }
                 </>
               ) : (
-                <span className="text-[10px] ">
-                  {selectedChat?.isOnline ? (
+                <span className="text-[10px]">
+                  {selectedChat?.isGroupChat ? (
+                    selectedChat?.isOnline ? (
+                      <span className="text-green-500">Online</span>
+                    ) : (
+                      <span className="text-rose-500">Friends are offline</span>
+                    )
+                  ) : selectedChat?.userInfo?.isOnline ? (
                     <span className="text-green-500">Online</span>
-                  ) : (!selectedChat?.isOnline &&
-                      !selectedChat.isGroupChat &&
-                      selectedChat?.userInfo?.lastActive) ||
+                  ) : (!selectedChat?.isOnline && selectedChat?.userInfo?.lastActive) ||
                     selectedChat?.userInfo?.createdAt ? (
                     <span className="text-[9px]">
-                      <span className="mr-1">active</span>
+                      <span className="mr-1">Active</span>
                       {moment(
                         (selectedChat?.userInfo?.lastActive as any) ||
                           selectedChat?.userInfo?.createdAt
@@ -185,15 +155,12 @@ const ChatHeader = () => {
           <span className="cursor-pointer flex gap-2">
             <MdCall
               onClick={() => {
-                setOpenVideoCall((prev) => !prev);
-
                 handleSendCall("audio", currentUser, selectedChat, socket, dispatch);
               }}
               className="h-4 w-4 md:h-6 md:w-6  cursor-pointer"
             />
             <MdVideoCall
               onClick={() => {
-                setOpenVideoCall((prev) => !prev);
                 handleSendCall("video", currentUser, selectedChat, socket, dispatch);
               }}
               className="h-4 w-4 md:h-6 md:w-6  cursor-pointer"

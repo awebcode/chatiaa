@@ -150,3 +150,15 @@ export const getUsersInAChat = async ({
   );
   return { ...data, prevOffset: pageParam, skip: pageParam };
 };
+
+
+//deleteAllMessagesInAChat
+
+//leave from group Chat
+export const deleteAllMessagesInAChat = async (chatId: string) => {
+  const { data } = await axiosClient.delete(`/deleteAllMessagesInAChat/${chatId}`, {
+    headers: { "Content-Type": "application/json" },
+    withCredentials: true,
+  });
+  return data;
+};

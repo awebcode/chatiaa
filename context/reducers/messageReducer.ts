@@ -31,6 +31,7 @@ import {
   CLEAR_CALL,
   RECEIVE_CALL_INVITATION,
   UPDATE_ON_CALL_COUNT,
+  DELETE_ALL_MESSAGE_IN_CHAT,
 } from "./actions";
 import { Action, State } from "./interfaces";
 import {
@@ -53,12 +54,8 @@ export const messageReducer = (state: State, action: Action): State => {
     case SET_CHATS:
       let updatedChats;
       if (Array.isArray(action.payload.chats)) {
-        if (action.payload.onScrollingData) {
-          //when scroll
-          updatedChats = [...state.chats, ...action.payload.chats];
-        } else {
-          updatedChats = action.payload.chats;
-        }
+        //when scroll
+        updatedChats = [...action.payload.chats];
       } else {
         //when new chat created new chat
         updatedChats = [action.payload, ...state.chats];
@@ -81,7 +78,21 @@ export const messageReducer = (state: State, action: Action): State => {
             : chat
         ),
       };
-
+    //DELETE_ALL_MESSAGE_IN_CHAT
+    case DELETE_ALL_MESSAGE_IN_CHAT:
+      return {
+        ...state,
+        // Update chats array to replace the existing message with the edited one
+        chats: state.chats.map((chat) =>
+          chat._id === action.payload.chatId
+            ? {
+                ...chat,
+                latestMessage: null as any,
+              }
+            : chat
+        ),
+        messages: action.payload.type === "update-only-chats" ? state.messages : [],
+      };
     //UPDATE_LATEST_CHAT_MESSAGE
     case UPDATE_LATEST_CHAT_MESSAGE:
       // Find the index of the chat being updated
@@ -364,7 +375,8 @@ export const messageReducer = (state: State, action: Action): State => {
       //&&
       // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
       if (Array.isArray(action.payload)) {
-        updatedMessages = [...state.messages, ...action.payload];
+        // updatedMessages = [...state.messages, ...action.payload];
+        updatedMessages = [...action.payload];
       } else {
         const existingMessageIndex = state.messages.findIndex((m) => {
           if (m.tempMessageId === action.payload.tempMessageId) {
@@ -459,7 +471,7 @@ export const messageReducer = (state: State, action: Action): State => {
       });
 
       let updatedReplyMessages;
-        console.log({replyaction:action.payload})
+      console.log({ replyaction: action.payload });
 
       if (existingMessageIndex !== -1) {
         // If the message exists, update it
@@ -502,9 +514,13 @@ export const messageReducer = (state: State, action: Action): State => {
               (m) => m.tempReactionId === action.payload.reaction.tempReactionId
             );
             //&&
-            if (action.payload.type === "add" && !updatedReactions.find(
+            if (
+              action.payload.type === "add" &&
+              !updatedReactions.find(
                 (u) => u.reactBy._id === action.payload.reaction.reactBy._id
-              )?._id) { ///if tempreactionId but no id exists then
+              )?._id
+            ) {
+              ///if tempreactionId but no id exists then
               let updatedReactionsGroup = Array.isArray(message.reactionsGroup)
                 ? [...message.reactionsGroup]
                 : [];

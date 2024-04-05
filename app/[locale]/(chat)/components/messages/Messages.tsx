@@ -1,10 +1,9 @@
 "use client";
 
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { findLastSeenMessageIndex } from "../logics/logics";
 import dynamic from "next/dynamic";
-
 const MessageCard = dynamic(() => import("./MessageCard"));
 const NoChatProfile = dynamic(() => import("../NoChatProfile"));
 import { FaArrowDown } from "react-icons/fa";
@@ -13,24 +12,55 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
-import { BaseUrl } from "@/config/BaseUrl";
 import { IMessage } from "@/context/reducers/interfaces";
-import { getSession } from "next-auth/react";
-import { axiosClient } from "@/config/AxiosConfig";
-export default function Messages() {
+import { BiLoaderCircle } from "react-icons/bi";
+import { allMessages } from "@/functions/messageActions";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/navigation";
+export default function Messages({ chatId }: { chatId: string }) {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
-
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState(false);
-  const [page, setpage] = useState(1);
   const { isIncomingMessage } = useIncomingMessageStore();
   const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
   const prevMessageRef = useRef(0);
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetching } = useInfiniteQuery({
+    queryKey: ["messages", chatId],
+    queryFn: allMessages as any,
+    getNextPageParam: (lastPage: any) => {
+      const { prevOffset, total, limit } = lastPage;
+      // Calculate the next offset based on the limit
+      const nextOffset = prevOffset !== undefined ? prevOffset + limit : 0;
+      // Check if there are more items to fetch
+      if (nextOffset >= total) {
+        return;
+      }
+      return nextOffset;
+    },
+    initialPageParam: 0,
+  });
+ 
+
   useEffect(() => {
-    const container = document.getElementById("CustomscrollableTarget"); //containerRef.current will be null and not work
+    dispatch({
+      type: SET_MESSAGES,
+      payload: data?.pages.flatMap((page) => page.messages),
+    });
+    const container = document.getElementById("MessagesscrollableTarget");
+
+    //ofcontainer.scrollTop = scrollTop+clientHeight or greter than 50px
+    if (container) {
+      container.scrollTop = container.scrollTop + 200;
+    }
+    dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data?.pages[0]?.total });
+  }, [data?.pages]);
+  useEffect(() => {
+    const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
 
     if (isIncomingMessage && container) {
       // container?.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
@@ -41,89 +71,10 @@ export default function Messages() {
     }
   }, [isIncomingMessage]);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // await new Promise((resolve) => setTimeout(resolve, 100));
-
-        const {data} = await axiosClient.get(
-          `${BaseUrl}/allmessages/${isSelectedChat?.chatId}?page=${page}&limit=10`,
-          {
-          withCredentials:true
-          }
-        );
-        // console.log({ res: data });
-
-        if (messages.length < 10 && isMounted) {
-          dispatch({ type: SET_MESSAGES, payload: data.messages });
-          dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
-        }
-        setLoading(false);
-        // if (isMounted) setLoading(false);
-      } catch (error) {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    if (isSelectedChat?.chatId && page === 1) {
-      fetchData();
-    }
-    // if (selectedChat && page === 1) {
-    //       fetchData();
-    //     }
-    return () => {
-      isMounted = false;
-    };
-  }, [isSelectedChat, page]); //selectedChat,
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await axiosClient.get(
-          `${BaseUrl}/allmessages/${isSelectedChat?.chatId}?page=${page}&limit=10`,
-          {
-            withCredentials: true,
-          }
-        );
-
-        dispatch({ type: SET_MESSAGES, payload: data.messages });
-        dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data.total });
-
-        const container = document.getElementById("CustomscrollableTarget");
-        if (container) {
-          const { scrollTop, scrollHeight, clientHeight } = container;
-          if (prevMessageRef.current === null) {
-            prevMessageRef.current = scrollHeight;
-          } else {
-            const heightDifference = scrollHeight - prevMessageRef.current;
-
-            const checkDifference = prevMessageRef.current > 487 ? heightDifference : 150;
-
-            //ofcontainer.scrollTop = scrollTop+clientHeight or greter than 500px
-            container.scrollTop = scrollTop + checkDifference; // Maintain scroll position
-            prevMessageRef.current = scrollHeight;
-          }
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-    if (page > 1) {
-      fetchData();
-    }
-  }, [page]);
-
-  const fetchNextPage = () => {
-    setpage((prev) => prev + 1);
-  };
-
   // setShowScrollToBottomButton
   useEffect(() => {
     const handleScroll = () => {
-      const container = document.getElementById("CustomscrollableTarget");
+      const container = document.getElementById("MessagesscrollableTarget");
       if (container) {
         const { scrollTop, scrollHeight, clientHeight } = container;
         //when will scroll top greater than 500px
@@ -131,7 +82,7 @@ export default function Messages() {
       }
     };
 
-    const container = document.getElementById("CustomscrollableTarget");
+    const container = document.getElementById("MessagesscrollableTarget");
     if (container) {
       container.addEventListener("scroll", handleScroll);
     }
@@ -146,7 +97,7 @@ export default function Messages() {
   }, [messages]);
   //scrollToBottom
   const scrollToBottom = () => {
-    const container = document.getElementById("CustomscrollableTarget"); //containerRef.current will be null and not work
+    const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
 
     container?.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
 
@@ -155,52 +106,58 @@ export default function Messages() {
   };
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   useEffect(() => {
-    const container = document.getElementById("CustomscrollableTarget");
+    const container = document.getElementById("MessagesscrollableTarget");
     if (container) {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-// console.log({messages})
+
+   const roomId = searchParams.get("chatId");
+   useEffect(() => {
+     const chatData = localStorage.getItem("selectedChat");
+     if (!roomId || !chatData) {
+       router.push("/chat");
+     }
+   }, [roomId]);
+  // console.log({messages})
   return (
     <div
-      id="CustomscrollableTarget"
+      id="MessagesscrollableTarget"
       className="menu p-2 md:p-4 bg-base-200 h-[65vh] overflow-y-auto overflow-x-hidden flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
-        next={() => {
-          fetchNextPage();
-        }}
-        hasMore={totalMessagesCount > messages.length}
+        next={fetchNextPage}
+        hasMore={!isLoading && hasNextPage}
         loader={
-          <div className="flex justify-center items-center mt-8">
-            <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>
+          <div className="flex justify-center items-center mt-6 ">
+            <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
           </div>
         }
         endMessage={
-          !loading &&
-          messages.length > 0 &&
-          // <div className="text-center text-2xl text-green-400 pt-10">
-          //   You have viewed all data
-          // </div>
-          ""
+          !isLoading && (
+            <div className="text-center text-2xl text-green-400 pt-10">
+              You have viewed all messages!
+            </div>
+          )
         }
         style={{
           display: "flex",
           flexDirection: "column-reverse",
           overflow: "auto",
+
           height: "100%",
         }}
         inverse={true}
-        scrollableTarget="CustomscrollableTarget"
+        scrollableTarget="MessagesscrollableTarget"
         scrollThreshold={0.6}
       >
-        <div className="flex flex-col-reverse gap-3 m-2 p-2">
+        <div className="flex flex-col-reverse gap-3 p-2 m-2">
           <div id="messageEndTarget" ref={messageEndRef}></div>
           {/* typing indicator */}
 
           <TypingIndicator onFriendListCard={false} />
-          {loading ? (
+          {isLoading ? (
             <div className="flex justify-center items-center mt-6">
               <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>
             </div>
@@ -211,28 +168,27 @@ export default function Messages() {
               return (
                 <MessageCard
                   message={message}
-                  key={message?._id+message?.tempMessageId + Date.now() + Math.floor(Math.random() * 100)}
+                  key={
+                    message?._id +
+                    message?.tempMessageId +
+                    Date.now() +
+                    Math.floor(Math.random() * 100)
+                  }
                   isLastSeenMessage={index === findLastSeenMessageIndex(messages)}
                 />
               );
             })
           )}
         </div>
-        {!loading &&
-          totalMessagesCount > 0 &&
-          totalMessagesCount === messages?.length &&
-          messages?.length > 10 && (
-            <div className="text-center text-2xl text-green-400 pt-10">
-              You have viewed all messages
-            </div>
-          )}
-        {!loading &&
+
+        {selectedChat &&
+          !isLoading &&
           totalMessagesCount > 0 &&
           totalMessagesCount === messages?.length && (
             <NoChatProfile selectedChat={selectedChat as any} />
           )}
         {/* when selectedChat have no chat */}
-        {messages.length === 0 && !loading && (
+        {selectedChat&&messages.length === 0 && !isLoading && (
           <NoChatProfile selectedChat={selectedChat as any} />
         )}
         <div

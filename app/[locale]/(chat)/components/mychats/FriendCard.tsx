@@ -1,6 +1,5 @@
-import { accessChats } from "@/functions/chatActions";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
 import React, { useState } from "react";
 import moment from "moment";
@@ -9,16 +8,13 @@ import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import {
   pushgroupSeenBy,
-  updateAllMessageStatusAsDelivered,
   updateAllMessageStatusAsSeen,
   updateMessageStatus,
 } from "@/functions/messageActions";
 import { getSender, getSenderFull } from "../logics/logics";
 import { BsThreeDots } from "react-icons/bs";
-import { useClickAway } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
 import { Link, useRouter } from "@/navigation";
-import { RenderStatus } from "../logics/RenderStatusComponent";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import {
   CLEAR_MESSAGES,
@@ -31,12 +27,14 @@ import { IChat } from "@/context/reducers/interfaces";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import SeenBy from "./status/SeenBy";
 import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
 const Modal = dynamic(() => import("./Modal"));
 
 const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
-  const router=useRouter()
+  const router = useRouter()
+   const searchParams = useSearchParams();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser, selectedChat } = useMessageState();
@@ -74,7 +72,6 @@ const FriendsCard: React.FC<{
 
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
-    console.log({isFriend})
     const chatData = {
       chatId: chat?._id,
       chatName: chat?.chatName,
@@ -104,6 +101,7 @@ const FriendsCard: React.FC<{
     };
 
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
+    localStorage.setItem("selectedChat", JSON.stringify(chatData));
 
     // if (chat.isGroupChat) {
     //   socket.emit("setup", { id: chat?._id } as any);
@@ -155,16 +153,11 @@ const FriendsCard: React.FC<{
       dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
       updateStatusMutation.mutate(chatId);
     }
+     router.replace(`?chatId=${chat?._id}`)
     // queryclient.invalidateQueries({ queryKey: ["messages", chatId] });
   };
 
-  const isUserOnline = onlineUsers.some((u) =>
-    chat.isGroupChat
-      ? chat.users.some(
-          (user: any) => user._id === u.userId && user._id !== currentUser?._id
-        )
-      : getSenderFull(currentUser, chat.users)?._id === u.userId
-  );
+ 
 // console.log({chat})
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
@@ -173,7 +166,7 @@ const FriendsCard: React.FC<{
           className="flex items-center gap-2 basis-[80%]"
           onClick={() => handleClick(chat._id as string)}
         >
-          <div className="relative p-[2px] h-10 w-10 ring-2 ring-violet-600 rounded-full">
+          <div className="relative p-[2px] h-8 w-8 md:h-10 md:w-10 ring-1 md:ring-2 ring-violet-600 rounded-full">
             <Image
               height={35}
               width={35}
@@ -192,7 +185,7 @@ const FriendsCard: React.FC<{
             />
 
             <span
-              className={`absolute bottom-0 right-0 rounded-full p-[6px] ${
+              className={`absolute bottom-0 right-0 rounded-full p-1 ring-1 ring-gray-900 md:p-[6px] ${
                 chat?.isOnline ? "bg-green-500" : "bg-rose-500"
               }`}
             ></span>
@@ -223,7 +216,7 @@ const FriendsCard: React.FC<{
                     typingUsers
                       .filter((typeuser) => typeuser.chatId === chat?._id)
                       .map((typeuser, index, array) => (
-                        <React.Fragment key={index}>
+                        <span className="text-[10px] md:text-xs text-blue-600" key={index}>
                           {index === 0 ? (
                             <>
                               {/* Show the name of the first typing user */}
@@ -239,7 +232,7 @@ const FriendsCard: React.FC<{
                               )}
                             </>
                           ) : null}
-                        </React.Fragment>
+                        </span>
                       ))
                   }
                 </>
@@ -252,7 +245,7 @@ const FriendsCard: React.FC<{
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
               {!chat?.isOnline && !chat?.isGroupChat && (
-                <span className="text-[10px]">
+                <span className="text-[8px] md:text-[10px]  font-thin block md:inline md:ml-2">
                   LastActive:
                   {moment(getSenderFull(currentUser, chat.users)?.lastActive).fromNow()}
                 </span>

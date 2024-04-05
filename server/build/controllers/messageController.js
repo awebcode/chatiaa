@@ -32,7 +32,8 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     try {
         const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
-        const skip = (page - 1) * limit;
+        // const skip = (page - 1) * limit;
+        const skip = parseInt(req.query.skip) || 0;
         let messages = yield MessageModel_1.Message.find({ chat: req.params.chatId })
             .populate([
             {
@@ -631,7 +632,6 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
         // Send message to cliento
         const emitData = editedChat.toObject();
-        console.log({ tempMessageId: req.body.tempMessageId, editedChat });
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
             yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "editMessage", chatId, emitData);
         }

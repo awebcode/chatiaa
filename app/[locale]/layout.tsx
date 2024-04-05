@@ -15,9 +15,8 @@ import { MessageContextProvider } from "@/context/MessageContext";
 import { fetchUser } from "@/functions/serverActions";
 import SocketEvents from "./SocketEvents";
 import dynamic from "next/dynamic";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
+import Navbar from "@/components/Navbar";
+// const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
   

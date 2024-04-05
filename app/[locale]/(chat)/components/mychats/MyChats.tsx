@@ -4,83 +4,49 @@ import { useDebounce } from "@uidotdev/usehooks";
 
 import dynamic from "next/dynamic";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
-const FriendsCard = dynamic(() => import("./FriendCard"));
 
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import ChatLoading from "../ChatLoading";
 import SkeletonContainer from "./SkeletonContainer";
-import { BaseUrl } from "@/config/BaseUrl";
-import { SET_CHATS } from "@/context/reducers/actions";
 import { Button } from "@/components/ui/button";
-import { getSession } from "next-auth/react";
-import { axiosClient } from "@/config/AxiosConfig";
+import { getChats } from "@/functions/chatActions";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { BiLoaderCircle } from "react-icons/bi";
+import { SET_CHATS } from "@/context/reducers/actions";
+import FriendsCard from "./FriendCard";
 
-const MyFriends = () => {
+const MyChats = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const searchText = useDebounce(searchTerm, 700);
   const { user: currentUser, selectedChat, chats, totalChats } = useMessageState();
   const dispatch = useMessageDispatch();
-  const [isLoading, setLoading] = useState(false);
-  const [page, setpage] = useState(1);
   const [showScrollToTopButton, setShowScrollToTopButton] = useState(false);
-  // const { } = useInfiniteQuery({
-  //   queryKey: ["users", searchText, currentUser?._id],
-
-  //   queryFn: getChats as any,
-
-  // });
+  const { data, isLoading, isFetching, fetchNextPage, hasNextPage } = useInfiniteQuery({
+    queryKey: ["chats", searchText],
+    queryFn: getChats as any,
+    getNextPageParam: (lastPage: any) => {
+      const { prevOffset, total, limit } = lastPage;
+      // Calculate the next offset based on the limit
+      const nextOffset = prevOffset !== undefined ? prevOffset + limit : 0;
+      // Check if there are more items to fetch
+      if (nextOffset >= total) {
+        return;
+      }
+      return nextOffset;
+    },
+    initialPageParam: 0,
+  });
+  // set chats in reducer store
+  useEffect(() => {
+    dispatch({
+      type: SET_CHATS,
+      payload: {
+        chats: data?.pages.flatMap((page) => page.chats),
+        total: data?.pages[0]?.total,
+      },
+    });
+  }, [data?.pages]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const {data} = await axiosClient.get(
-          `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
-          {
-          withCredentials:true
-          }
-        );
-          dispatch({
-            type: SET_CHATS,
-            payload: { chats: data.chats, total: data.total },
-          });
-
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-    if (page === 1) {
-      fetchData();
-    }
-  }, [searchText]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-         const { data } = await axiosClient.get(
-           `${BaseUrl}/fetchChats?page=${page}&limit=10&search=${searchText}`,
-           {
-             withCredentials: true,
-           }
-         );
-        dispatch({ type: SET_CHATS, payload: { chats: data.chats, total: data.total,onScrollingData:"true" } });
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-    if (page > 1) {
-
-      fetchData();
-    }
-  }, [page, searchText]);
-
-  const fetchNextPage = () => {
-    console.log("fetchnextpage")
-    setpage((prev) => prev + 1);
   };
 
   // setShowScrollToTopButton
@@ -113,15 +79,13 @@ const MyFriends = () => {
 
     container?.scrollTo({ top: 0, behavior: "smooth" });
 
-    // if (messageEndRef.current)
-    //   messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+   
   };
 
-  
   return (
     <>
       <div>
-        <div className="menu p-4     bg-base-200 text-base-content overflow-y-scroll">
+        <div className="menu p-4     bg-base-200 text-base-content overflow-y-auto">
           <input
             type="text"
             value={searchTerm}
@@ -137,41 +101,45 @@ const MyFriends = () => {
           >
             <InfiniteScroll
               dataLength={chats ? chats?.length : 0}
-              next={() => {
-                fetchNextPage();
-              }}
-              hasMore={totalChats > chats.length}
-              loader={<div>Loading...</div>}
-              endMessage={
-                // chats &&
-                // chats.length > 10 &&
-                // !isLoading && (
-                // <p className="text-green-400">
-                //   <b>Yay! You have seen it all</b>
-                // </p>
-                // )
-                <p className="text-green-400 text-center text-xl">
-                  <b>Yay! You have seen  all</b>
-                </p>
+              next={fetchNextPage}
+              hasMore={!isLoading && hasNextPage}
+              loader={
+                <div className="flex justify-center items-center mt-6 ">
+                  <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
+                </div>
               }
-              style={{ height: "100%", overflow: "auto" }}
+              endMessage={
+                !isLoading &&chats?.length>10&& (
+                  <div className="text-center text-2xl text-green-400 pt-10">
+                    You have viewed all chats!
+                  </div>
+                )
+              }
               scrollableTarget="ChatscrollableTarget"
-              scrollThreshold={0.5}
+              scrollThreshold={0.6}
             >
-              <div className="flex flex-col gap-2 z-50 min-h-[80vh] ">
+              <div
+                className={`flex flex-col gap-2 z-50 ${
+                  chats.length > 6 ? "min-h-[80vh]" : "h-auto"
+                } `}
+              >
                 {isLoading ? (
-                  <>
-                    <SkeletonContainer />
-                  </>
+                  <SkeletonContainer />
                 ) : chats && chats.length > 0 ? (
                   chats.map((chat) => (
                     <FriendsCard chat={chat} key={chat._id + Date.now().toString()} />
                   ))
                 ) : (
-                  <h1 className="text-sm md:text-xl m-4 text-center">No Chat Found!</h1>
+                  <h1 className="text-sm md:text-xl m-4 text-center font-medium">
+                    No Chat Found!
+                  </h1>
                 )}
               </div>
-              {/* {isFetching && <h1 className="text-center p-2 text-2xl">Fetching...</h1>} */}
+              {isFetching && (
+                <div className="flex justify-center items-center mt-6 ">
+                  <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
+                </div>
+              )}
             </InfiniteScroll>
             <Button
               onClick={scrollToTop}
@@ -188,4 +156,4 @@ const MyFriends = () => {
   );
 };
 
-export default MyFriends;
+export default MyChats;

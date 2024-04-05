@@ -4,6 +4,7 @@ import { MdCall, MdDelete, MdVideoCall } from "react-icons/md";
 import { RiProfileLine } from "react-icons/ri";
 import {
   useBlockMutation,
+  useDeleteAllMessagesInAChatMutation,
   useDeleteSingleChatMutation,
   useLeaveChatMutation,
 } from "../mutations/Chatmutations";
@@ -34,6 +35,7 @@ const Modal = ({
   const { user: currentUser } = useMessageState();
   const leaveMutation = useLeaveChatMutation(chat._id as any, currentUser?._id as any);
   const deleteSignleChatMutation = useDeleteSingleChatMutation(chat._id as any, false);
+  const deleteAllMessagesInAChatMutation = useDeleteAllMessagesInAChatMutation(chat._id as any);
   const isFriend=getSenderFull(currentUser,chat?.users)
   const blockData = {
     chatId: chat._id,
@@ -102,6 +104,18 @@ const Modal = ({
       action: () => {
         if (confirm("Are you sure?")) {
           deleteSignleChatMutation.mutateAsync();
+        }
+      },
+      isHidden: chat?.isGroupChat
+        ? (chat?.groupAdmin || []).some((admin: any) => admin._id !== currentUser?._id)
+        : false,
+    },
+    {
+      name: <span className="text-rose-500">Delete all messages</span>,
+      icon: <MdDelete className="text-rose-500" />,
+      action: () => {
+        if (confirm("Are you sure?")) {
+          deleteAllMessagesInAChatMutation.mutateAsync();
         }
       },
       isHidden: chat?.isGroupChat

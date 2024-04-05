@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onCallMembersCount = exports.getFilesInChat = exports.getInitialFilesInChat = exports.getUsersInAChat = exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.updateGroupNamePhoto = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
+exports.deleteAllMessagesInAChat = exports.onCallMembersCount = exports.getFilesInChat = exports.getInitialFilesInChat = exports.getUsersInAChat = exports.leaveFromChat = exports.updateChatStatusAsBlockOrUnblock = exports.removeFromAdmin = exports.makeAdmin = exports.deleteSingleChat = exports.addToGroup = exports.removeFromGroup = exports.updateGroupNamePhoto = exports.createGroupChat = exports.fetchChats = exports.accessChat = void 0;
 const errorHandler_1 = require("../middlewares/errorHandler");
 const ChatModel_1 = require("../model/ChatModel");
 const UserModel_1 = require("../model/UserModel");
@@ -70,9 +70,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             const createdChat = yield ChatModel_1.Chat.create(chatData);
             let FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive createdAt");
             const isOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(FullChat === null || FullChat === void 0 ? void 0 : FullChat.users, req.id);
-            res
-                .status(201)
-                .json({
+            res.status(201).json({
                 success: true,
                 isNewChat: true,
                 chatData: Object.assign(Object.assign({}, FullChat === null || FullChat === void 0 ? void 0 : FullChat.toObject()), { isOnline }),
@@ -89,7 +87,8 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         // console.log({fetchChats:req.id})
         const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
-        const skip = (page - 1) * limit;
+        // const skip = (page - 1) * limit;
+        const skip = parseInt(req.query.skip) || 0;
         const keyword = req.query.search
             ? {
                 $or: [
@@ -824,3 +823,33 @@ const onCallMembersCount = (req, res, next) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.onCallMembersCount = onCallMembersCount;
+//deleteAllMessagesInACh
+const deleteAllMessagesInAChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { chatId } = req.params;
+        const chat = yield ChatModel_1.Chat.findOne({
+            _id: chatId,
+            users: { $elemMatch: { $eq: req.id } },
+        });
+        if (!chat) {
+            return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
+        }
+        // Find all messages in the chat that have a file attached
+        const messagesWithFiles = yield MessageModel_1.Message.find({
+            chat: chatId,
+            file: { $exists: true },
+        });
+        // Delete files from cloud storage and collect public_ids
+        const publicIds = messagesWithFiles.map((message) => { var _a; return (_a = message === null || message === void 0 ? void 0 : message.file) === null || _a === void 0 ? void 0 : _a.public_id; });
+        yield Promise.all(publicIds.map((public_id) => cloudinary_1.v2.uploader.destroy(public_id)));
+        yield MessageModel_1.Message.deleteMany({ chat: chatId });
+        res.json({
+            success: true,
+            message: "All Messages are deleted!",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.deleteAllMessagesInAChat = deleteAllMessagesInAChat;

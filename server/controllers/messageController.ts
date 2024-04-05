@@ -23,7 +23,9 @@ export const allMessages = async (
   try {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * limit;
+    // const skip = (page - 1) * limit;
+
+     const skip = parseInt(req.query.skip) || 0;
     let messages: any = await Message.find({ chat: req.params.chatId })
       .populate([
         {
@@ -758,7 +760,6 @@ export const editMessage = async (
     const chat = await Chat.findByIdAndUpdate(chatId);
     // Send message to cliento
     const emitData = editedChat.toObject();
-    console.log({ tempMessageId: req.body.tempMessageId, editedChat });
     if (chat?.isGroupChat) {
       await emitEventToGroupUsers(io, "editMessage", chatId, emitData);
     } else {

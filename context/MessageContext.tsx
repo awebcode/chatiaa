@@ -9,14 +9,17 @@ import {
 import { State } from "./reducers/interfaces";
 import {  useContextSelector } from "use-context-selector";
 const initialState: State = {
-  selectedChat: null,
+  selectedChat:
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("selectedChat") || "null")
+      : null,
   isSelectedChat: null,
   messages: [],
   user: null,
   totalMessagesCount: 0,
   totalChats: 0,
   chats: [],
-  callInfo:null
+  callInfo: null,
 };
 
 export const MessageContextProvider = ({ children }: { children: ReactNode }) => {

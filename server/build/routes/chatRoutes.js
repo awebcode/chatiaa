@@ -33,4 +33,6 @@ chatRoute.get("/getInitialFilesInChat/:chatId", authMiddleware_1.default, ChatCo
 // getUsersInAChat;
 chatRoute.get("/getUsersInAChat/:chatId", authMiddleware_1.default, ChatController_1.getUsersInAChat);
 chatRoute.put("/updateOncallMembers", authMiddleware_1.default, ChatController_1.onCallMembersCount);
+//deleteAllMessagesInAChat
+chatRoute.delete("/deleteAllMessagesInAChat/:chatId", authMiddleware_1.default, ChatController_1.deleteAllMessagesInAChat);
 exports.default = chatRoute;

@@ -11,9 +11,7 @@ export const getChatsServerAction = async ({
   queryKey: any;
 }) => {
   const { data } = await axios.get(
-    `${BaseUrl}/fetchChats/${queryKey[2]}?search=${
-      queryKey[1]
-    }&skip=${pageParam}&limit=${10}`,
+    `${BaseUrl}/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${10}`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -80,7 +78,7 @@ export const fetchUser = async () => {
   return await res.json();
 };
 //get profile
-export const getProfile = async (userId:string) => {
+export const getProfile = async (userId: string) => {
   const res = await fetch(`${BaseUrl}/getProfile/${userId}`, {
     credentials: "include",
     next: { tags: ["user-profile"] },

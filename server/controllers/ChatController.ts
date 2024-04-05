@@ -68,13 +68,11 @@ export const accessChat = async (
         "name email image lastActive createdAt"
       );
       const isOnline = await checkIfAnyUserIsOnline(FullChat?.users as any, req.id);
-      res
-        .status(201)
-        .json({
-          success: true,
-          isNewChat: true,
-          chatData: { ...FullChat?.toObject(), isOnline },
-        });
+      res.status(201).json({
+        success: true,
+        isNewChat: true,
+        chatData: { ...FullChat?.toObject(), isOnline },
+      });
     } catch (error: any) {
       next(error);
     }
@@ -90,7 +88,8 @@ export const fetchChats = async (
     // console.log({fetchChats:req.id})
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * limit;
+    // const skip = (page - 1) * limit;
+    const skip = parseInt(req.query.skip) || 0;
     const keyword: any = req.query.search
       ? {
           $or: [
@@ -998,7 +997,6 @@ export const getFilesInChat = async (
   }
 };
 
-
 //update oncallmembers count
 
 //onCallMembersCount
@@ -1029,6 +1027,46 @@ export const onCallMembersCount = async (
     res.send({ chat });
   } catch (error) {
     console.log({ error });
+    next(error);
+  }
+};
+
+//deleteAllMessagesInACh
+export const deleteAllMessagesInAChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { chatId } = req.params;
+
+    const chat = await Chat.findOne({
+      _id: chatId,
+      users: { $elemMatch: { $eq: req.id } },
+    });
+
+    if (!chat) {
+      return next(new CustomErrorHandler("Chat not found!", 404));
+    }
+
+    // Find all messages in the chat that have a file attached
+    const messagesWithFiles = await Message.find({
+      chat: chatId,
+      file: { $exists: true },
+    });
+
+    // Delete files from cloud storage and collect public_ids
+    const publicIds = messagesWithFiles.map((message:any) => message?.file?.public_id );
+    await Promise.all(
+      publicIds.map((public_id) => v2.uploader.destroy(public_id))
+    );
+    await Message.deleteMany({ chat: chatId });
+
+    res.json({
+      success: true,
+      message: "All Messages are deleted!",
+    });
+  } catch (error) {
     next(error);
   }
 };

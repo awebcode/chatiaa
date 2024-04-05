@@ -33,7 +33,7 @@ const DisplayReaction = ({
     setIsOpenReactionListModal(false);
     setMessageId("")
   });
-  const handleRemoveReact = async (messageId: string, reactionId: string,emoji:string) => {
+  const handleRemoveReact = (messageId: string, reactionId: string,emoji:string) => {
     //update sender ui without delay
      if (!messageId || !emoji||!reactionId) return;
      const tempReactionId = v4();
@@ -61,7 +61,7 @@ const DisplayReaction = ({
       type: "remove",
       tempReactionId
     };
-    const res = await addRemoveEmojiReactions(data);
+     addRemoveEmojiReactions(data);
   };
   return (
     <div

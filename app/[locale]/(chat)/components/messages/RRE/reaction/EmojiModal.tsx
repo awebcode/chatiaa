@@ -6,7 +6,6 @@ const EmojiPicker = dynamic(
   },
   { ssr: false }
 );
-import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { PopoverContent } from "@/components/ui/popover";
 import { IMessage } from "@/context/reducers/interfaces";
 import { PopoverArrow } from "@radix-ui/react-popover";
@@ -46,8 +45,8 @@ const EmojiModal = ({
         open={openEmoji}
         style={{
           zIndex: 1000,
-          height: isSmallDevice ? "280px" : "310px",
-          width: isSmallDevice ? "260px" : "310px",
+          height: isSmallDevice ? "300px" : "310px",
+          width: isSmallDevice ? "300px" : "310px",
           fontSize: "10px",
           overflow: "auto",
         }}

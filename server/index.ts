@@ -378,7 +378,16 @@ io.on("connection", (socket: Socket) => {
       data
     );
   });
+///deletedAllMessageInChatNotify
 
+   socket.on("deletedAllMessageInChatNotify", async (data: any) => {
+     await emitEventToGroupUsers(
+       socket,
+       "deletedAllMessageInChatNotify",
+       data.chatId,
+       data
+     );
+   });
   //update_group_info
   socket.on("update_group_info", async (data: any) => {
     await emitEventToGroupUsers(socket, "update_group_info_Received", data._id, data);

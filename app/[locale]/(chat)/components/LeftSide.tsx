@@ -1,16 +1,16 @@
-import React from "react";
+"use client";
+import React, { ReactNode } from "react";
 import { SearchDrawer } from "./searchfriends/SearchDrawer";
 import dynamic from "next/dynamic";
 // const CreateGroupModal = dynamic(() => import("./group/GroupModal"));
 // const MyFriends = dynamic(() => import("./mychats/MyChats"),{loading:()=><h1>Loading..</h1>});
 import CreateGroupModal from "./group/GroupModal";
-import MyFriends from "./mychats/MyChats";
 import OnlineFriends from "./mychats/online/OnlieFriends";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useMessageState } from "@/context/MessageContext";
-const LeftSide = () => {
+const LeftSideClientWrapper = ({ children }: { children: ReactNode }) => {
   const { onlineUsers } = useOnlineUsersStore();
-  const {user:currentUser}=useMessageState()
+  const { user: currentUser } = useMessageState();
   return (
     <div className="border flex flex-col">
       <div className="m-4">
@@ -20,10 +20,10 @@ const LeftSide = () => {
 
       {onlineUsers.filter((curr) => curr.userInfo?._id !== currentUser?._id).length >
         0 && <OnlineFriends />}
-
-      <MyFriends />
+      {/* my friends server rendering here */}
+      {children}
     </div>
   );
 };
 
-export default LeftSide;
+export default LeftSideClientWrapper;

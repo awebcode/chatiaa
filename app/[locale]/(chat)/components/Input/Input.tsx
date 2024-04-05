@@ -21,9 +21,9 @@ import { v4 } from "uuid";
 import { updateSenderMessagesUI } from "@/config/functions";
 import { FaReply } from "react-icons/fa";
 
-const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"));
-const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"));
-const EmojiComponent = dynamic(() => import("./EmojiComponent"));
+const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"), { ssr: false });
+const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"),{ssr:false});
+const EmojiComponent = dynamic(() => import("./EmojiComponent"),{ssr:false});
 type Temoji = {
   emoji: string;
   unified: string;

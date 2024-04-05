@@ -1,6 +1,7 @@
 import { useSocketContext } from "@/context/SocketContextProvider";
 import {
   accessChats,
+  deleteAllMessagesInAChat,
   deleteSingleChat,
   leaveChat,
   makeAsAdmin,
@@ -14,6 +15,8 @@ import { toast } from "react-toastify";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import {
   BLOCK_CHAT,
+  CLEAR_MESSAGES,
+  DELETE_ALL_MESSAGE_IN_CHAT,
   DELETE_CHAT,
   LEAVE_CHAT,
   MAKE_AS_ADMIN_TO_GROUP_CHAT,
@@ -25,18 +28,19 @@ import {
 import { Tuser } from "@/store/types";
 import { getSenderFull } from "../logics/logics";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
+import { useRouter } from "@/navigation";
 //useAccessChats mutation
 
-export const useAccessChatMutation = (closeDialogId:string) => {
-  const {  user:currentUser } = useMessageState();
+export const useAccessChatMutation = (closeDialogId: string) => {
+  const { user: currentUser } = useMessageState();
+  const router = useRouter();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
-  const addOnlineUser=useOnlineUsersStore((s)=>s.addOnlineUser)
+  const addOnlineUser = useOnlineUsersStore((s) => s.addOnlineUser);
   return useMutation({
     mutationFn: (data) => accessChats(data),
-    
+
     onSuccess: (chat) => {
-      console.log({chat})
       const isFriend = getSenderFull(currentUser, chat.chatData?.users);
       const chatData = {
         chatId: chat?.chatData?._id,
@@ -63,22 +67,23 @@ export const useAccessChatMutation = (closeDialogId:string) => {
           image: { url: (chat?.chatData as any)?.image?.url },
         },
         isOnline: chat?.chatData?.isOnline,
-        onCallMembers:chat?.chatData?.onCallMembers
+        onCallMembers: chat?.chatData?.onCallMembers,
       };
       // setSelectedChat(chatData as any);
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
+      localStorage.setItem("selectedChat", JSON.stringify(chatData));
       if (chat?.isNewChat) {
         dispatch({ type: SET_CHATS, payload: chat.chatData });
         if (chat?.chatData?.isOnline) {
-           const onlineUserData = {
-             userId: isFriend?._id,
-             chatId: chat.chatData?._id,
-             userInfo: isFriend,
-             socketId: "",
-           };
-           addOnlineUser(onlineUserData);
+          const onlineUserData = {
+            userId: isFriend?._id,
+            chatId: chat.chatData?._id,
+            userInfo: isFriend,
+            socketId: "",
+          };
+          addOnlineUser(onlineUserData);
         }
-       
+
         socket.emit("chatCreatedNotify", {
           to: isFriend?._id,
           chat: chat.chatData,
@@ -87,10 +92,11 @@ export const useAccessChatMutation = (closeDialogId:string) => {
       }
 
       document.getElementById(closeDialogId)?.click();
+      router.replace(`?chatId=${chat.chatData?._id}`);
       // setIsOpen(false);
     },
   });
-}
+};
 export const useBlockMutation = () => {
   const { selectedChat, user } = useMessageState();
   const dispatch = useMessageDispatch();
@@ -114,8 +120,8 @@ export const useBlockMutation = () => {
 
 export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => {
   const { socket } = useSocketContext();
-  const removeOnlineUser=useOnlineUsersStore((s)=>s.removeOnlineUser)
-   const { selectedChat, user: currentUser } = useMessageState();
+  const removeOnlineUser = useOnlineUsersStore((s) => s.removeOnlineUser);
+  const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   return useMutation({
     mutationFn: () => deleteSingleChat(chatId),
@@ -131,7 +137,7 @@ export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => 
         type: DELETE_CHAT,
         payload: { chatId },
       });
-      removeOnlineUser({userId:data.receiverId} as any)
+      removeOnlineUser({ userId: data.receiverId } as any);
       socket.emit("singleChatDeletedNotify", {
         chatId,
         receiverId: data.receiverId,
@@ -168,12 +174,12 @@ export const useLeaveChatMutation = (chatId: string, userId: string) => {
 
 ///remove user from group
 
-export const useUserRemoveFromGroup = (chatId: string, user:Tuser) => {
-   const { selectedChat, user: currentUser } = useMessageState();
+export const useUserRemoveFromGroup = (chatId: string, user: Tuser) => {
+  const { selectedChat, user: currentUser } = useMessageState();
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
   return useMutation({
-    mutationFn: () => removeFromGroup({ chatId, userId:user._id }),
+    mutationFn: () => removeFromGroup({ chatId, userId: user._id }),
     onSuccess: (data) => {
       // Assuming selectedChat is stored in a global state using setSelectedChat
       // If not, modify this part accordingly
@@ -182,11 +188,11 @@ export const useUserRemoveFromGroup = (chatId: string, user:Tuser) => {
         payload: { chatId, user },
       });
 
-       socket.emit("userRemoveFromGroupNotify", {
-         chatId,
-         user,
-         currentUser,
-       });
+      socket.emit("userRemoveFromGroupNotify", {
+        chatId,
+        user,
+        currentUser,
+      });
     },
   });
 };
@@ -194,7 +200,7 @@ export const useUserRemoveFromGroup = (chatId: string, user:Tuser) => {
 ///make admin to group
 
 export const useMakeAdmin = (chatId: string, user: Tuser) => {
-   const { selectedChat, user: currentUser } = useMessageState();
+  const { selectedChat, user: currentUser } = useMessageState();
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
   return useMutation({
@@ -204,11 +210,11 @@ export const useMakeAdmin = (chatId: string, user: Tuser) => {
         type: MAKE_AS_ADMIN_TO_GROUP_CHAT,
         payload: { chatId, user },
       });
-        socket.emit("makeAdminToGroupNotify", {
-          chatId,
-          user,
-          currentUser,
-        });
+      socket.emit("makeAdminToGroupNotify", {
+        chatId,
+        user,
+        currentUser,
+      });
     },
   });
 };
@@ -216,7 +222,7 @@ export const useMakeAdmin = (chatId: string, user: Tuser) => {
 ///remove  admin from group
 
 export const useRemoveAdminFromGroup = (chatId: string, user: Tuser) => {
-   const { selectedChat, user: currentUser } = useMessageState();
+  const { selectedChat, user: currentUser } = useMessageState();
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
   return useMutation({
@@ -228,11 +234,32 @@ export const useRemoveAdminFromGroup = (chatId: string, user: Tuser) => {
         type: REMOVE_ADMIN_FROM_GROUP_CHAT,
         payload: { chatId, user },
       });
-        socket.emit("adminRemoveFromGroupNotify", {
-          chatId,
-          user,
-          currentUser,
+      socket.emit("adminRemoveFromGroupNotify", {
+        chatId,
+        user,
+        currentUser,
+      });
+    },
+  });
+};
+
+//delete all messages in chat
+
+
+export const useDeleteAllMessagesInAChatMutation = (chatId: string) => {
+  const { socket } = useSocketContext();
+  const dispatch = useMessageDispatch();
+  return useMutation({
+    mutationFn: () => deleteAllMessagesInAChat(chatId),
+    onSuccess: (data) => {
+      toast.success("All messages deleted successfully!");
+        dispatch({
+          type: DELETE_ALL_MESSAGE_IN_CHAT,payload:{chatId}
         });
+     
+      socket.emit("deletedAllMessageInChatNotify", {
+        chatId,
+      });
     },
   });
 };

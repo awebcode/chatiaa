@@ -32,11 +32,11 @@ const ReactionLists = ({
   isCurrentUserMessage: boolean;
   isOpenReactionListModal: boolean;
   setIsOpenReactionListModal: Dispatch<boolean>;
-  handleRemoveReact: (messageId: string, reactionId: string,emoji:string) => Promise<any>;
+  handleRemoveReact: (messageId: string, reactionId: string, emoji: string) => void;
   reactionsGroup: ReactionGroup[];
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
-  const {theme}=useTheme()
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("");
   const [page, setpage] = useState(1);
   const [data, setData] = useState<Reaction[]>([]);
@@ -59,10 +59,10 @@ const ReactionLists = ({
   // }, [activeTab, messageId]);
   useEffect(() => {
     const fetchData = async () => {
-       const data = await axiosClient.get(
-         `/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
-         { withCredentials: true }
-       );
+      const data = await axiosClient.get(
+        `/getMessageReactions/${messageId}?emoji=${activeTab}&page=${page}&limit=10`,
+        { withCredentials: true }
+      );
       setData((prev) => [...prev, data as any]);
     };
     if (page > 1) {
@@ -187,15 +187,16 @@ const ReactionLists = ({
           scrollThreshold={1}
         >
           <div className="flex flex-col  gap-y-2 w-full">
-            {data?.length>0&&data?.map((reaction, i) => {
-              return (
-                <Card
-                  key={reaction._id + Date.now() + Math.random() * 1000}
-                  handleRemoveReact={handleRemoveReact}
-                  reaction={reaction}
-                />
-              );
-            })}
+            {data?.length > 0 &&
+              data?.map((reaction, i) => {
+                return (
+                  <Card
+                    key={reaction._id + Date.now() + Math.random() * 1000}
+                    handleRemoveReact={handleRemoveReact}
+                    reaction={reaction}
+                  />
+                );
+              })}
           </div>
         </InfiniteScroll>
         <Button

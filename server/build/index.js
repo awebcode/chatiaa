@@ -301,6 +301,10 @@ exports.io.on("connection", (socket) => {
     socket.on("deliveredGroupMessage", (data) => __awaiter(void 0, void 0, void 0, function* () {
         yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "deliveredGroupMessageReceived", data.chatId, data);
     }));
+    ///deletedAllMessageInChatNotify
+    socket.on("deletedAllMessageInChatNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "deletedAllMessageInChatNotify", data.chatId, data);
+    }));
     //update_group_info
     socket.on("update_group_info", (data) => __awaiter(void 0, void 0, void 0, function* () {
         yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "update_group_info_Received", data._id, data);

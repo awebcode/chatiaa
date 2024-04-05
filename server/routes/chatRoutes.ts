@@ -4,6 +4,7 @@ import {
   accessChat,
   addToGroup,
   createGroupChat,
+  deleteAllMessagesInAChat,
   deleteSingleChat,
   fetchChats,
   getFilesInChat,
@@ -50,5 +51,6 @@ chatRoute.get("/getInitialFilesInChat/:chatId", authMiddleware, getInitialFilesI
 // getUsersInAChat;
 chatRoute.get("/getUsersInAChat/:chatId", authMiddleware, getUsersInAChat);
 chatRoute.put("/updateOncallMembers", authMiddleware, onCallMembersCount);
-
+//deleteAllMessagesInAChat
+chatRoute.delete("/deleteAllMessagesInAChat/:chatId", authMiddleware, deleteAllMessagesInAChat);
 export default chatRoute;

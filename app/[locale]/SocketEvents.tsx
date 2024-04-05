@@ -30,6 +30,8 @@ import {
   USER_CALL_REJECTED,
   USER_CALL_ACCEPTED,
   UPDATE_ON_CALL_COUNT,
+  CLEAR_MESSAGES,
+  DELETE_ALL_MESSAGE_IN_CHAT,
 } from "@/context/reducers/actions";
 import { IChat } from "@/context/reducers/interfaces";
 import { Reaction, Tuser } from "@/store/types";
@@ -401,12 +403,12 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   const handleOnlineUsers = useCallback(
     (user: { userId: string; socketId: string; userInfo: Tuser; chatId: string }) => {
       if (user) {
-        dispatch({
-          type: UPDATE_ONLINE_STATUS,
-          payload: { chatId: user.chatId, type: "online" },
-        });
         if (user.userId !== currentUserRef?.current?._id) {
           addOnlineUser(user);
+          dispatch({
+            type: UPDATE_ONLINE_STATUS,
+            payload: { chatId: user.chatId, type: "online" },
+          });
         }
       }
     },
@@ -650,6 +652,16 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       }
     }
   }, []);
+
+  //deletedAllMessageInChatNotify
+  const deletedAllMessageInChatNotify = useCallback((data: any) => {
+
+    if (data.chatId === selectedChatRef?.current?.chatId) {
+      dispatch({ type: DELETE_ALL_MESSAGE_IN_CHAT,payload:data });
+    } else {
+      dispatch({ type: DELETE_ALL_MESSAGE_IN_CHAT,payload:{...data,type:"update-only-chats"} });
+    }
+  }, []);
   useEffect(() => {
     // Add event listeners
     socket.on("receiveMessage", handleSocketMessage);
@@ -694,6 +706,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     socket.on("caller_call_rejected_received", handleCallRejected);
     socket.on("update:on-call-count_received", handleUpdateOnCallCount);
     socket.on("user-on-call-message_received", handleUserOnCallMessage);
+    socket.on("deletedAllMessageInChatNotify", deletedAllMessageInChatNotify);
     return () => {
       //online events
       socket.off("addOnlineUsers", handleOnlineUsers);
@@ -739,6 +752,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       //update:on-call-count_received
       socket.off("update:on-call-count_received", handleUpdateOnCallCount);
       socket.off("user-on-call-message_received", handleUserOnCallMessage);
+      socket.off("deletedAllMessageInChatNotify", deletedAllMessageInChatNotify);
     };
   }, []); //
 
