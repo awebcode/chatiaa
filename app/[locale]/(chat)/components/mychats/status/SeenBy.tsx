@@ -51,8 +51,8 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
                       >
                         <Image
                           src={user?.userId?.image || user?.image}
-                          height={1000}
-                          width={1000}
+                          height={20}
+                          width={20}
                           alt="image"
                           className="h-full w-full object-cover rounded"
                           loading="lazy"

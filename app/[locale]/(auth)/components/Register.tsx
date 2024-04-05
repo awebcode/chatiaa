@@ -5,6 +5,7 @@ import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
+import { BiLoaderCircle } from "react-icons/bi";
 
 const Register = () => {
   const queryClient=useQueryClient()
@@ -185,7 +186,9 @@ const Register = () => {
               </svg>
               <span>
                 {loading ? (
-                  <span className="animate-pulse">Creating...</span>
+                 <div className="flex justify-center items-center mt-6 ">
+                    <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />Creating...
+                  </div>
                 ) : (
                   "Register"
                 )}

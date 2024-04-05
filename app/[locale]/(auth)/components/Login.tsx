@@ -4,6 +4,7 @@ import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
+import { BiLoaderCircle } from "react-icons/bi";
 
 const Login = () => {
   const queryClient=useQueryClient()
@@ -161,7 +162,15 @@ const Login = () => {
                   d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                 />
               </svg>
-              <span>{loading ? "signing..." : "Login"}</span>
+              <span>
+                {loading ? (
+                  <div className="flex justify-center items-center mt-6 ">
+                    <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />signing...
+                  </div>
+                ) : (
+                  "Login"
+                )}
+              </span>
             </button>
             <p className="text-center">
               Not registered yet?{" "}

@@ -24,8 +24,8 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
                   <div className="h-4 w-4 rounded-full cursor-pointer " >
                     <Image
                       src={user?.userId?.image || user.userId?.image}
-                      height={1000}
-                      width={1000}
+                      height={20}
+                      width={20}
                       alt="image"
                       className="h-full w-full object-cover rounded"
                       loading="lazy"

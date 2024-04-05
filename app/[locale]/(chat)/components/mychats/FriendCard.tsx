@@ -1,4 +1,3 @@
-
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
 import React, { useState } from "react";
@@ -33,8 +32,8 @@ const Modal = dynamic(() => import("./Modal"));
 const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
-  const router = useRouter()
-   const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser, selectedChat } = useMessageState();
@@ -99,9 +98,10 @@ const FriendsCard: React.FC<{
       isOnline: chat?.isOnline,
       onCallMembers: chat?.onCallMembers,
     };
-
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
+    router.prefetch(`?chatId=${chat?._id}`);
+
 
     // if (chat.isGroupChat) {
     //   socket.emit("setup", { id: chat?._id } as any);
@@ -153,12 +153,11 @@ const FriendsCard: React.FC<{
       dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
       updateStatusMutation.mutate(chatId);
     }
-     router.replace(`?chatId=${chat?._id}`)
+
     // queryclient.invalidateQueries({ queryKey: ["messages", chatId] });
   };
 
- 
-// console.log({chat})
+  // console.log({chat})
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
@@ -216,7 +215,10 @@ const FriendsCard: React.FC<{
                     typingUsers
                       .filter((typeuser) => typeuser.chatId === chat?._id)
                       .map((typeuser, index, array) => (
-                        <span className="text-[10px] md:text-xs text-blue-600" key={index}>
+                        <span
+                          className="text-[10px] md:text-xs text-blue-600"
+                          key={index}
+                        >
                           {index === 0 ? (
                             <>
                               {/* Show the name of the first typing user */}
@@ -246,7 +248,6 @@ const FriendsCard: React.FC<{
                 : moment(chat?.createdAt).format("LT")}
               {!chat?.isOnline && !chat?.isGroupChat && (
                 <span className="text-[8px] md:text-[10px]  font-thin block  md:ml-2 md:flex gap-x-1">
-                 
                   {moment(getSenderFull(currentUser, chat.users)?.lastActive).fromNow()}
                 </span>
               )}
