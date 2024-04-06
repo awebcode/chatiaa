@@ -69,15 +69,6 @@ const checkOnlineUsers = (userId, socketId) => __awaiter(void 0, void 0, void 0,
         }
     }
 });
-// Function to remove a user from the online users model
-// const removeUser = async (socketId: string) => {
-//   try {
-//     // Find the user in the online users model based on socketId
-//     await onlineUsersModel.findOneAndDelete({ socketId });
-//   } catch (error) {
-//     console.error("Error removing user:", error);
-//   }
-// };
 // Function to get the socket connected user from the User model
 const getSocketConnectedUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -398,7 +389,6 @@ exports.io.on("connection", (socket) => {
     socket.on("disconnect", () => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const leaveId = yield (0, exports.getSocketConnectedUser)(socket.id);
-            console.log({ leaveId });
             if (leaveId) {
                 socket.leave(leaveId.userId.toString());
                 const userId = leaveId.userId.toString();

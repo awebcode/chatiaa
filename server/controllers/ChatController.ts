@@ -64,7 +64,7 @@ export const accessChat = async (
       const createdChat = await Chat.create(chatData);
       let FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
         "users",
-        "name email image lastActive createdAt"
+        "name email image lastActive onlineStatus createdAt onlineStatus"
       );
       const isOnline = await checkIfAnyUserIsOnline(FullChat?.users as any, req.id);
       res.status(201).json({
@@ -127,18 +127,18 @@ export const fetchChats = async (
     })
       .populate({
         path: "users",
-        select: "name email image createdAt lastActive",
+        select: "name email image createdAt lastActive onlineStatus",
         options: { limit: 10 }, // Set limit to Infinity to populate all documents
       })
-      .populate("groupAdmin", "email name image createdAt lastActive")
+      .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
       .populate("latestMessage")
-      .populate("chatBlockedBy", "name image email createdAt lastActive")
+      .populate("chatBlockedBy", "name image email createdAt lastActive onlineStatus")
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(skip);
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
-      select: "name image email lastActive createdAt lastActive",
+      select: "name image email lastActive createdAt lastActive onlineStatus",
     });
     // Filter the populatedChats array based on the keyword
     let filteredChats: any = [];
@@ -433,10 +433,10 @@ export const updateGroupNamePhoto = async (
     )
       .populate({
         path: "users",
-        select: "name email image lastActive",
+        select: "name email image lastActive onlineStatus onlineStatus",
         options: { limit: 10 },
       })
-      .populate("groupAdmin", "name email image lastActive");
+      .populate("groupAdmin", "name email image lastActive onlineStatus onlineStatus");
     // //@@@ notify/emit-socket group members that who updated the group
     // Generate update message
     const message = generateUpdateMessage(
@@ -600,10 +600,10 @@ export const addToGroup = async (
     )
       .populate({
         path: "users",
-        select: "name email image lastActive",
+        select: "name email image lastActive onlineStatus",
         options: { limit: 10 },
       })
-      .populate("groupAdmin", "name email image lastActive");
+      .populate("groupAdmin", "name email image lastActive onlineStatus");
 
     if (!added) {
       return next(new CustomErrorHandler("Chat not found!", 404));
@@ -698,10 +698,10 @@ export const makeAdmin = async (
     )
       .populate({
         path: "users",
-        select: "name email image lastActive",
+        select: "name email image lastActive onlineStatus",
         options: { limit: 10 },
       })
-      .populate("groupAdmin", "name email image lastActive");
+      .populate("groupAdmin", "name email image lastActive onlineStatus");
 
     if (!updatedChat) {
       return next(new CustomErrorHandler("Chat not found!", 404));

@@ -39,23 +39,23 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             {
                 path: "isReply.messageId",
                 select: "content file type",
-                populate: { path: "sender", select: "name image email" },
+                populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
             },
             {
                 path: "isReply.repliedBy",
-                select: "name image email",
+                select: "name image email lastActive createdAt onlineStatus",
             },
             {
                 path: "isEdit.messageId",
                 select: "content file type",
-                populate: { path: "sender", select: "name image email" },
+                populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
             },
             {
                 path: "isEdit.editedBy",
-                select: "name image email",
+                select: "name image email lastActive createdAt onlineStatus",
             },
         ])
-            .populate("sender removedBy unsentBy", "name image email")
+            .populate("sender removedBy unsentBy", "name image email lastActive createdAt onlineStatus")
             .populate("chat")
             .sort({ _id: -1 })
             .limit(limit)
@@ -63,7 +63,7 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         // .sort({ _id: -1 }) // Use _id for sorting in descending order
         messages = yield UserModel_1.User.populate(messages, {
             path: "sender chat.users",
-            select: "name image email lastActive",
+            select: "name image email lastActive createdAt onlineStatus",
         });
         // Populate reactions for each message
         messages = yield Promise.all(messages.map((message) => __awaiter(void 0, void 0, void 0, function* () {
@@ -71,7 +71,7 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             const reactions = yield reactModal_1.Reaction.find({ messageId: message._id })
                 .populate({
                 path: "reactBy",
-                select: "name image email",
+                select: "name image email lastActive createdAt onlineStatus",
                 options: { limit: 10 },
             })
                 .sort({ updatedAt: -1 })
@@ -80,7 +80,7 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             const seenBy = yield seenByModel_1.MessageSeenBy.find({ messageId: message._id })
                 .populate({
                 path: "userId",
-                select: "name image email",
+                select: "name image email lastActive createdAt onlineStatus",
                 options: { limit: 10 },
             })
                 .sort({ updatedAt: -1 })
@@ -135,7 +135,7 @@ const getMessageReactions = (req, res, next) => __awaiter(void 0, void 0, void 0
             : { messageId, emoji: req.query.emoji })
             .populate({
             path: "reactBy",
-            select: "name image email",
+            select: "name image email lastActive createdAt onlineStatus",
         })
             .sort({ updatedAt: -1 })
             .limit(limit)
@@ -195,7 +195,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 message = yield message.populate("sender chat", "name email image");
                 message = yield UserModel_1.User.populate(message, {
                     path: "sender chat.users",
-                    select: "name image email",
+                    select: "name image email lastActive createdAt onlineStatus",
                 });
                 // Update latest message for the chat
                 const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
@@ -223,11 +223,11 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             };
             // Create and populate message
             let message = yield MessageModel_1.Message.create(newMessage);
-            message = yield message.populate("sender chat", "name image email");
+            message = yield message.populate("sender chat", "name image email lastActive createdAt onlineStatus");
             message = yield message.populate("chat");
             message = yield UserModel_1.User.populate(message, {
                 path: "chat.users",
-                select: "name image email",
+                select: "name image email lastActive createdAt onlineStatus",
             });
             // Update latest message for the chat
             const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
@@ -267,9 +267,12 @@ const updateChatMessageController = (req, res, next) => __awaiter(void 0, void 0
         })
             .populate({
             path: "latestMessage",
-            populate: { path: "sender", select: "name image" },
+            populate: {
+                path: "sender",
+                select: "name email image onlineStatus lastActive createdAt",
+            },
         })
-            .populate("users", "name image");
+            .populate("users", "name email image onlineStatus lastActive createdAt");
         res.status(200).json({ success: true, chat: updateChat });
     }
     catch (error) {
@@ -442,11 +445,11 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                     {
                         path: "isReply.messageId",
                         select: "content file type",
-                        populate: { path: "sender", select: "name image email" },
+                        populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
                     },
                     {
                         path: "isReply.repliedBy",
-                        select: "name image email",
+                        select: "name image email lastActive createdAt onlineStatus",
                     },
                     // {
                     //   path: "chat",
@@ -455,12 +458,12 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 message = yield UserModel_1.User.populate(message, [
                     {
                         path: "chat.users",
-                        select: "name image email",
+                        select: "name image email lastActive createdAt onlineStatus",
                         options: { limit: 10 },
                     },
                     {
                         path: "sender",
-                        select: "name image email",
+                        select: "name image email lastActive createdAt onlineStatus",
                     },
                 ]);
                 // Update latest message for the chat
@@ -496,22 +499,22 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             });
         }
         message = yield MessageModel_1.Message.findOne(message._id)
-            .populate("sender chat", "name image email")
+            .populate("sender chat", "name image email lastActive createdAt onlineStatus")
             .populate([
             {
                 path: "isReply.messageId",
                 select: "content file type",
-                populate: { path: "sender", select: "name image email" },
+                populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
             },
             {
                 path: "isReply.repliedBy",
-                select: "name image email",
+                select: "name image email lastActive createdAt onlineStatus",
             },
         ])
             .populate("chat");
         message = yield UserModel_1.User.populate(message, {
             path: "chat.users",
-            select: "name image email",
+            select: "name image email lastActive createdAt onlineStatus",
         });
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: message });
         //send to client
@@ -582,7 +585,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                     .populate("chat");
                 editedChat = yield UserModel_1.User.populate(editedChat, {
                     path: "chat.users",
-                    select: "name image email",
+                    select: "name image email lastActive createdAt onlineStatus",
                 });
                 if (isLastMessage) {
                     yield ChatModel_1.Chat.findByIdAndUpdate(chatId, { latestMessage: editedChat });
@@ -619,11 +622,11 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 file: null,
                 tempMessageId: req.body.tempMessageId,
             }, { new: true })
-                .populate("sender isEdit.editedBy", "name email image")
+                .populate("sender isEdit.editedBy", "name email image onlineStatus lastActive createdAt")
                 .populate("chat");
             editedChat = yield UserModel_1.User.populate(editedChat, {
                 path: "chat.users",
-                select: "name image email",
+                select: "name image email lastActive createdAt onlineStatus",
             });
         }
         if (isLastMessage) {
@@ -664,7 +667,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                 });
                 if (existingReaction) {
                     // Emoji update logic
-                    const reaction = yield reactModal_1.Reaction.findOneAndUpdate({ messageId, reactBy: req.id }, { emoji }, { new: true }).populate("reactBy", "name email image");
+                    const reaction = yield reactModal_1.Reaction.findOneAndUpdate({ messageId, reactBy: req.id }, { emoji }, { new: true }).populate("reactBy", "name email image onlineStatus lastActive createdAt");
                     // Send message to client
                     if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                         const emitData = { reaction, type: "update" };
@@ -685,7 +688,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                         reactBy: req.id,
                         tempReactionId,
                     });
-                    const reaction = yield react.populate("reactBy", "name email image");
+                    const reaction = yield react.populate("reactBy", "name email image onlineStatus lastActive createdAt");
                     // Send message to client
                     if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                         const emitData = { reaction, type: "add" };

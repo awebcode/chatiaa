@@ -31,24 +31,24 @@ export const allMessages = async (
         {
           path: "isReply.messageId",
           select: "content file type",
-          populate: { path: "sender", select: "name image email" },
+          populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
         },
         {
           path: "isReply.repliedBy",
-          select: "name image email",
+          select: "name image email lastActive createdAt onlineStatus",
         },
         {
           path: "isEdit.messageId",
           select: "content file type",
-          populate: { path: "sender", select: "name image email" },
+          populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
         },
         {
           path: "isEdit.editedBy",
-          select: "name image email",
+          select: "name image email lastActive createdAt onlineStatus",
         },
       ])
 
-      .populate("sender removedBy unsentBy", "name image email")
+      .populate("sender removedBy unsentBy", "name image email lastActive createdAt onlineStatus")
       .populate("chat")
       .sort({ _id: -1 })
       .limit(limit)
@@ -58,7 +58,7 @@ export const allMessages = async (
 
     messages = await User.populate(messages, {
       path: "sender chat.users",
-      select: "name image email lastActive",
+      select: "name image email lastActive createdAt onlineStatus",
     });
     // Populate reactions for each message
     messages = await Promise.all(
@@ -69,7 +69,7 @@ export const allMessages = async (
         const reactions = await Reaction.find({ messageId: message._id })
           .populate({
             path: "reactBy",
-            select: "name image email",
+            select: "name image email lastActive createdAt onlineStatus",
             options: { limit: 10 },
           })
           .sort({ updatedAt: -1 })
@@ -78,7 +78,7 @@ export const allMessages = async (
         const seenBy = await MessageSeenBy.find({ messageId: message._id })
           .populate({
             path: "userId",
-            select: "name image email",
+            select: "name image email lastActive createdAt onlineStatus",
             options: { limit: 10 },
           })
           .sort({ updatedAt: -1 })
@@ -144,7 +144,7 @@ export const getMessageReactions = async (
     )
       .populate({
         path: "reactBy",
-        select: "name image email",
+        select: "name image email lastActive createdAt onlineStatus",
       })
       .sort({ updatedAt: -1 })
       .limit(limit)
@@ -214,7 +214,7 @@ export const sendMessage = async (
           message = await message.populate("sender chat", "name email image");
           message = await User.populate(message, {
             path: "sender chat.users",
-            select: "name image email",
+            select: "name image email lastActive createdAt onlineStatus",
           });
 
           // Update latest message for the chat
@@ -246,11 +246,11 @@ export const sendMessage = async (
 
       // Create and populate message
       let message: any = await Message.create(newMessage);
-      message = await message.populate("sender chat", "name image email");
+      message = await message.populate("sender chat", "name image email lastActive createdAt onlineStatus");
       message = await message.populate("chat");
       message = await User.populate(message, {
         path: "chat.users",
-        select: "name image email",
+        select: "name image email lastActive createdAt onlineStatus",
       });
 
       // Update latest message for the chat
@@ -302,9 +302,12 @@ export const updateChatMessageController = async (
     })
       .populate({
         path: "latestMessage",
-        populate: { path: "sender", select: "name image" },
+        populate: {
+          path: "sender",
+          select: "name email image onlineStatus lastActive createdAt",
+        },
       })
-      .populate("users", "name image");
+      .populate("users", "name email image onlineStatus lastActive createdAt");
 
     res.status(200).json({ success: true, chat: updateChat });
   } catch (error) {
@@ -536,11 +539,11 @@ export const replyMessage = async (
             {
               path: "isReply.messageId",
               select: "content file type",
-              populate: { path: "sender", select: "name image email" },
+              populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
             },
             {
               path: "isReply.repliedBy",
-              select: "name image email",
+              select: "name image email lastActive createdAt onlineStatus",
             },
             // {
             //   path: "chat",
@@ -550,12 +553,12 @@ export const replyMessage = async (
           message = await User.populate(message, [
             {
               path: "chat.users",
-              select: "name image email",
+              select: "name image email lastActive createdAt onlineStatus",
               options: { limit: 10 },
             },
             {
               path: "sender",
-              select: "name image email",
+              select: "name image email lastActive createdAt onlineStatus",
             },
           ]);
 
@@ -599,23 +602,23 @@ export const replyMessage = async (
     }
 
     message = await Message.findOne(message._id)
-      .populate("sender chat", "name image email")
+      .populate("sender chat", "name image email lastActive createdAt onlineStatus")
       .populate([
         {
           path: "isReply.messageId",
           select: "content file type",
-          populate: { path: "sender", select: "name image email" },
+          populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
         },
         {
           path: "isReply.repliedBy",
-          select: "name image email",
+          select: "name image email lastActive createdAt onlineStatus",
         },
       ])
       .populate("chat");
 
     message = await User.populate(message, {
       path: "chat.users",
-      select: "name image email",
+      select: "name image email lastActive createdAt onlineStatus",
     });
 
     const chat = await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
@@ -701,7 +704,7 @@ export const editMessage = async (
 
           editedChat = await User.populate(editedChat, {
             path: "chat.users",
-            select: "name image email",
+            select: "name image email lastActive createdAt onlineStatus",
           });
           if (isLastMessage) {
             await Chat.findByIdAndUpdate(chatId, { latestMessage: editedChat });
@@ -746,12 +749,15 @@ export const editMessage = async (
         },
         { new: true }
       )
-        .populate("sender isEdit.editedBy", "name email image")
+        .populate(
+          "sender isEdit.editedBy",
+          "name email image onlineStatus lastActive createdAt"
+        )
         .populate("chat");
 
       editedChat = await User.populate(editedChat, {
         path: "chat.users",
-        select: "name image email",
+        select: "name image email lastActive createdAt onlineStatus",
       });
     }
     if (isLastMessage) {
@@ -802,7 +808,7 @@ export const addRemoveEmojiReactions = async (
             { messageId, reactBy: req.id },
             { emoji },
             { new: true }
-          ).populate("reactBy", "name email image");
+          ).populate("reactBy", "name email image onlineStatus lastActive createdAt");
           // Send message to client
           if (chat?.isGroupChat) {
             const emitData = { reaction, type: "update" };
@@ -822,7 +828,10 @@ export const addRemoveEmojiReactions = async (
             tempReactionId,
           });
 
-          const reaction = await react.populate("reactBy", "name email image");
+          const reaction = await react.populate(
+            "reactBy",
+            "name email image onlineStatus lastActive createdAt"
+          );
           // Send message to client
           if (chat?.isGroupChat) {
             const emitData = { reaction, type: "add" };

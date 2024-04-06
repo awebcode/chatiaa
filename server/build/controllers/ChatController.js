@@ -67,7 +67,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         };
         try {
             const createdChat = yield ChatModel_1.Chat.create(chatData);
-            let FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive createdAt");
+            let FullChat = yield ChatModel_1.Chat.findOne({ _id: createdChat._id }).populate("users", "name email image lastActive onlineStatus createdAt onlineStatus");
             const isOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(FullChat === null || FullChat === void 0 ? void 0 : FullChat.users, req.id);
             res.status(201).json({
                 success: true,
@@ -123,18 +123,18 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         })
             .populate({
             path: "users",
-            select: "name email image createdAt lastActive",
+            select: "name email image createdAt lastActive onlineStatus",
             options: { limit: 10 }, // Set limit to Infinity to populate all documents
         })
-            .populate("groupAdmin", "email name image createdAt lastActive")
+            .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
             .populate("latestMessage")
-            .populate("chatBlockedBy", "name image email createdAt lastActive")
+            .populate("chatBlockedBy", "name image email createdAt lastActive onlineStatus")
             .sort({ updatedAt: -1 })
             .limit(limit)
             .skip(skip);
         const populatedChats = yield UserModel_1.User.populate(chats, {
             path: "latestMessage.sender",
-            select: "name image email lastActive createdAt lastActive",
+            select: "name image email lastActive createdAt lastActive onlineStatus",
         });
         // Filter the populatedChats array based on the keyword
         let filteredChats = [];
@@ -357,10 +357,10 @@ const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 
         })
             .populate({
             path: "users",
-            select: "name email image lastActive",
+            select: "name email image lastActive onlineStatus onlineStatus",
             options: { limit: 10 },
         })
-            .populate("groupAdmin", "name email image lastActive");
+            .populate("groupAdmin", "name email image lastActive onlineStatus onlineStatus");
         // //@@@ notify/emit-socket group members that who updated the group
         // Generate update message
         const message = (0, generateUpdateMessage_1.generateUpdateMessage)(currentUser, description, groupName, (_f = req.file) === null || _f === void 0 ? void 0 : _f.path);
@@ -481,10 +481,10 @@ const addToGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         })
             .populate({
             path: "users",
-            select: "name email image lastActive",
+            select: "name email image lastActive onlineStatus",
             options: { limit: 10 },
         })
-            .populate("groupAdmin", "name email image lastActive");
+            .populate("groupAdmin", "name email image lastActive onlineStatus");
         if (!added) {
             return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
         }
@@ -558,10 +558,10 @@ const makeAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         })
             .populate({
             path: "users",
-            select: "name email image lastActive",
+            select: "name email image lastActive onlineStatus",
             options: { limit: 10 },
         })
-            .populate("groupAdmin", "name email image lastActive");
+            .populate("groupAdmin", "name email image lastActive onlineStatus");
         if (!updatedChat) {
             return next(new errorHandler_1.CustomErrorHandler("Chat not found!", 404));
         }

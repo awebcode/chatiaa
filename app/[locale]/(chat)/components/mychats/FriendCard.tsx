@@ -101,7 +101,7 @@ const FriendsCard: React.FC<{
     };
 
     // router.replace
-    router.replace(`?chatId=${chat?._id}`);
+    router.push(`/chat?chatId=${chat?._id}`);
 
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));

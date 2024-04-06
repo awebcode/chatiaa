@@ -12,7 +12,7 @@ export async function checkIfAnyUserIsOnline(
 
   // Query onlineUsersModel for online status of filtered users
   const onlineUsers = await User.find({
-    _id: { $in: userIds },
+    _id: { $in: userIds, $ne: reqId },
     onlineStatus: { $in: ["online", "busy"] },
   });
 

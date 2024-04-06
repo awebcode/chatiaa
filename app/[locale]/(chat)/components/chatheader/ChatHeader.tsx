@@ -25,16 +25,16 @@ const ChatHeader = () => {
   const isUserOnline = selectedChat?.isOnline as boolean;
 
   const clearselectedChat = async () => {
-    // window.history.pushState(null, "", "/chat");
-    router.replace("/chat");
+    window.history.pushState(null, "", "/chat");
+    // router.replace("/chat");
 
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
   };
   useEffect(() => {
-    if (!selectedChat) return router.replace("/chat");
-  }, [selectedChat, router]);
+    if (!selectedChat) return window.history.pushState(null, "", "/chat");
+  }, [selectedChat]);
   //  if (!selectedChat) return
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
@@ -118,7 +118,7 @@ const ChatHeader = () => {
                     ) : (
                       <span className="text-rose-500">Friends are offline</span>
                     )
-                  ) : selectedChat?.userInfo?.isOnline ? (
+                  ) : selectedChat?.isOnline ? (
                     <span className="text-green-500">Online</span>
                   ) : (!selectedChat?.isOnline && selectedChat?.userInfo?.lastActive) ||
                     selectedChat?.userInfo?.createdAt ? (
