@@ -59,11 +59,17 @@ export function MessagePreview({
         previewContent = (
           <span
             className={`${
-              chat.isGroupChat&&chat?.latestMessage?.content &&
-              !chat?.latestMessage?.isSeen&&!isCurrentUserSender &&
+              chat.isGroupChat &&
+              chat?.latestMessage?.content &&
+              !chat?.latestMessage?.isSeen &&
+              !isCurrentUserSender &&
               chat?.latestMessage?.sender?._id !== currentUser?._id
                 ? "font-bold"
-                :chat?.latestMessage?.status !== "seen"? "font-bold":""
+                : !chat?.latestMessage?.isSeen &&
+                  !isCurrentUserSender &&
+                  chat?.latestMessage?.status !== "seen"
+                ? "font-bold"
+                : "font-medium"
             }`}
           >
             {/* // chat?.latestMessage?.status !== "seen" */}

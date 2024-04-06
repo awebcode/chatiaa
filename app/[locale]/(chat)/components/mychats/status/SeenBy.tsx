@@ -20,7 +20,7 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
         {/* unseen */}
         {chat?.latestMessage?.status === "unseen" && (
           <div className="h-5 w-5 relative m-1">
-            <IoIosCheckmarkCircleOutline className="h-5 w-5 text-gray-400 rounded-full relative" />
+            <IoIosCheckmarkCircleOutline className="h-5 w-5 text-gray-400  rounded-full relative" />
           </div>
         )}
         {/* Delivered */}

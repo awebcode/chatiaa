@@ -27,7 +27,6 @@ const __1 = require("..");
 const groupSocket_1 = require("../common/groupSocket");
 const functions_1 = require("./functions");
 const generateUpdateMessage_1 = require("../common/generateUpdateMessage");
-const onlineUsersModel_1 = require("../model/onlineUsersModel");
 const checkIsOnline_1 = require("../common/checkIsOnline");
 //@access          Protected
 const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -712,8 +711,11 @@ const getUsersInAChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         const total = chat ? chat.users.length : 0;
         // Check online status for each user
         const usersWithOnlineStatus = yield Promise.all(((findChatQuery === null || findChatQuery === void 0 ? void 0 : findChatQuery.users) || []).map((user) => __awaiter(void 0, void 0, void 0, function* () {
-            const isOnline = yield onlineUsersModel_1.onlineUsersModel.findOne({ userId: user === null || user === void 0 ? void 0 : user._id });
-            return Object.assign(Object.assign({}, user.toObject()), { isOnline });
+            const isOnline = yield UserModel_1.User.findOne({
+                _id: user === null || user === void 0 ? void 0 : user._id,
+                onlineStatus: { $in: ["online", "busy"] },
+            });
+            return Object.assign(Object.assign({}, user.toObject()), { isOnline: !!isOnline, onlineStatus: isOnline === null || isOnline === void 0 ? void 0 : isOnline.onlineStatus });
         })));
         res.send({ users: usersWithOnlineStatus, total, limit });
     }

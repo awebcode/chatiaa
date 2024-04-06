@@ -45,8 +45,8 @@ const EmojiModal = ({
         open={openEmoji}
         style={{
           zIndex: 1000,
-          height: isSmallDevice ? "300px" : "310px",
-          width: isSmallDevice ? "300px" : "310px",
+          height: isSmallDevice ? "270px" : "310px",
+          width: isSmallDevice ? "240px" : "310px",
           fontSize: "10px",
           overflow: "auto",
         }}
@@ -55,7 +55,7 @@ const EmojiModal = ({
           setIsOpenReactModal(false);
           setIsOpenEmojiModal(false);
         }}
-        autoFocusSearch
+        // autoFocusSearch
         theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
         lazyLoadEmojis
         // previewConfig={{defaultEmoji:<Emoji/>}}

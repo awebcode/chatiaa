@@ -21,5 +21,11 @@ const userSchema = new mongoose_1.default.Schema({
         type: Date,
         // default: Date.now,
     },
+    onlineStatus: {
+        type: String,
+        default: "offline",
+        enum: ["online", "offline", "busy"],
+    },
+    socketId: String
 }, { timestamps: true });
 exports.User = mongoose_1.default.model("User", userSchema);

@@ -7,7 +7,9 @@ export type Tuser = {
   role: string;
   createdAt: string;
   lastActive: string;
-  isOnline:boolean
+  isOnline:boolean;
+  onlineStatus: ['online', 'busy', 'offline'],
+  socketId:string
 };
 
 //reactions

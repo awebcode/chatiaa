@@ -18,25 +18,17 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
     >
       <div className="flex items-center gap-2">
         <div className="h-8 md:h-8 w-8 md:w-8 relative rounded-full  ">
-          {user.image?.includes("accessoriesType") ? (
-            <img
-              height={35}
-              width={35}
-              src={user?.image || "/logo.svg"}
-              alt="Profile"
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : (
+         
             <Image
               height={35}
               width={35}
               className=" h-full w-full object-cover rounded-full"
               alt={user.name}
-              src={user.image}
+            src={user.image}
+            loading="lazy"
             />
-          )}
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col text-left gap-1">
           <h3 className="text-xs md:text-sm font-bold">{user.name}</h3>
           <span className="text-[8px]">{user.email.slice(0, 30)}</span>
           <span className="text-[8px]">

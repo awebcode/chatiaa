@@ -379,7 +379,7 @@ export const messageReducer = (state: State, action: Action): State => {
         updatedMessages = [...action.payload];
       } else {
         const existingMessageIndex = state.messages.findIndex((m) => {
-          if (m.tempMessageId === action.payload.tempMessageId) {
+          if (m?.tempMessageId === action.payload?.tempMessageId) {
             return true;
           }
           if (action.payload.isEdit && m._id === action.payload.isEdit?.messageId?._id) {
@@ -412,7 +412,7 @@ export const messageReducer = (state: State, action: Action): State => {
           }
         } else {
           // Add the new message to the messages array
-          if (action.payload.addMessageType !== "editMessage") {
+          if (action.payload?.addMessageType !== "editMessage") {
             updatedMessages = [action.payload, ...state.messages];
           } //
         }

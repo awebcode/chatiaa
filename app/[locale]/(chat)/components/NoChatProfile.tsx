@@ -39,7 +39,7 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
         <h2 className="text-center text-sm font-semibold mt-3">
           {moment(selectedChat?.userInfo?.createdAt).format("llll")}
         </h2>
-        <p className="text-center  mt-1">Software Engineer</p>
+        <p className="text-center  mt-1">Product Manager</p>
         <div className="flex text-[10px] md:text-x justify-center mt-5">
           <a href="#" className="text-blue-500 hover:text-blue-700 mx-3">
             Twitter

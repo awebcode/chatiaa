@@ -124,7 +124,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-2 md:p-4 bg-base-200 h-[65vh] overflow-y-auto overflow-x-hidden flex flex-col-reverse"
+      className="menu p-2 md:p-4 bg-base-200 h-[76vh] md:h-[70vh] overflow-y-auto overflow-x-hidden flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
@@ -184,7 +184,6 @@ export default function Messages({ chatId }: { chatId: string }) {
 
         {selectedChat &&
           !isLoading &&
-          !isFetching&&
           totalMessagesCount > 0 &&
           totalMessagesCount === messages?.length && (
             <NoChatProfile selectedChat={selectedChat as any} />

@@ -1,8 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetClose,
@@ -12,7 +10,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useMessageState } from "@/context/MessageContext";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import { BsThreeDots } from "react-icons/bs";
 import {
@@ -79,9 +76,10 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
             <Button
               size={"lg"}
               className="w-full block"
+              variant={"outline"}
               onClick={() => {
                 if (confirm("Are you sure?")) {
-                  deleteSignleChatMutation.mutateAsync();
+                  blockMutation.mutateAsync(blockData);
                 }
               }}
             >
@@ -90,9 +88,10 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
             <Button
               size={"lg"}
               className="w-full block"
+              variant={"outline"}
               onClick={() => {
                 if (confirm("Are you sure?")) {
-                  blockMutation.mutateAsync(blockData);
+                  deleteSignleChatMutation.mutateAsync();
                 }
               }}
             >

@@ -13,7 +13,6 @@ exports.emitEventToOnlineUsers = exports.markMessageAsDeliverdAfteronlineFriend 
 const ChatModel_1 = require("../model/ChatModel");
 const __1 = require("..");
 const UserModel_1 = require("../model/UserModel");
-const onlineUsersModel_1 = require("../model/onlineUsersModel");
 // Function to emit an event to users within a chat
 const emitEventToGroupUsers = (io, event, chatId, data) => __awaiter(void 0, void 0, void 0, function* () {
     const chatUsers = yield ChatModel_1.Chat.findById(chatId);
@@ -58,7 +57,11 @@ exports.markMessageAsDeliverdAfteronlineFriend = markMessageAsDeliverdAfteronlin
 // Function to emit an event to online users based on userId
 const emitEventToOnlineUsers = (io, eventName, userId, eventData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const userInfo = yield UserModel_1.User.findOneAndUpdate({ _id: userId }, { $set: { lastActive: new Date(Date.now()) } }, { new: true });
+        let userInfo = yield UserModel_1.User.findById(userId);
+        if (eventName === "leaveOnlineUsers" && userInfo) {
+            //when user updated then update online status
+            userInfo = yield UserModel_1.User.findByIdAndUpdate(userId, { onlineStatus: "offline", socketId: null, lastActive: Date.now() }, { new: true });
+        }
         const chats = yield ChatModel_1.Chat.find({ users: { $elemMatch: { $eq: userId } } });
         chats === null || chats === void 0 ? void 0 : chats.forEach((chatUsers) => {
             chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((chatUserId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -67,17 +70,21 @@ const emitEventToOnlineUsers = (io, eventName, userId, eventData) => __awaiter(v
                 //check if any user is online
                 const userIds = (_a = chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users) === null || _a === void 0 ? void 0 : _a.map((user) => user === null || user === void 0 ? void 0 : user.toString());
                 // Query onlineUsersModel for online status of filtered users
-                const onlineUsers = yield onlineUsersModel_1.onlineUsersModel.find({ userId: { $in: userIds } });
+                const onlineUsers = yield UserModel_1.User.find({
+                    _id: { $in: userIds },
+                    onlineStatus: { $in: ["online", "busy"] },
+                });
                 // Map the online status to userIds
-                const onlineUserIds = onlineUsers.map((user) => user.userId.toString());
+                const onlineUserIds = onlineUsers.map((user) => { var _a; return (_a = user === null || user === void 0 ? void 0 : user._id) === null || _a === void 0 ? void 0 : _a.toString(); });
                 const isAnyGroupUserOnline = (_b = chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users) === null || _b === void 0 ? void 0 : _b.some((user) => {
                     return onlineUserIds.includes(user === null || user === void 0 ? void 0 : user.toString()) && onlineUserIds.length > 1;
                 });
                 if (receiverId) {
-                    const { id, socketId } = receiverId;
+                    const { userId, socketId } = receiverId;
                     io.to(socketId).emit(eventName, Object.assign(Object.assign({}, eventData), { chatId: chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers._id, isAnyGroupUserOnline, userInfo: {
                             userId: userInfo === null || userInfo === void 0 ? void 0 : userInfo._id,
                             lastActive: userInfo === null || userInfo === void 0 ? void 0 : userInfo.lastActive,
+                            onlineStatus: userInfo === null || userInfo === void 0 ? void 0 : userInfo.onlineStatus,
                         } }));
                 }
             }));

@@ -31,7 +31,6 @@ const Navbar = () => {
     localStorage.removeItem("currentUser");
     router.push("/");
   };
-
   return (
     <nav className="sticky flex items-center justify-between p-3 md:p-4 px-4 md:px-10  shadow-sm">
       {/* Left Side - Logo */}

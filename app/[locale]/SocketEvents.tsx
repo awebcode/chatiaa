@@ -117,10 +117,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   useEffect(() => {
     const fetchOnlineUsers = async () => {
       const { data } = await axiosClient.get("/getOnlineUsersInMyChats");
-      let onlineUserss = data.onlineUsers.map((u: any) => ({
-        userId: u.userId._id,
+      let onlineUserss = data.onlineUsers.map((u: Tuser) => ({
+        userId: u._id,
         socketId: u.socketId,
-        userInfo: u.userId,
+        userInfo: u,
       }));
       setInitOnlineUsers(onlineUserss);
     };

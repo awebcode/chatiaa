@@ -1,7 +1,10 @@
 "use client"
 import dynamic from "next/dynamic";
 import React, { ReactNode, memo, useEffect } from "react";
- const ChatHeader = dynamic(() => import("./chatheader/ChatHeader"), { ssr: false });
+ const ChatHeader = dynamic(
+  () => import('./chatheader/ChatHeader'),
+  { ssr: false }
+);
 // const Input = dynamic(() => import("./Input/Input"),{ssr:false});
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { useMessageState } from "@/context/MessageContext";
@@ -20,7 +23,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
       {/* chat header */}
       <div className="z-50  overflow-hidden"> <ChatHeader /></div>
       {/* Message */}
-      <div className="absolute py-4 bottom-10 w-full z-10">
+      <div className="absolute md:py-4 bottom-10 w-full z-10">
        {children}
       </div>
       {/* Inpute */}

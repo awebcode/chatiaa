@@ -14,7 +14,7 @@ const page = async ({
       <div className="flexBetween gap-2 overflow-hidden">
         {/* Left side */}
         <div
-          className={`h-screen md:h-[88vh] basis-[100%] ${
+          className={`h-[91vh] md:h-[88vh] basis-[100%] ${
             searchParams?.chatId ? "hidden" : "block"
           } md:block w-full md:basis-2/4 border `}
         >
@@ -24,7 +24,7 @@ const page = async ({
         </div>
         {/* Rightside */}
         <div
-          className={`h-screen md:h-[88vh] border w-full ${
+          className={`h-[91vh] md:h-[88vh] border w-full ${
             searchParams?.chatId ? "block basis-[100%] w-full" : "hidden"
           }  md:block`}
         >

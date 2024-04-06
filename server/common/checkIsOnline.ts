@@ -1,14 +1,7 @@
-import mongoose from "mongoose";
-import { onlineUsersModel } from "../model/onlineUsersModel";
+import { User } from "../model/UserModel";
 
 interface User {
   _id: string;
-}
-
-
-
-interface OnlineUser {
-  userId: string|mongoose.Types.ObjectId;
 }
 
 export async function checkIfAnyUserIsOnline(
@@ -18,10 +11,13 @@ export async function checkIfAnyUserIsOnline(
   const userIds = chatUsers?.map((user: User) => user?._id?.toString()) || [];
 
   // Query onlineUsersModel for online status of filtered users
-  const onlineUsers = await onlineUsersModel.find({ userId: { $in: userIds } });
+  const onlineUsers = await User.find({
+    _id: { $in: userIds },
+    onlineStatus: { $in: ["online", "busy"] },
+  });
 
   // Map the online status to userIds
-  const onlineUserIds = onlineUsers.map((user: OnlineUser) => user.userId.toString());
+  const onlineUserIds = onlineUsers.map((user) => user?._id?.toString());
 
   const isOnline = chatUsers?.some((user: User) => {
     return onlineUserIds.includes(user?._id.toString()) && user?._id.toString() !== reqId;

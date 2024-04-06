@@ -10,14 +10,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkIfAnyUserIsOnline = void 0;
-const onlineUsersModel_1 = require("../model/onlineUsersModel");
+const UserModel_1 = require("../model/UserModel");
 function checkIfAnyUserIsOnline(chatUsers, reqId) {
     return __awaiter(this, void 0, void 0, function* () {
         const userIds = (chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.map((user) => { var _a; return (_a = user === null || user === void 0 ? void 0 : user._id) === null || _a === void 0 ? void 0 : _a.toString(); })) || [];
         // Query onlineUsersModel for online status of filtered users
-        const onlineUsers = yield onlineUsersModel_1.onlineUsersModel.find({ userId: { $in: userIds } });
+        const onlineUsers = yield UserModel_1.User.find({
+            _id: { $in: userIds },
+            onlineStatus: { $in: ["online", "busy"] },
+        });
         // Map the online status to userIds
-        const onlineUserIds = onlineUsers.map((user) => user.userId.toString());
+        const onlineUserIds = onlineUsers.map((user) => { var _a; return (_a = user === null || user === void 0 ? void 0 : user._id) === null || _a === void 0 ? void 0 : _a.toString(); });
         const isOnline = chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.some((user) => {
             return onlineUserIds.includes(user === null || user === void 0 ? void 0 : user._id.toString()) && (user === null || user === void 0 ? void 0 : user._id.toString()) !== reqId;
         });

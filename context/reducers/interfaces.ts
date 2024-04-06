@@ -49,6 +49,7 @@ export interface IChat {
   chatBlockedBy: Tuser[];
   image: { url: string };
   isOnline: boolean;
+  onlineStatus: ["online", "busy", "offline"];
   onCallMembers: number;
 }
 export interface ICall {

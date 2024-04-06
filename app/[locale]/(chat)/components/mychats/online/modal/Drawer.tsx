@@ -5,6 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { getAllUsers, getOnlineUsers } from "@/functions/authActions";
 
 import dynamic from "next/dynamic";
+import { Tuser } from "@/store/types";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const UserCard = dynamic(() => import("./UserCard"));
@@ -35,7 +36,7 @@ const Drawer = () => {
   };
 
   const users = data?.pages.flatMap((page) => page?.onlineUsers);
-
+ console.log({users})
   return (
     <>
       <div>
@@ -73,8 +74,8 @@ const Drawer = () => {
           return <UserCard user={user} key={user._id} />;
         })} */}
                 {users && users?.length > 0 ? (
-                  users?.map((user: any) => {
-                    return <UserCard user={user} key={user._id} />;
+                  users?.map((user: Tuser) => {
+                    return <UserCard user={user} key={user._id+Date.now()} />;
                   })
                 ) : (
                   <h1 className="text-sm md:text-xl m-4 text-center">No Online User Found!</h1>

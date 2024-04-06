@@ -22,9 +22,7 @@ import {
   emitEventToOnlineUsers,
   markMessageAsDeliverdAfteronlineFriend,
 } from "./common/groupSocket";
-import { onlineUsersModel } from "./model/onlineUsersModel";
 const app = express();
-
 
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
@@ -57,7 +55,7 @@ type TUser = {
   image: string;
   lastActive: string;
 };
-type TsocketUsers = {
+export type TsocketUsers = {
   userId: string;
   socketId: string;
   userInfo: TUser | null;
@@ -67,20 +65,11 @@ type TsocketUsers = {
 const checkOnlineUsers = async (userId: string, socketId: string) => {
   try {
     // Check if the user already exists in the online users model
-    let foundUser = await onlineUsersModel.findOne({ userId });
-
-    if (foundUser) {
-      // If the user exists, update their socketId
-      foundUser = await onlineUsersModel.findOneAndUpdate(
-        { userId },
-        { $set: { socketId } },
-        { new: true }
-      );
-      // await onlineUsersModel.findOneAndDelete({ userId });
-    } else {
-      // If the user doesn't exist, create a new entry in the online users model
-      await onlineUsersModel.create({ userId, socketId });
-    }
+    await User.findByIdAndUpdate(
+      userId,
+      { onlineStatus: "online", socketId },
+      { new: true }
+    );
   } catch (error: any) {
     if (error.code === 11000) {
       return null;
@@ -91,24 +80,37 @@ const checkOnlineUsers = async (userId: string, socketId: string) => {
 };
 
 // Function to remove a user from the online users model
-const removeUser = async (socketId: string) => {
-  try {
-    // Find the user in the online users model based on socketId
-    await onlineUsersModel.findOneAndDelete({ socketId });
-  } catch (error) {
-    console.error("Error removing user:", error);
-  }
-};
+// const removeUser = async (socketId: string) => {
+//   try {
+//     // Find the user in the online users model based on socketId
+//     await onlineUsersModel.findOneAndDelete({ socketId });
+//   } catch (error) {
+//     console.error("Error removing user:", error);
+//   }
+// };
 
-// Function to get the socket connected user from the onlineUsersModel
+// Function to get the socket connected user from the User model
 export const getSocketConnectedUser = async (id: string | Types.ObjectId) => {
   try {
-    // Query the onlineUsersModel to find the user based on id or socketId
-    if (id) {
-      //Types.ObjectId.isValid(id) ? { userId: id } : { socketId: id };
-      const query = Types.ObjectId.isValid(id) ? { userId: id } : { socketId: id };
-      const user = await onlineUsersModel.findOne(query);
-      return user;
+    // Check if id is a valid ObjectId
+    const isObjectId = Types.ObjectId.isValid(id);
+
+    // Construct the query based on whether id is a valid ObjectId or not
+    const query = isObjectId
+      ? {
+          $and: [{ onlineStatus: { $in: ["online", "busy"] } }, { _id: id }],
+        }
+      : {
+          $and: [{ onlineStatus: { $in: ["online", "busy"] } }, { socketId: id }],
+        };
+
+    // Query the User model to find the user based on the constructed query
+    const user = await User.findOne(query);
+    if (user) {
+      return {
+        userId: user?._id?.toString() as string,
+        socketId: user?.socketId as string,
+      };
     }
   } catch (error) {
     console.error("Error finding socket connected user:", error);
@@ -123,9 +125,6 @@ io.on("connection", (socket: Socket) => {
     await checkOnlineUsers(userData.userId, socket.id);
     //store connected users
 
-    let alreadyConnectedOnlineUsers: TsocketUsers[] = [];
-    let userIdSet = new Set(); // Maintain a set of unique user IDs
-
     // Filtered users from chats
     const chatUsers = await Chat.find({ users: userData.userId });
 
@@ -136,17 +135,8 @@ io.on("connection", (socket: Socket) => {
           chatUser.users.map(async (chatUserId: any) => {
             const receiverId = await getSocketConnectedUser(chatUserId.toString());
             if (receiverId) {
-              const { userId, socketId } = receiverId;
+              const { userId } = receiverId;
               const id = userId.toString(); // Convert userId to string
-              const userInfo: any = await User.findById(id).select(
-                "name image lastActive"
-              );
-              if (!userIdSet.has(id)) {
-                // Check if user ID is already added
-
-                alreadyConnectedOnlineUsers.push({ userId: id, socketId, userInfo });
-                userIdSet.add(id); // Add user ID to set
-              }
 
               io.to(id).emit("addOnlineUsers", {
                 chatId: chatUser._id,
@@ -378,16 +368,16 @@ io.on("connection", (socket: Socket) => {
       data
     );
   });
-///deletedAllMessageInChatNotify
+  ///deletedAllMessageInChatNotify
 
-   socket.on("deletedAllMessageInChatNotify", async (data: any) => {
-     await emitEventToGroupUsers(
-       socket,
-       "deletedAllMessageInChatNotify",
-       data.chatId,
-       data
-     );
-   });
+  socket.on("deletedAllMessageInChatNotify", async (data: any) => {
+    await emitEventToGroupUsers(
+      socket,
+      "deletedAllMessageInChatNotify",
+      data.chatId,
+      data
+    );
+  });
   //update_group_info
   socket.on("update_group_info", async (data: any) => {
     await emitEventToGroupUsers(socket, "update_group_info_Received", data._id, data);
@@ -452,9 +442,7 @@ io.on("connection", (socket: Socket) => {
       receiver?.users?.forEach(async (user) => {
         const isConnected = await getSocketConnectedUser(user?._id.toString());
         if (isConnected) {
-          io
-            .to(isConnected?.socketId)
-            .emit("update:on-call-count_received", { ...data });
+          io.to(isConnected?.socketId).emit("update:on-call-count_received", { ...data });
         }
       });
     }
@@ -490,15 +478,14 @@ io.on("connection", (socket: Socket) => {
       receiver?.users?.forEach(async (user) => {
         const isConnected = await getSocketConnectedUser(user?._id.toString());
         if (isConnected) {
-          io
-            .to(isConnected?.socketId)
-            .emit("user-on-call-message_received", { ...userOncallData });
+          io.to(isConnected?.socketId).emit("user-on-call-message_received", {
+            ...userOncallData,
+          });
         }
       });
     }
   });
 
-  
   //@@@@@@ calling system end
 
   // Handle client disconnection
@@ -507,6 +494,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("disconnect", async () => {
     try {
       const leaveId = await getSocketConnectedUser(socket.id);
+      console.log({ leaveId });
       if (leaveId) {
         socket.leave(leaveId.userId.toString());
 
@@ -520,7 +508,6 @@ io.on("connection", (socket: Socket) => {
         await emitEventToOnlineUsers(io, "leaveOnlineUsers", userId, eventData);
 
         // Remove the user from the database
-        await removeUser(socket.id);
 
         console.log("Client disconnected:", socket.id);
       }

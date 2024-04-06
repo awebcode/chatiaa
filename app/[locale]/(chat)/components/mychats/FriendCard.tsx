@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import moment from "moment";
 import { useTypingStore } from "@/store/useTyping";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
@@ -99,12 +99,12 @@ const FriendsCard: React.FC<{
       isOnline: chat?.isOnline,
       onCallMembers: chat?.onCallMembers,
     };
-    // router.replace(`?chatId=${chat?._id}`);
 
     // router.replace
+    router.replace(`?chatId=${chat?._id}`);
+
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
-    router.replace(`?chatId=${chat?._id}`);
     // router.push(`?chatId=${chat?._id}`);
     // router.push(`/chat/${chat?._id}`);
     // if (chat.isGroupChat) {
@@ -162,6 +162,9 @@ const FriendsCard: React.FC<{
   };
 
   // console.log({chat})
+
+
+  
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
@@ -169,7 +172,7 @@ const FriendsCard: React.FC<{
           // href={`/chat/${chat?._id}`}
           // prefetch
           // shallow
-          className="flex items-center gap-2 basis-[80%]"
+          className="flex items-center gap-2 basis-[90%] cursor-pointer"
           onClick={() => handleClick(chat._id as string)}
         >
           <div className="relative p-[2px] h-8 w-8 md:h-10 md:w-10 ring-1 md:ring-2 ring-violet-600 rounded-full">
@@ -197,7 +200,7 @@ const FriendsCard: React.FC<{
             ></span>
           </div>
 
-          <div>
+          <div className="flex flex-col justify-center items-start">
             <h3 className="text-xs md:text-sm font-bold">
               {!chat.isGroupChat && chat.users
                 ? getSender(currentUser, chat.users)
@@ -249,13 +252,13 @@ const FriendsCard: React.FC<{
                 <MessagePreview chat={chat} currentUser={currentUser as any} />
               )}
             </span>
-            <span className="text-[10px] font-bold inline mx-2">
+            <span className="text-[8px]  inline mr-2">
               {chat?.latestMessage?.content
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
               {!chat?.isOnline && !chat?.isGroupChat && (
-                <span className="text-[8px] md:text-[10px]  font-thin block  md:ml-2 md:inline ">
-                  <span className="mr-1">last active</span>
+                <span className="text-[8px]  font-medium   mx-1 md:inline ">
+                  <span className="mr-1">active</span>
                   {moment(getSenderFull(currentUser, chat.users)?.lastActive).fromNow()}
                 </span>
               )}

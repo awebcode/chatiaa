@@ -1,17 +1,14 @@
 "use client";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { MdCall, MdVideoCall } from "react-icons/md";
 import dynamic from "next/dynamic";
 import { useRouter } from "@/navigation";
 import moment from "moment";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import {
-  CLEAR_MESSAGES,
-  SET_SELECTED_CHAT,
-} from "@/context/reducers/actions";
+import { CLEAR_MESSAGES, SET_SELECTED_CHAT } from "@/context/reducers/actions";
 import { useTypingStore } from "@/store/useTyping";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { Button } from "@/components/ui/button";
@@ -21,23 +18,24 @@ const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"));
 
 const ChatHeader = () => {
   const { socket } = useSocketContext();
-  const router = useRouter()
+  const router = useRouter();
   const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   const { typingUsers } = useTypingStore();
-  const isUserOnline = selectedChat?.isOnline as boolean
+  const isUserOnline = selectedChat?.isOnline as boolean;
 
- 
+  const clearselectedChat = async () => {
+    // window.history.pushState(null, "", "/chat");
+    router.replace("/chat");
 
-  const clearselectedChat = async() => {
-    window.history.pushState(null, "", "/chat");
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
-    localStorage.removeItem("selectedChat")
-    //  await router.replace("/chat")
-
+    localStorage.removeItem("selectedChat");
   };
-  if (!selectedChat) return;
+  useEffect(() => {
+    if (!selectedChat) return router.replace("/chat");
+  }, [selectedChat, router]);
+  //  if (!selectedChat) return
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
       <div className="flex items-center gap-2">
@@ -71,10 +69,7 @@ const ChatHeader = () => {
 
               <span
                 className={`absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-[6px] ${
-                 selectedChat?.isOnline
-                      ? "bg-green-500"
-                      : "bg-rose-500"
-                   
+                  selectedChat?.isOnline ? "bg-green-500" : "bg-rose-500"
                 }`}
               ></span>
             </div>

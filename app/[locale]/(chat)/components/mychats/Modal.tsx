@@ -1,17 +1,17 @@
 import React from "react";
 import { BsArchive, BsBoxArrowLeft, BsCheck, BsLock, BsMicMute } from "react-icons/bs";
 import { MdCall, MdDelete, MdVideoCall } from "react-icons/md";
-import { RiProfileLine } from "react-icons/ri";
+import { RiChatOffLine, RiProfileLine } from "react-icons/ri";
 import {
   useBlockMutation,
   useDeleteAllMessagesInAChatMutation,
   useDeleteSingleChatMutation,
   useLeaveChatMutation,
 } from "../mutations/Chatmutations";
+import { FcDeleteDatabase } from "react-icons/fc";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { Tuser } from "@/store/types";
 import { IChat } from "@/context/reducers/interfaces";
-import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { PopoverContent } from "@/components/ui/popover";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
@@ -90,7 +90,7 @@ const Modal = ({
       ) : (
         <span className="text-rose-500">Block</span>
       ),
-      icon: <BsLock />,
+      icon: <RiChatOffLine />,
       action: () => {
         if (confirm("Are you sure?")) {
           blockMutation.mutateAsync(blockData);
@@ -99,8 +99,8 @@ const Modal = ({
       isHidden: chat?.isGroupChat ? true : false,
     },
     {
-      name: <span className="text-rose-500">Delete</span>,
-      icon: <MdDelete className="text-rose-500" />,
+      name: <span className="text-gray-500">Delete</span>,
+      icon: <MdDelete className="text-gray-500" />,
       action: () => {
         if (confirm("Are you sure?")) {
           deleteSignleChatMutation.mutateAsync();
@@ -111,8 +111,8 @@ const Modal = ({
         : false,
     },
     {
-      name: <span className="text-rose-500">Delete all messages</span>,
-      icon: <MdDelete className="text-rose-500" />,
+      name: <span className="text-violet-500">Delete all messages</span>,
+      icon: <FcDeleteDatabase className="text-violet-500" />,
       action: () => {
         if (confirm("Are you sure?")) {
           deleteAllMessagesInAChatMutation.mutateAsync();
@@ -123,8 +123,8 @@ const Modal = ({
         : false,
     },
     {
-      name: <span className="text-rose-500">Leave</span>,
-      icon: <BsBoxArrowLeft className="text-rose-500" />,
+      name: <span className="text-rose-600">Leave</span>,
+      icon: <BsBoxArrowLeft className="text-rose-600" />,
       action: () => {
         if (confirm("Are you sure?")) {
           leaveMutation.mutateAsync();
@@ -144,7 +144,7 @@ const Modal = ({
       {items.map((item, index) => (
         <ul
           key={index}
-          className={`flex items-center py-2 px-2 cursor-pointer     hover:bg-gray-600 rounded duration-300 ${
+          className={`flex items-center py-2 px-2 cursor-pointer     hover:bg-gray-400 rounded duration-300 ${
             item.isHidden && "hidden"
           }`}
           onClick={item.action}

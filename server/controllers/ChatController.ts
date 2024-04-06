@@ -14,7 +14,6 @@ import { io } from "..";
 import { emitEventToGroupUsers } from "../common/groupSocket";
 import { sentGroupNotifyMessage } from "./functions";
 import { generateUpdateMessage } from "../common/generateUpdateMessage";
-import { onlineUsersModel } from "../model/onlineUsersModel";
 import { checkIfAnyUserIsOnline } from "../common/checkIsOnline";
 
 //@access          Protected
@@ -902,8 +901,15 @@ export const getUsersInAChat = async (
     // Check online status for each user
     const usersWithOnlineStatus = await Promise.all(
       (findChatQuery?.users || []).map(async (user: any) => {
-        const isOnline = await onlineUsersModel.findOne({ userId: user?._id });
-        return { ...user.toObject(), isOnline };
+        const isOnline = await User.findOne({
+          _id: user?._id,
+          onlineStatus: { $in: ["online", "busy"] },
+        });
+        return {
+          ...user.toObject(),
+          isOnline: !!isOnline, // Convert isOnline to boolean
+          onlineStatus: isOnline?.onlineStatus,
+        };
       })
     );
 
@@ -1056,10 +1062,8 @@ export const deleteAllMessagesInAChat = async (
     });
 
     // Delete files from cloud storage and collect public_ids
-    const publicIds = messagesWithFiles.map((message:any) => message?.file?.public_id );
-    await Promise.all(
-      publicIds.map((public_id) => v2.uploader.destroy(public_id))
-    );
+    const publicIds = messagesWithFiles.map((message: any) => message?.file?.public_id);
+    await Promise.all(publicIds.map((public_id) => v2.uploader.destroy(public_id)));
     await Message.deleteMany({ chat: chatId });
 
     res.json({

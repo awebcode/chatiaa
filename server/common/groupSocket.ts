@@ -3,7 +3,6 @@ import { Chat } from "../model/ChatModel";
 import { getSocketConnectedUser } from "..";
 import { Types } from "mongoose";
 import { User } from "../model/UserModel";
-import { onlineUsersModel } from "../model/onlineUsersModel";
 
 // Function to emit an event to users within a chat
 export const emitEventToGroupUsers = async (
@@ -73,11 +72,16 @@ export const emitEventToOnlineUsers = async (
   eventData?: any
 ) => {
   try {
-    const userInfo = await User.findOneAndUpdate(
-      { _id: userId },
-      { $set: { lastActive: new Date(Date.now()) } },
-      { new: true }
-    );
+    let userInfo = await User.findById(userId);
+    if (eventName === "leaveOnlineUsers" && userInfo) {
+      //when user updated then update online status
+      userInfo = await User.findByIdAndUpdate(
+        userId,
+        { onlineStatus: "offline", socketId: null, lastActive: Date.now() },
+        { new: true }
+      );
+    }
+
     const chats = await Chat.find({ users: { $elemMatch: { $eq: userId } } });
     chats?.forEach((chatUsers) => {
       chatUsers?.users.forEach(async (chatUserId: any) => {
@@ -86,15 +90,18 @@ export const emitEventToOnlineUsers = async (
         const userIds = chatUsers?.users?.map((user: any) => user?.toString());
 
         // Query onlineUsersModel for online status of filtered users
-        const onlineUsers = await onlineUsersModel.find({ userId: { $in: userIds } });
+        const onlineUsers = await User.find({
+          _id: { $in: userIds },
+          onlineStatus: { $in: ["online", "busy"] },
+        });
 
         // Map the online status to userIds
-        const onlineUserIds = onlineUsers.map((user: any) => user.userId.toString());
-        const isAnyGroupUserOnline = chatUsers?.users?.some((user: any) => {
+        const onlineUserIds = onlineUsers.map((user) => user?._id?.toString());
+        const isAnyGroupUserOnline = chatUsers?.users?.some((user) => {
           return onlineUserIds.includes(user?.toString()) && onlineUserIds.length > 1;
         });
         if (receiverId) {
-          const { id, socketId } = receiverId;
+          const { userId, socketId } = receiverId;
           io.to(socketId).emit(eventName, {
             ...eventData,
             chatId: chatUsers?._id,
@@ -102,6 +109,7 @@ export const emitEventToOnlineUsers = async (
             userInfo: {
               userId: userInfo?._id,
               lastActive: userInfo?.lastActive,
+              onlineStatus: userInfo?.onlineStatus,
             },
           });
         }

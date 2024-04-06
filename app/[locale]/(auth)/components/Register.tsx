@@ -188,7 +188,7 @@ const Register = () => {
                 {loading ? (
                   <div className="flex items-center gap-x-1">
                     {" "}
-                    <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
+                    <BiLoaderCircle className="animate-spin h-7 w-7 text-gray-600 rounded-full relative" />
                     Creating...
                   </div>
                 ) : (

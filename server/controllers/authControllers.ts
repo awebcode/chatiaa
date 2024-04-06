@@ -6,7 +6,6 @@ import { CustomErrorHandler } from "../middlewares/errorHandler";
 import { User } from "../model/UserModel";
 import { Chat } from "../model/ChatModel";
 import { AvatarGenerator } from "random-avatar-generator";
-import { onlineUsersModel } from "../model/onlineUsersModel";
 import AccountModel from "../model/AccountModel";
 const register = async (req: Request | any, res: Response, next: NextFunction) => {
   const { name, password, email } = req.body;
@@ -89,7 +88,7 @@ interface CustomRequest extends Request {
 const getUser: any = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     // Access the authenticated user from the request
-     //with serverside in next js req.id not work you can use getserversession for accessing user
+    //with serverside in next js req.id not work you can use getserversession for accessing user
     const { id } = req;
     const user = await User.findOne({ _id: id });
 
@@ -157,7 +156,9 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
           };
     const users = await User.find(usersQuery).limit(limit).skip(skip);
     const total = await User.countDocuments(usersQuery);
-    const totalOnlineUsers = await onlineUsersModel.countDocuments();
+    const totalOnlineUsers = await User.countDocuments({
+      onlineStatus: { $in: ["online", "busy"] },
+    });
     res.send({ users, total, limit, totalOnlineUsers });
   } catch (error) {
     next(error);
@@ -234,10 +235,13 @@ export const allAdminUsers = async (
     const userIds = users.map((user: any) => user._id);
 
     // Query onlineUsersModel for online status of filtered users
-    const onlineUsers = await onlineUsersModel.find({ userId: { $in: userIds } });
+    const onlineUsers = await User.find({
+      _id: { $in: userIds },
+      onlineStatus: { $in: ["online", "busy"] },
+    });
 
     // Map the online status to userIds
-    const onlineUserIds = onlineUsers.map((user: any) => user.userId.toString());
+    const onlineUserIds = onlineUsers.map((user) => user?._id?.toString());
 
     // Merge online status into user data
     users = users.map((user: any) => ({
@@ -246,7 +250,9 @@ export const allAdminUsers = async (
     }));
 
     // Count total online users
-    const totalOnlineUsers = await onlineUsersModel.countDocuments();
+    const totalOnlineUsers = await User.countDocuments({
+      onlineStatus: { $in: ["online", "busy"] },
+    });
 
     res.send({ users, total, limit, totalOnlineUsers });
   } catch (error) {
@@ -371,7 +377,6 @@ export const updateUser = async (
       }
       const cloudinaryResponse = await v2.uploader.upload(req.file.path, {
         folder: "messengaria",
-      
       });
 
       imageUpdate = cloudinaryResponse.secure_url;
@@ -440,16 +445,19 @@ export const getOnlineUsersInMyChats = async (
     }, []);
 
     // Find online users among the extracted user IDs with pagination, population, and sorting
-    const onlineUsers = await onlineUsersModel
-      .find({ userId: { $in: userIdsInChats }, ...keyword })
-      .populate({ path: "userId", select: "name image email lastActive" }) // Populate user details
+    const onlineUsers = await User.find({
+      _id: { $in: userIdsInChats, $ne: req.id },
+      onlineStatus: { $in: ["online", "busy"] },
+      ...keyword,
+    })
       .sort({ updatedAt: -1 }) // Sort by updatedAt in descending order
       .limit(limit)
       .skip(skip);
 
     // Count total online users matching the search criteria
-    const totalOnlineUsers = await onlineUsersModel.countDocuments({
-      userId: { $in: userIdsInChats },
+    const totalOnlineUsers = await User.countDocuments({
+      _id: { $in: userIdsInChats, $ne: req.id },
+      onlineStatus: { $in: ["online", "busy"] },
       ...keyword,
     });
 

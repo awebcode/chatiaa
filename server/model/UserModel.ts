@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       // default: Date.now,
     },
+    onlineStatus: {
+      type: String,
+      default: "offline",
+      enum: ["online", "offline", "busy"],
+    },
+    socketId:String
   },
   { timestamps: true }
 );

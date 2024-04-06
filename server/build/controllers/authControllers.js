@@ -20,7 +20,6 @@ const errorHandler_1 = require("../middlewares/errorHandler");
 const UserModel_1 = require("../model/UserModel");
 const ChatModel_1 = require("../model/ChatModel");
 const random_avatar_generator_1 = require("random-avatar-generator");
-const onlineUsersModel_1 = require("../model/onlineUsersModel");
 const AccountModel_1 = __importDefault(require("../model/AccountModel"));
 const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, password, email } = req.body;
@@ -153,7 +152,9 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             };
         const users = yield UserModel_1.User.find(usersQuery).limit(limit).skip(skip);
         const total = yield UserModel_1.User.countDocuments(usersQuery);
-        const totalOnlineUsers = yield onlineUsersModel_1.onlineUsersModel.countDocuments();
+        const totalOnlineUsers = yield UserModel_1.User.countDocuments({
+            onlineStatus: { $in: ["online", "busy"] },
+        });
         res.send({ users, total, limit, totalOnlineUsers });
     }
     catch (error) {
@@ -216,13 +217,18 @@ const allAdminUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         // Retrieve the IDs of the filtered users
         const userIds = users.map((user) => user._id);
         // Query onlineUsersModel for online status of filtered users
-        const onlineUsers = yield onlineUsersModel_1.onlineUsersModel.find({ userId: { $in: userIds } });
+        const onlineUsers = yield UserModel_1.User.find({
+            _id: { $in: userIds },
+            onlineStatus: { $in: ["online", "busy"] },
+        });
         // Map the online status to userIds
-        const onlineUserIds = onlineUsers.map((user) => user.userId.toString());
+        const onlineUserIds = onlineUsers.map((user) => { var _a; return (_a = user === null || user === void 0 ? void 0 : user._id) === null || _a === void 0 ? void 0 : _a.toString(); });
         // Merge online status into user data
         users = users.map((user) => (Object.assign(Object.assign({}, user.toObject()), { isOnline: onlineUserIds.includes(user._id.toString()) })));
         // Count total online users
-        const totalOnlineUsers = yield onlineUsersModel_1.onlineUsersModel.countDocuments();
+        const totalOnlineUsers = yield UserModel_1.User.countDocuments({
+            onlineStatus: { $in: ["online", "busy"] },
+        });
         res.send({ users, total, limit, totalOnlineUsers });
     }
     catch (error) {
@@ -374,14 +380,12 @@ const getOnlineUsersInMyChats = (req, res, next) => __awaiter(void 0, void 0, vo
             return acc;
         }, []);
         // Find online users among the extracted user IDs with pagination, population, and sorting
-        const onlineUsers = yield onlineUsersModel_1.onlineUsersModel
-            .find(Object.assign({ userId: { $in: userIdsInChats } }, keyword))
-            .populate({ path: "userId", select: "name image email lastActive" }) // Populate user details
+        const onlineUsers = yield UserModel_1.User.find(Object.assign({ _id: { $in: userIdsInChats, $ne: req.id }, onlineStatus: { $in: ["online", "busy"] } }, keyword))
             .sort({ updatedAt: -1 }) // Sort by updatedAt in descending order
             .limit(limit)
             .skip(skip);
         // Count total online users matching the search criteria
-        const totalOnlineUsers = yield onlineUsersModel_1.onlineUsersModel.countDocuments(Object.assign({ userId: { $in: userIdsInChats } }, keyword));
+        const totalOnlineUsers = yield UserModel_1.User.countDocuments(Object.assign({ _id: { $in: userIdsInChats, $ne: req.id }, onlineStatus: { $in: ["online", "busy"] } }, keyword));
         // Send the list of online users along with total count
         res.send({ onlineUsers, totalOnlineUsers, limit, skip });
     }

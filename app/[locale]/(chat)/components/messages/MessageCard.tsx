@@ -43,7 +43,7 @@ const MessageCard = ({
       <div
         className={`flex ${
           isCurrentUserMessage ? "justify-end " : "justify-start"
-        } mb-4 py-10`}
+        } mb-1`} //mb-4 py-10
       >
         <div
           className={`flex items-center ${
