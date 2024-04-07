@@ -1,13 +1,21 @@
 "use client";
 import React, { ReactNode } from "react";
-import { SearchDrawer } from "./searchfriends/SearchDrawer";
-import dynamic from "next/dynamic";
-// const CreateGroupModal = dynamic(() => import("./group/GroupModal"));
-// const MyFriends = dynamic(() => import("./mychats/MyChats"),{loading:()=><h1>Loading..</h1>});
-import CreateGroupModal from "./group/GroupModal";
-import OnlineFriends from "./mychats/online/OnlieFriends";
+const SearchDrawer = dynamic(() => import("./searchfriends/SearchDrawer"), {
+  loading: () => <LoaderComponent/>,
+});
+
+const CreateGroupModal = dynamic(() => import("./group/GroupModal"), {
+  loading: () => <LoaderComponent/>,
+});
+
+const OnlineFriends = dynamic(() => import("./mychats/online/OnlieFriends"), {
+  loading: () => <LoaderComponent />,
+});
+
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useMessageState } from "@/context/MessageContext";
+import dynamic from "next/dynamic";
+import LoaderComponent from "@/components/Loader";
 const LeftSideClientWrapper = ({ children }: { children: ReactNode }) => {
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser } = useMessageState();

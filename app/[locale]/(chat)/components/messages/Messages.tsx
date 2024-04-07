@@ -42,6 +42,7 @@ export default function Messages({ chatId }: { chatId: string }) {
       return nextOffset;
     },
     initialPageParam: 0,
+    staleTime: 24 * 60 * 60 * 1000,
   });
  
 
@@ -111,13 +112,13 @@ export default function Messages({ chatId }: { chatId: string }) {
     }
   }, []);
 
-   const roomId = searchParams.get("chatId");
-   useEffect(() => {
-     const chatData = localStorage.getItem("selectedChat");
-     if (!roomId || !chatData) {
-       router.push("/chat");
-     }
-   }, [roomId]);
+  //  const roomId = searchParams.get("chatId");
+  //  useEffect(() => {
+  //    const chatData = localStorage.getItem("selectedChat");
+  //    if (!roomId || !chatData) {
+  //      router.push("/chat");
+  //    }
+  //  }, [roomId]);
   
    
   // console.log({messages})

@@ -34,6 +34,8 @@ const MyChats = () => {
       return nextOffset;
     },
     initialPageParam: 0,
+     staleTime: 24 * 60 * 60 * 1000,
+
   });
   // set chats in reducer store
   useEffect(() => {

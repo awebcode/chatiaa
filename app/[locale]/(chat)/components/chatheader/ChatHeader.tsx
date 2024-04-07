@@ -25,17 +25,17 @@ const ChatHeader = () => {
   const isUserOnline = selectedChat?.isOnline as boolean;
 
   const clearselectedChat = async () => {
-    window.history.pushState(null, "", "/chat");
-    // router.replace("/chat");
+    // window.history.pushState(null, "", "/chat");
+    router.replace("/chat");
 
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
   };
   useEffect(() => {
-    if (!selectedChat) return window.history.pushState(null, "", "/chat");
-  }, [selectedChat]);
-  //  if (!selectedChat) return
+    if (!selectedChat) return router.push("/chat");
+  }, [selectedChat,router,dispatch]);
+  //  if (!selectedChat) return router.replace("/chat");
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
       <div className="flex items-center gap-2">

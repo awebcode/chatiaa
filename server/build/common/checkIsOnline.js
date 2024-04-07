@@ -16,7 +16,7 @@ function checkIfAnyUserIsOnline(chatUsers, reqId) {
         const userIds = (chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.map((user) => { var _a; return (_a = user === null || user === void 0 ? void 0 : user._id) === null || _a === void 0 ? void 0 : _a.toString(); })) || [];
         // Query onlineUsersModel for online status of filtered users
         const onlineUsers = yield UserModel_1.User.find({
-            _id: { $in: userIds },
+            _id: { $in: userIds, $ne: reqId },
             onlineStatus: { $in: ["online", "busy"] },
         });
         // Map the online status to userIds

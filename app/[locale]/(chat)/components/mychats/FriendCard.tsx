@@ -67,8 +67,9 @@ const FriendsCard: React.FC<{
 
   
   const handleClick = (chatId: string) => {
-    // dispatch({ type: SET_SELECTED_CHAT, payload: null });
-    dispatch({ type: CLEAR_MESSAGES });
+    if (selectedChat?.chatId===chatId) return
+      // dispatch({ type: SET_SELECTED_CHAT, payload: null });
+      dispatch({ type: CLEAR_MESSAGES });
 
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
@@ -101,7 +102,7 @@ const FriendsCard: React.FC<{
     };
 
     // router.replace
-    router.push(`/chat?chatId=${chat?._id}`);
+    // router.push(`/chat?chatId=${chat?._id}`);
 
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
@@ -168,10 +169,10 @@ const FriendsCard: React.FC<{
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
-        <div
-          // href={`/chat/${chat?._id}`}
-          // prefetch
-          // shallow
+        <Link
+          href={`/chat/${chat?._id}`}
+          prefetch
+          shallow
           className="flex items-center gap-2 basis-[90%] cursor-pointer"
           onClick={() => handleClick(chat._id as string)}
         >
@@ -264,7 +265,7 @@ const FriendsCard: React.FC<{
               )}
             </span>
           </div>
-        </div>
+        </Link>
         <div className="flex gap-5 items-center ">
           {/* Chat status */}
           {chat?.onCallMembers > 0 ? (
