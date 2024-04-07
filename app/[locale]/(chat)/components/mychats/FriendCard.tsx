@@ -65,11 +65,10 @@ const FriendsCard: React.FC<{
     },
   });
 
-  
   const handleClick = (chatId: string) => {
-    if (selectedChat?.chatId===chatId) return
-      // dispatch({ type: SET_SELECTED_CHAT, payload: null });
-      dispatch({ type: CLEAR_MESSAGES });
+    if (selectedChat?.chatId === chatId) return;
+    // dispatch({ type: SET_SELECTED_CHAT, payload: null });
+    dispatch({ type: CLEAR_MESSAGES });
 
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
@@ -107,7 +106,7 @@ const FriendsCard: React.FC<{
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
     // router.push(`?chatId=${chat?._id}`);
-     router.replace(`/chat/${chat?._id}`);
+    router.push(`/chat/${chat?._id}`);
     // if (chat.isGroupChat) {
     //   socket.emit("setup", { id: chat?._id } as any);
     // }
@@ -150,7 +149,7 @@ const FriendsCard: React.FC<{
 
       //emit seenby socket here
     } else if (
-       //////
+      //////
       chat?.latestMessage?.status !== "seen" &&
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
@@ -163,8 +162,6 @@ const FriendsCard: React.FC<{
 
   // console.log({chat})
 
-
-  
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
