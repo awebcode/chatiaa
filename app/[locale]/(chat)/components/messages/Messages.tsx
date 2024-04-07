@@ -149,7 +149,7 @@ export default function Messages({ chatId }: { chatId: string }) {
         }}
         inverse={true}
         scrollableTarget="MessagesscrollableTarget"
-        scrollThreshold={0.6}
+        scrollThreshold={1}
       >
         <div className="flex flex-col-reverse gap-3 p-2 m-4 mb-[60px]">
           <div id="messageEndTarget" ref={messageEndRef}></div>

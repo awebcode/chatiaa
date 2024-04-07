@@ -300,7 +300,7 @@ export const messageReducer = (state: State, action: Action): State => {
           if (chat._id === action.payload.chatId) {
             // Check if latestMessage exists and seenBy is an array
             const updatedSeenBy = chat.latestMessage?.seenBy || [];
-
+            let totalseenBy = chat.latestMessage?.totalseenBy || 0;
             // Check if the user is already in the seenBy array
             const isUserSeen = updatedSeenBy.some(
               (u) => u._id === action.payload.user._id
@@ -309,6 +309,7 @@ export const messageReducer = (state: State, action: Action): State => {
             // If the user is not already in the seenBy array, add them
             if (!isUserSeen) {
               updatedSeenBy.push(action.payload.user);
+              totalseenBy += 1;
             }
 
             return {
@@ -317,6 +318,7 @@ export const messageReducer = (state: State, action: Action): State => {
                 ...(chat.latestMessage as any),
                 status: "seen",
                 seenBy: updatedSeenBy,
+                totalseenBy,
                 isSeen: !action.payload?.isSocketData && true,
               },
             };
@@ -325,7 +327,7 @@ export const messageReducer = (state: State, action: Action): State => {
         }),
         messages: state.messages.map((message) => {
           let updated = message.seenBy || [];
-
+          let totalseenBy = message?.totalseenBy || 0;
           if (
             message.seenBy?.some(
               (u: any) =>
@@ -338,6 +340,7 @@ export const messageReducer = (state: State, action: Action): State => {
                 u?._id !== action.payload.user._id &&
                 (!u._id || u?.userId?._id !== action.payload.user._id)
             );
+             totalseenBy-=1
           }
 
           if (message._id === action.payload.messageId) {
@@ -352,16 +355,18 @@ export const messageReducer = (state: State, action: Action): State => {
             // If the user is not already in the seenBy array, add them
             if (!isUserSeen) {
               updatedSeenBy.push(action.payload.user);
+              totalseenBy += 1;
             }
 
             return {
               ...message,
               status: "seen",
               seenBy: updatedSeenBy,
+              totalseenBy,
               isSeen: true,
             };
           }
-          return { ...message, status: "seen", seenBy: updated };
+          return { ...message, status: "seen", seenBy: updated,  totalseenBy, };
         }),
       };
 

@@ -122,7 +122,7 @@ const RepliedMessage = ({
         </>
       ) : (
         <span
-          className={"break-all text-sm font-medium text-gray-700 dark:text-gray-200"}
+          className={"break-all text-sm  text-gray-600 dark:text-gray-200"}
         >
           {message?.status === "removed" && message.removedBy?._id === currentUser?._id
             ? "Removed"

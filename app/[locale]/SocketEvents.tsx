@@ -201,9 +201,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         !data.chat?.isGroupChat &&
         //delivered message
         data.receiverId === currentUserRef.current?._id &&
-        onlineUsersRef.current.some(
-          (user: any) => user.userId === currentUserRef.current?._id
-        )
+        ["online","busy"].includes(currentUserRef?.current?.onlineStatus as string)
       ) {
         //play sound
         soundRef.current?.play();
@@ -289,14 +287,15 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         } else {
           if (
             data.chat.status !== "seen" &&
-            data.chat.users?.some((user: any) =>
-              onlineUsersRef.current.some(
-                (onlineUser: any) =>
-                  onlineUser.userId === user?._id &&
-                  onlineUser.userId !== currentUserRef.current?._id
-              )
-            )
+            ["online", "busy"].includes(currentUserRef?.current?.onlineStatus as string)
           ) {
+            //  data.chat.users?.some((user: any) =>
+            //   onlineUsersRef.current.some(
+            //     (onlineUser: any) =>
+            //       onlineUser.userId === user?._id &&
+            //       onlineUser.userId !== currentUserRef.current?._id
+            //   )
+            // )
             //play sound
             soundRef.current?.play();
             showNotification(data.sender.name, data.sender.image, data.content);
@@ -588,9 +587,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   const handleUserOnCallMessage = useCallback((data: any) => {
     if (
       data.receiverId === currentUserRef.current?._id &&
-      onlineUsersRef.current.some(
-        (user: any) => user.userId === currentUserRef.current?._id
-      )
+      ["online", "busy"].includes(currentUserRef?.current?.onlineStatus as string)
     ) {
       dispatch({ type: SET_MESSAGES, payload: { ...data.message, status: "delivered" } });
       dispatch({

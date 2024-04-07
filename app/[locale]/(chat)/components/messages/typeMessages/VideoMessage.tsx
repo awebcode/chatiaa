@@ -51,7 +51,7 @@ function VideoMessage({
         >
           <div className={"relative"}>
             {/* reply */}
-            <div className="pt-6">
+            <div className="pt-5">
               <RepliedMessage message={message} currentUser={currentUser as any} />
             </div>
             <div className="h-72 w-72">

@@ -71,9 +71,7 @@ const UserProfile = ({ userId }: { userId: string }) => {
 
                 <span
                   className={`absolute bottom-0 -right-1 rounded-full  p-[6px] ${
-                    onlineUsers.some((u) => u.userId === user?._id)
-                      ? "bg-green-500"
-                      : "bg-rose-500"
+                    user?.onlineStatus === "online" ? "bg-green-500" : "bg-rose-500"
                   }`}
                 ></span>
               </div>

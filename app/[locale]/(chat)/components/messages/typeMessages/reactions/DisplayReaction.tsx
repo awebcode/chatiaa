@@ -66,7 +66,7 @@ const DisplayReaction = ({
   return (
     <div
       ref={clickOutsideEmojiModal}
-      className={`absolute -bottom-[30px]  ${
+      className={`absolute -bottom-[24px]  ${
         isCurrentUserMessage ? "right-0" : "left-4"
       }`}
     >
@@ -77,13 +77,13 @@ const DisplayReaction = ({
             setIsOpenReactionListModal(!isOpenReactionListModal);
             setMessageId(message._id);
           }}
-          className="relative  cursor-pointer flex gap-1 bg-gray-200 dark:bg-gray-700 border border-black p-1 rounded-lg"
+          className="relative  cursor-pointer flex gap-1 bg-gray-200 dark:bg-gray-700  p-[3px] rounded-lg"
         >
           {reactionsGroup.slice(0, 4).map((react, i) => {
             return (
               <Emoji
                 key={i}
-                size={isSmallDevice ? 12 : 16}
+                size={isSmallDevice ? 12 : 14}
                 lazyLoad
                 emojiStyle={EmojiStyle.APPLE}
                 unified={(react as any)?._id?.codePointAt(0).toString(16)}

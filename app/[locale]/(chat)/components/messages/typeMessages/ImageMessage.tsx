@@ -52,7 +52,7 @@ function ImageMessage({
           <div className={""}>
             <div className={"relative"}>
               {/* Reply */}
-              <div className="pt-6">
+              <div className="pt-5">
                 <RepliedMessage message={message} currentUser={currentUser as any} />
               </div>
               <Image

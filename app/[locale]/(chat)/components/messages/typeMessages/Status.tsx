@@ -18,7 +18,6 @@ const Status = ({
   isCurrentUserMessage: boolean;
 }) => {
   const { selectedChat, user: currentUser } = useMessageState();
-  console.log({sender:message?.sender})
   return (
     <div
       className={`absolute bottom-1 ${

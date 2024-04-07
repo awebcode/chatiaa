@@ -32,7 +32,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
         <ChatHeader />
       </div>
       {/* Message */}
-      <div className="w-full fixed  md:absolute  py-2   bottom-8 md:bottom-2  z-10">
+      <div className="w-full fixed  md:absolute  py-2   bottom-9 md:bottom-6  z-10">
         {children}
       </div>
       {/* Inpute */}

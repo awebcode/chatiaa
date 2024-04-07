@@ -30,18 +30,18 @@ const ChatHeader = () => {
 
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
-    router.replace("/chat");
+    router.push("/chat");
 
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
   };
-  useEffect(() => {
-    if (!selectedChat) return router.replace("/chat");
-  }, [selectedChat, router, dispatch]);
+  // useEffect(() => {
+  //   if (!selectedChat) return  window.history.pushState(null, "", "/chat");
+  // }, [selectedChat, router, dispatch]);
   //  if (!selectedChat) return router.replace("/chat");
   return (
-    <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">
+    <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
       <div className="flex items-center gap-2">
         <span
           className=" cursor-pointer  md:p-[6px]  rounded-full"
@@ -53,7 +53,7 @@ const ChatHeader = () => {
         </span>
         {selectedChat && (
           <>
-            <div className="relative  p-[2px] h-8 w-8 md:h-10 md:w-10 ring md:ring-2 ring-violet-500 rounded-full">
+            <div className="relative  p-[2px] h-8 w-8 md:h-10 md:w-10 ring-1 md:ring-2 ring-violet-500 rounded-full">
               <Image
                 height={35}
                 width={35}

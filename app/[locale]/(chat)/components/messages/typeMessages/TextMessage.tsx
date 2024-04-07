@@ -52,7 +52,7 @@ const TextMessage = ({
           }`}
         >
           <div className={""}>
-            <div className="relative px-4 py-2">
+            <div className="relative p-1">
               {/* Reply */}
               <RepliedMessage message={message} currentUser={currentUser as any} />
               {/* REACTIONS */}

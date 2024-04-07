@@ -24,7 +24,11 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
   const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   const handleClick = () => {
-    router.push(`/user/profile/${user?._id}`);
+    router.push(
+      user?._id === currentUser?._id
+        ? `/user/profile/${user?._id}`
+        : `/profile`
+    );
   };
   //chat
   const mutaion = useAccessChatMutation("closeSeenByDialog");
@@ -50,7 +54,9 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
 
           <span
             className={` absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-[5px] ${
-              user?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
+              user?.onlineStatus === "online"
+                ? "animate-pulse bg-green-500"
+                : "bg-rose-500"
             }`}
           ></span>
         </div>
@@ -69,20 +75,28 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
           <DropdownMenuContent className="w-56">
             <DropdownMenuLabel>Menus</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" onClick={handleClick}>
-              <AiOutlineUser className="inline-block mr-2" /> Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer" onClick={handleChat}>
-              <AiOutlineMessage className="inline-block mr-2" /> Chat
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => {
-                handleSendCall("audio", currentUser, selectedChat, socket, dispatch);
-              }}
-            >
-              <AiOutlinePhone className="inline-block mr-2" /> Call
-            </DropdownMenuItem>
+            {user?._id === currentUser?._id ? (
+              <DropdownMenuItem className="cursor-pointer" onClick={handleClick}>
+                <AiOutlineUser className="inline-block mr-2" /> Profile
+              </DropdownMenuItem>
+            ) : (
+              <>
+                <DropdownMenuItem className="cursor-pointer" onClick={handleClick}>
+                  <AiOutlineUser className="inline-block mr-2" /> Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={handleChat}>
+                  <AiOutlineMessage className="inline-block mr-2" /> Chat
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => {
+                    handleSendCall("audio", currentUser, selectedChat, socket, dispatch);
+                  }}
+                >
+                  <AiOutlinePhone className="inline-block mr-2" /> Call
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
