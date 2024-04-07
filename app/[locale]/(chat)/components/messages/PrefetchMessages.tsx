@@ -2,7 +2,7 @@ import React from "react";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 const Messages = dynamic(() => import("./Messages"), {
   ssr: false,
-  loading: () => <LoaderComponent text="Fetching..."/>,
+  // loading: () => <LoaderComponent text="Fetching..."/>,
 });
 import { allMessagesServerAction } from "@/functions/serverActions";
 import dynamic from "next/dynamic";

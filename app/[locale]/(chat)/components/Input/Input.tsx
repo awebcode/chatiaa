@@ -231,7 +231,7 @@ const Input = () => {
     return <ChatBlockStatus chatBlockedBy={selectedChat?.chatBlockedBy} />;
   }
   return (
-    <div className="w-full bg-gray-100 rounded dark:bg-gray-800 z-50">
+    <div className="w-full  bg-gray-100 rounded dark:bg-gray-800 z-50">
       {/* edit replay preview */}
       <EdRePreview setMessage={setMessage} />
       <div className="flex items-center rounded-lg p-2">

@@ -1,15 +1,15 @@
 "use client";
 import React, { ReactNode } from "react";
 const SearchDrawer = dynamic(() => import("./searchfriends/SearchDrawer"), {
-  loading: () => <LoaderComponent text="Fetching..."/>,
+  // loading: () => <LoaderComponent text="Fetching..."/>,
 });
 
 const CreateGroupModal = dynamic(() => import("./group/GroupModal"), {
-  loading: () => <LoaderComponent text="Fetching..."/>,
+  // loading: () => <LoaderComponent text="Fetching..."/>,
 });
 
 const OnlineFriends = dynamic(() => import("./mychats/online/OnlieFriends"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";

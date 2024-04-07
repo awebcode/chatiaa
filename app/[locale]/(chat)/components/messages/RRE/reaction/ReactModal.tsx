@@ -1,7 +1,6 @@
 import { IMessage } from "@/context/reducers/interfaces";
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 import React, { useState } from "react";
-const EmojiModal = dynamic(() => import("./EmojiModal"));
 import { MdAdd } from "react-icons/md";
 import { useClickAway, useMediaQuery } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
@@ -9,10 +8,15 @@ import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { addRemoveEmojiReactions } from "@/functions/messageActions";
 
 import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import { ADD_REACTION_ON_MESSAGE } from "@/context/reducers/actions";
 import { v4 } from "uuid";
+
+const EmojiBottomSheet = dynamic(() => import("./SheetBottomEmoji"), {
+  // loading: () => <LoaderComponent />,
+});
+
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 
 const ReactModal = ({
   message,
@@ -98,28 +102,28 @@ const ReactModal = ({
       })}
       {/*  */}
 
-      <Popover>
-        <PopoverTrigger ref={clickEmojiOutsideRef} className="border-none outline-none">
+      <Sheet>
+        <SheetTrigger asChild ref={clickEmojiOutsideRef} className="border-none outline-none">
           <MdAdd
             onClick={() => setIsOpenEmojiModal(!isOpenEmojiModal)}
             className={`flex text-gray-600 dark:text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer `}
           />
-        </PopoverTrigger>
-        {/* <EmojiBottomSheet
+        </SheetTrigger>
+        <EmojiBottomSheet
           onEmojiClick={onEmojiClick}
           openEmoji={isOpenEmojiModal}
           setIsOpenReactModal={setIsOpenReactModal}
           message={message}
-        /> */}
-        <EmojiModal
+        />
+        {/* <EmojiModal
           onEmojiClick={onEmojiClick}
           openEmoji={isOpenEmojiModal}
           setIsOpenEmojiModal={setIsOpenEmojiModal}
           setIsOpenReactModal={setIsOpenReactModal}
           message={message}
           isCurrentUserMessage={isCurrentUserMessage}
-        />
-      </Popover>
+        /> */}
+      </Sheet>
     </DropdownMenuContent>
   );
 };

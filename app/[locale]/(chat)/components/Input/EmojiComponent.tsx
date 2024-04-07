@@ -18,19 +18,18 @@ const EmojiComponent = ({ onEmojiClick, openEmoji }: { onEmojiClick: any; openEm
         open={openEmoji}
         style={{
           position: "absolute",
-          top:  "-350px", // Adjust this value based on your design
+          top: "-350px", // Adjust this value based on your design
           left: "0",
           zIndex: 1000,
           height: "340px",
-          width:  "310px",
+          width: "310px",
           fontSize: "10px",
         }}
         onEmojiClick={onEmojiClick}
-        
         theme={Theme.DARK}
         lazyLoadEmojis
         // previewConfig={{defaultEmoji:<Emoji/>}}
-
+        autoFocusSearch={false}
         emojiStyle={EmojiStyle.APPLE}
         searchPlaceholder="Search chat emojis..."
         suggestedEmojisMode={SuggestionMode.RECENT}

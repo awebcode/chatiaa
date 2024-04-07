@@ -55,6 +55,7 @@ const EmojiModal = ({
           setIsOpenReactModal(false);
           setIsOpenEmojiModal(false);
         }}
+         autoFocusSearch={false}
         // autoFocusSearch
         theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
         lazyLoadEmojis

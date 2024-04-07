@@ -16,7 +16,7 @@ const Drawer = dynamic(() => import("./Drawer"));
 
 export default function OnlineUsesDrawer() {
   return (
-    <div className="">
+    <div >
       <Sheet>
         <SheetClose id="closeOnlineUsersSheet" className="hidden"></SheetClose>
 
@@ -25,7 +25,7 @@ export default function OnlineUsesDrawer() {
             See all
           </Button>
         </SheetTrigger>
-        <SheetContent side="left">
+        <SheetContent side="left" className="w-screen" style={{width:"100vw"}}>
           <SheetHeader>
             <SheetTitle>Online Users</SheetTitle>
             <Drawer />

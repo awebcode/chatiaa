@@ -2,7 +2,7 @@ import React from "react";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 const MyChats = dynamic(() => import("./MyChats"), {
   ssr: false,
-  loading: () => <LoaderComponent text="Fetching..."/>,
+  // loading: () => <LoaderComponent text="Fetching..."/>,
 });
 import { getChatsServerAction } from "@/functions/serverActions";
 import dynamic from "next/dynamic";

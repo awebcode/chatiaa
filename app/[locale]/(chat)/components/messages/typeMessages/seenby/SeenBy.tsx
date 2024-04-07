@@ -11,7 +11,7 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
   const { selectedChat } = useMessageState();
 
   return (
-    <div className="absolute -bottom-10">
+    <div className="absolute -bottom-14">
       <div className="flex m-1 gap-1">
         {message?.seenBy?.map((user: any) => {
           return (

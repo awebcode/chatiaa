@@ -1,6 +1,7 @@
 "use client";
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import LoaderComponent from "@/components/Loader";
+import { SheetContent } from "@/components/ui/sheet";
 import { EmojiStyle, SuggestionMode, Theme } from "emoji-picker-react";
 import dynamic from "next/dynamic";
 const EmojiPicker = dynamic(
@@ -9,11 +10,10 @@ const EmojiPicker = dynamic(
       return module.default || module;
     });
   },
-  { ssr: false }
+  { ssr: false, loading: () => <LoaderComponent />, }
 );
-import { MdAdd } from "react-icons/md";
 
-export function EmojiBottomSheet({
+export default function EmojiBottomSheet({
   message,
   onEmojiClick,
   setIsOpenReactModal,
@@ -26,28 +26,26 @@ export function EmojiBottomSheet({
   return (
     <div className="flex md:hidden w-full">
       {" "}
-      <Sheet>
-        <SheetTrigger asChild>
+      {/* <SheetTrigger asChild>
           <MdAdd className={`text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer `} />
-        </SheetTrigger>
-        <SheetContent side={"bottom"}>
-          <EmojiPicker
-            className="w-auto h-auto block mx-auto"
-            onEmojiClick={(e) => {
-              onEmojiClick(e, message._id);
-              setIsOpenReactModal(false);
-            }}
-            autoFocusSearch
-            theme={Theme.DARK}
-            lazyLoadEmojis
-            // previewConfig={{defaultEmoji:<Emoji/>}}
-
-            emojiStyle={EmojiStyle.APPLE}
-            searchPlaceholder="Search chat emojis..."
-            suggestedEmojisMode={SuggestionMode.RECENT}
-          />
-        </SheetContent>
-      </Sheet>
+        </SheetTrigger> */}
+      <SheetContent side={"bottom"}>
+        <EmojiPicker
+          open
+          className="w-screen h-auto block mx-auto transition-all duration-500"
+          onEmojiClick={(e) => {
+            onEmojiClick(e, message._id);
+            setIsOpenReactModal(false);
+          }}
+          theme={Theme.DARK}
+          lazyLoadEmojis
+          // previewConfig={{defaultEmoji:<Emoji/>}}
+          autoFocusSearch={false}
+          emojiStyle={EmojiStyle.APPLE}
+          searchPlaceholder="Search chat emojis..."
+          suggestedEmojisMode={SuggestionMode.RECENT}
+        />
+      </SheetContent>
     </div>
   );
 }
