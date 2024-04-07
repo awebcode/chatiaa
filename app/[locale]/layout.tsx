@@ -18,8 +18,8 @@ import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 // const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
-  
+  metadataBase: new URL("https://messengaria.vercel.app"),
+
   title: "Messengaria - Connect and Chat",
   creator: "Md Asikur Rahman",
   authors: [{ name: "Md Asikur Rahman", url: "https://asikur.vercel.app" }],
@@ -92,8 +92,6 @@ export default async function LocaleLayout({
   } catch (error) {
     notFound();
   }
-  // console.log({userT:user})
-
   return (
     <html lang={locale} suppressHydrationWarning>
       {/* {locale} */}

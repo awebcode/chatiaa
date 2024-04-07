@@ -30,13 +30,21 @@ const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => 
         <TooltipContent className=" dark:bg-gray-100  p-4 flex  gap-2 rounded-3xl">
           <div className="mt-2 h-16 w-16 md:h-20 md:w-20 flex p-2 flex-col justify-center items-center">
             {" "}
-            <Image
-              height={35}
-              width={35}
-              className="rounded-full h-full w-full object-cover"
-              alt={user?.name}
-              src={user?.image}
-            />
+            <div className="relative  p-[2px] h-16 w-16 ring md:ring-2 ring-violet-500 rounded-full">
+              {" "}
+              <Image
+                height={35}
+                width={35}
+                className="rounded-full h-full w-full object-cover"
+                alt={user?.name}
+                src={user?.image}
+              />
+              <span
+                className={` absolute bottom-1 -right-0 rounded-full ring-1 ring-gray-900 p-[6px] ${
+                  user?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
+                }`}
+              ></span>
+            </div>
             <div className="flex items-center justify-center mt-4 gap-1">
               {/* Video Icon */}
               <div className="rounded-full bg-white dark:bg-gray-700 hover:bg-opacity-80 shadow p-2 text-xl">
@@ -44,7 +52,7 @@ const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => 
                   onClick={() =>
                     handleSendCall("video", currentUser, chat as any, socket, dispatch)
                   }
-                  className=" text-[12px] text-blue-500 cursor-pointer hover:text-blue-700"
+                  className=" text-[10px] text-blue-500 cursor-pointer hover:text-blue-700"
                 />
               </div>
 
@@ -54,14 +62,14 @@ const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => 
                   onClick={() =>
                     handleSendCall("audio", currentUser, chat as any, socket, dispatch)
                   }
-                  className="text-[12px] text-green-500 cursor-pointer hover:text-green-700"
+                  className="text-[10px] text-green-500 cursor-pointer hover:text-green-700"
                 />
               </div>
               {/* Chat Icon */}
               <div className="rounded-full bg-white dark:bg-gray-700 hover:bg-opacity-80 shadow p-2 text-xl">
                 <FaComments
                   onClick={() => handleAccessChat(user._id)}
-                  className="text-[12px] text-purple-500 cursor-pointer hover:text-purple-700"
+                  className="text-[10px] text-purple-500 cursor-pointer hover:text-purple-700"
                 />
               </div>
             </div>
@@ -69,14 +77,14 @@ const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => 
           <div>
             <Button
               onClick={() => Router.push(`/user/profile/${user?._id}`)}
-              className="w-full  bg-blue-600 cursor-pointer"
+              className="w-full text-sm bg-blue-600 cursor-pointer"
               variant={"ghost"}
             >
               View Profile
             </Button>
-            <h1 className="text-lg font-bold">{user?.name}</h1>
-            <h3 className="text-sm font-medium">{user?.email}</h3>
-            <p className="text-xs font-normal">
+            <h1 className="text-sm md:text-lg font-bold">{user?.name}</h1>
+            <h3 className="text-xs md:text-sm font-medium">{user?.email}</h3>
+            <p className="text-[10px] md:text-xs font-normal">
               Joined:{moment(user?.createdAt).format("lll")}
             </p>
           </div>

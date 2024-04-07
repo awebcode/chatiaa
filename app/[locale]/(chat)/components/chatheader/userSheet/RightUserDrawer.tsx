@@ -59,7 +59,7 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
               />
 
               <span
-                className={`absolute bottom-0 -right-1 rounded-full  p-[6px] ${
+                className={`animate-pulse absolute bottom-0 -right-1 rounded-full  p-[6px] ${
                   isUserOnline ? "bg-green-500" : "bg-rose-500"
                 }`}
               ></span>
@@ -74,7 +74,6 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
           </div>
           <div className="grid gap-4 py-4">
             <Button
-              size={"lg"}
               className="w-full block"
               variant={"outline"}
               onClick={() => {
@@ -86,7 +85,6 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
               Block User
             </Button>
             <Button
-              size={"lg"}
               className="w-full block"
               variant={"outline"}
               onClick={() => {

@@ -195,8 +195,8 @@ const FriendsCard: React.FC<{
             />
 
             <span
-              className={`absolute bottom-0 right-0 rounded-full p-1 ring-1 ring-gray-900 md:p-[6px] ${
-                chat?.isOnline ? "bg-green-500" : "bg-rose-500"
+              className={` absolute bottom-0 right-0 rounded-full p-1 ring-1 ring-gray-900 md:p-[6px] ${
+                chat?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
               }`}
             ></span>
           </div>

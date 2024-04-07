@@ -14,13 +14,9 @@ const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
 const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"));
 function VideoMessage({
   message,
-  isLastSeenMessage,
-  isUserOnline,
   isCurrentUserMessage,
 }: {
   message: IMessage;
-  isLastSeenMessage: boolean;
-  isUserOnline: boolean;
   isCurrentUserMessage: boolean;
 }) {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
@@ -71,8 +67,6 @@ function VideoMessage({
             <Status
               isCurrentUserMessage={isCurrentUserMessage}
               message={message}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
             />
           </div>
         </div>

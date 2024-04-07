@@ -176,7 +176,6 @@ export default function Messages({ chatId }: { chatId: string }) {
                     Date.now() +
                     Math.floor(Math.random() * 100)
                   }
-                  isLastSeenMessage={index === findLastSeenMessageIndex(messages)}
                 />
               );
             })

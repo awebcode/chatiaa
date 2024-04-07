@@ -26,7 +26,7 @@ const EmojiComponent = ({ onEmojiClick, openEmoji }: { onEmojiClick: any; openEm
           fontSize: "10px",
         }}
         onEmojiClick={onEmojiClick}
-        autoFocusSearch
+        
         theme={Theme.DARK}
         lazyLoadEmojis
         // previewConfig={{defaultEmoji:<Emoji/>}}

@@ -168,3 +168,30 @@ export const pushgroupSeenBy = async (body: { chatId: string; messageId: string 
   });
   return data;
 };
+
+//getSeenByInfoForSingleMessage
+
+export const getSeenByInfoForSingleMessage = async ({
+  queryKey = "",
+  pageParam = 0,
+}: {
+  pageParam: any;
+  queryKey: any;
+}) => {
+  const search = queryKey[1];
+  const chatId = queryKey[2];
+  const messageId = queryKey[3];
+  if (chatId === undefined) {
+    // Handle the case where chatId is undefined
+    return { data: [], prevOffset: 0, skip: 0 };
+  }
+
+  const { data } = await axiosClient.get(
+    `/getSeenByInfoForSingleMessage/${chatId}/${messageId}?search=${search}&skip=${pageParam}&limit=${10}`,
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+  return { ...data, prevOffset: pageParam, skip: pageParam };
+};

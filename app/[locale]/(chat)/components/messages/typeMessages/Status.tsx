@@ -12,13 +12,9 @@ import dynamic from "next/dynamic";
 const TooltipContentComponent=dynamic(()=>import("./TooltipWrapper"))
 const Status = ({
   message,
-  isLastSeenMessage,
-  isUserOnline,
   isCurrentUserMessage,
 }: {
   message: IMessage;
-  isLastSeenMessage: boolean;
-  isUserOnline: boolean;
   isCurrentUserMessage: boolean;
 }) => {
   const { selectedChat, user: currentUser } = useMessageState();
@@ -30,7 +26,7 @@ const Status = ({
     >
       {message?.sender?._id === currentUser?._id ? (
         // Assuming RenderStatus is a function
-        RenderStatus(selectedChat as any, message, "onMessage", 0, isLastSeenMessage)
+        RenderStatus(selectedChat as any, message, "onMessage", 0, false)
       ) : (
         <div className="h-6 w-6 relative">
           {/* Assuming Image is a component */}
@@ -50,7 +46,7 @@ const Status = ({
           </TooltipProvider>
           <span
             className={`absolute bottom-0 right-0 rounded-full p-[4px] ${
-              isUserOnline ? "bg-green-500" : "bg-rose-500"
+              message?.sender?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
             }`}
           ></span>
         </div>

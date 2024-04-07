@@ -2,15 +2,15 @@ import Image from "next/image";
 import React from "react";
 import moment from "moment";
 import { IChat } from "@/context/reducers/interfaces";
+
 const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
   return (
-    <div>
-      <div className="max-w-sm bg-gray-200 dark:bg-gray-800 mx-auto m-20 rounded-lg shadow-md p-4">
-        <div className="relative h-14 md:h-20 w-14 md:w-20 block mx-auto ring-4 ring-violet-600 rounded-full">
-          {" "}
+    <div className="flex justify-center items-center w-full my-8">
+      <div className="min-w-[250px] md:min-w-[360px] bg-gray-200 dark:bg-gray-800 rounded-lg shadow-md p-2 md:p-4">
+        <div className="relative h-14 md:h-20 w-14 md:w-20 block mx-auto ring-2 md:ring-4 ring-violet-600 rounded-full">
           <Image
-            height={80}
-            width={80}
+            height={60}
+            width={60}
             className="rounded-full mx-auto h-full w-full"
             loading="lazy"
             src={
@@ -25,21 +25,21 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
             }
           />
           <span
-            className={`absolute bottom-0 right-0 rounded-full p-[7px] ${
+            className={`animate-pulse border absolute bottom-0 right-0 rounded-full p-[7px] ${
               selectedChat?.isOnline ? "bg-green-500" : "bg-rose-500"
             }`}
           ></span>
         </div>
-        <h2 className="text-center text-2xl font-semibold mt-3">
+        <h2 className="text-center text-lg md:text-2xl font-semibold mt-3">
           {selectedChat?.userInfo?.name}
         </h2>
-        <h2 className="text-center text-sm font-semibold mt-3">
+        <h2 className="text-center text-xs md:text-sm font-semibold mt-3">
           {selectedChat?.userInfo?.email}
         </h2>
-        <h2 className="text-center text-sm font-semibold mt-3">
+        <h2 className="text-center text-xs md:text-sm font-semibold mt-3">
           {moment(selectedChat?.userInfo?.createdAt).format("llll")}
         </h2>
-        <p className="text-center  mt-1">Product Manager</p>
+        <p className="text-center text-xs mt-1">Product Manager</p>
         <div className="flex text-[10px] md:text-x justify-center mt-5">
           <a href="#" className="text-blue-500 hover:text-blue-700 mx-3">
             Twitter

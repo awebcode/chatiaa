@@ -20,6 +20,7 @@ import { ADD_REPLY_MESSAGE, SET_MESSAGES } from "@/context/reducers/actions";
 import { v4 } from "uuid";
 import { updateSenderMessagesUI } from "@/config/functions";
 import { FaReply } from "react-icons/fa";
+import { Emoji, EmojiStyle } from "emoji-picker-react";
 
 const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"), { ssr: false });
 const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"),{ssr:false});
@@ -41,6 +42,7 @@ const Input = () => {
   const clickOutsideEmojiRef: any = useClickAway(() => setOpenEmoji(false));
   const dispatch = useMessageDispatch();
   const onEmojiClick = (e: Temoji) => {
+    console.log({e})
     // Render the Emoji component and get its value
 
     // Append the value of the Emoji component to the message
@@ -235,10 +237,11 @@ const Input = () => {
       <EdRePreview setMessage={setMessage} />
       <div className="flex items-center rounded-lg p-2">
         <div className="p-1" ref={clickOutsideEmojiRef}>
-          <AiOutlineSmile
-            onClick={() => setOpenEmoji(!openEmoji)}
-            className="text-orange-600 text-xl cursor-pointer"
-          />{" "}
+          <div className="cursor-pointer" onClick={() => setOpenEmoji(!openEmoji)}>
+            {" "}
+            <Emoji size={20} lazyLoad emojiStyle={EmojiStyle.APPLE} unified={"1f642"} />{" "}
+          </div>
+
           {/* Emoji icon */}
           <EmojiComponent onEmojiClick={onEmojiClick} openEmoji={openEmoji} />
         </div>
@@ -278,11 +281,11 @@ const Input = () => {
             )}
           </div>
         ) : (
-          <div className="p-1">
+          <div className="animate-pulse p-2 md:p-3 bg-blue-600 text-white rounded-full">
             {/* Right side audio recorder icon */}
             <CiMicrophoneOn
               onClick={() => setAudioRecorder(true)}
-              className=" text-xl cursor-pointer"
+              className=" text-lg md:text-xl cursor-pointer h-full w-full"
             />
           </div>
         )}

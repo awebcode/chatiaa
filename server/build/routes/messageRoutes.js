@@ -46,4 +46,6 @@ messageRoute
 messageRoute.post("/addRemoveEmojiReactions", authMiddleware_1.default, messageController_1.addRemoveEmojiReactions);
 //pushseenBy
 messageRoute.put("/pushGroupSeenByInMessage", authMiddleware_1.default, seenByCtrl_1.pushSeenBy);
+//getSeenByInfoForSingleMessage
+messageRoute.get("/getSeenByInfoForSingleMessage/:chatId/:messageId", authMiddleware_1.default, seenByCtrl_1.getSeenByInfoForSingleMessage);
 exports.default = messageRoute;

@@ -4,13 +4,9 @@ import Time from "./Time";
 import { IoReturnUpBackOutline } from "react-icons/io5";
 export default function NotifyMessage({
   message,
-  isLastSeenMessage,
-  isUserOnline,
   isCurrentUserMessage,
 }: {
   message: IMessage;
-  isLastSeenMessage: boolean;
-  isUserOnline: boolean;
   isCurrentUserMessage: boolean;
 }) {
   return (

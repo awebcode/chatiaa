@@ -68,8 +68,8 @@ const ChatHeader = () => {
               />
 
               <span
-                className={`absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-[6px] ${
-                  selectedChat?.isOnline ? "bg-green-500" : "bg-rose-500"
+                className={` absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-[6px] ${
+                  selectedChat?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
                 }`}
               ></span>
             </div>

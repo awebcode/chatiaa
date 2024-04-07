@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, useRouter } from "@/navigation";
+import { Link, usePathname, useRouter } from "@/navigation";
 import { AvatarIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
 import { CiLogout } from "react-icons/ci";
 import { signOut, useSession } from "next-auth/react";
@@ -23,16 +23,21 @@ const Navbar = () => {
   const t = useTranslations();
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   const logoutHandler = async () => {
     await signOut();
     queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
-
     localStorage.removeItem("currentUser");
     router.push("/");
   };
+  const isHidden = pathname.includes("/chat/");
   return (
-    <nav className="sticky flex items-center justify-between p-3 md:p-4 px-4 md:px-10  shadow-sm">
+    <nav
+      className={`${
+        isHidden ? "hidden" : ""
+      } sticky flex items-center justify-between p-3 md:p-4 px-4 md:px-10  shadow-sm`}
+    >
       {/* Left Side - Logo */}
       <div
         className="flex items-center space-x-4 cursor-pointer"
@@ -62,20 +67,20 @@ const Navbar = () => {
           <DropdownMenu>
             <DropdownMenuTrigger className="border-none outline-none">
               <div className=" flex flex-col items-center space-x-2 cursor-pointer">
-               <div className="relative">
-                 <Image
-                  height={32}
-                  width={32}
-                  src={session?.user?.image || "/logo.svg"}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <span
-                  className={`absolute bottom-0 right-0 rounded-full  p-[5px] 
+                <div className="relative">
+                  <Image
+                    height={32}
+                    width={32}
+                    src={session?.user?.image || "/logo.svg"}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <span
+                    className={` absolute bottom-0 right-0 rounded-full  p-[5px] 
                  bg-green-500 
                 `}
-                ></span>
-               </div>
+                  ></span>
+                </div>
                 <span className="text-gray-400 text-xs">{session?.user?.name}</span>
               </div>
             </DropdownMenuTrigger>

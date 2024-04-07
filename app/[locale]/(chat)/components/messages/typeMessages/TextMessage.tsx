@@ -4,7 +4,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { ChatSkeleton } from "../../mychats/ChatSkeleton";
 import Time from "./Time";
-import SeenBy from "./SeenBy";
+import SeenBy from "./seenby/SeenBy";
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
   loading: () => <ChatSkeleton />,
   ssr: false,
@@ -26,13 +26,9 @@ const Status = dynamic(() => import("./Status"), {
 });
 const TextMessage = ({
   message,
-  isLastSeenMessage,
-  isUserOnline,
   isCurrentUserMessage,
 }: {
   message: IMessage;
-  isLastSeenMessage: boolean;
-  isUserOnline: boolean;
   isCurrentUserMessage: boolean;
 }) => {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
@@ -57,7 +53,6 @@ const TextMessage = ({
         >
           <div className={""}>
             <div className="relative px-4 py-2">
-            
               {/* Reply */}
               <RepliedMessage message={message} currentUser={currentUser as any} />
               {/* REACTIONS */}
@@ -71,12 +66,7 @@ const TextMessage = ({
               )}
 
               {/* message status */}
-              <Status
-                message={message}
-                isLastSeenMessage={isLastSeenMessage}
-                isUserOnline={isUserOnline}
-                isCurrentUserMessage={isCurrentUserMessage}
-              />
+              <Status message={message} isCurrentUserMessage={isCurrentUserMessage} />
               {/* Seen by lists */}
               {message?.seenBy?.length > 0 && (
                 <SeenBy message={message} currentUser={currentUser as any} />

@@ -33,13 +33,9 @@ const formWaveSurferOptions = (ref: any) => ({
 
 export default function VoiceMessage ({
   message,
-  isLastSeenMessage,
-  isUserOnline,
   isCurrentUserMessage,
 }: {
   message: IMessage;
-  isLastSeenMessage: boolean;
-  isUserOnline: boolean;
   isCurrentUserMessage: boolean;
 }) {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
@@ -142,8 +138,6 @@ export default function VoiceMessage ({
               <Status
                 isCurrentUserMessage={isCurrentUserMessage}
                 message={message}
-                isLastSeenMessage={isLastSeenMessage}
-                isUserOnline={isUserOnline}
               />
               {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
               <RiDownloadCloudFill

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pushSeenBy = void 0;
+exports.getSeenByInfoForSingleMessage = exports.pushSeenBy = void 0;
 const MessageModel_1 = require("../model/MessageModel");
 const errorHandler_1 = require("../middlewares/errorHandler");
 const seenByModel_1 = require("../model/seenByModel");
@@ -45,3 +45,46 @@ const pushSeenBy = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.pushSeenBy = pushSeenBy;
+//getSeenByInfoForMessage
+const getSeenByInfoForSingleMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { messageId, chatId } = req.params;
+        const limit = parseInt(req.query.limit) || 10;
+        // const skip = (page - 1) * limit;
+        const skip = parseInt(req.query.skip) || 0;
+        const keyword = req.query.search
+            ? {
+                $or: [
+                    { name: { $regex: req.query.search, $options: "i" } },
+                    { email: { $regex: req.query.search, $options: "i" } },
+                ],
+            }
+            : {};
+        let users = yield seenByModel_1.MessageSeenBy.find({ chatId, messageId })
+            .populate({
+            path: "userId",
+            match: keyword,
+            select: "name email image createdAt lastActive onlineStatus",
+        })
+            .select("-_id userId")
+            .sort({ _id: -1 })
+            .limit(limit)
+            .skip(skip);
+        // Filter out null userId entries
+        users = users.filter((user) => user.userId !== null);
+        // Calculate total count only for non-null userId entries
+        let totalFound = yield seenByModel_1.MessageSeenBy.find({ chatId, messageId })
+            .populate({
+            path: "userId",
+            match: keyword,
+        })
+            .select("-_id userId");
+        let total = totalFound.filter((user) => user.userId !== null).length;
+        res.status(200).json({ users, total, limit, skip });
+    }
+    catch (error) {
+        console.log({ error });
+        next(error);
+    }
+});
+exports.getSeenByInfoForSingleMessage = getSeenByInfoForSingleMessage;

@@ -31,7 +31,7 @@ const UserCard: React.FC<{ user: Tuser | any }> = ({ user }) => {
           />
 
           <span
-            className={`absolute bottom-0 right-1 rounded-full  p-[4px] bg-green-500
+            className={`animate-pulse absolute bottom-0 right-1 rounded-full  p-[4px] bg-green-500
                   }`}
           ></span>
         </div>

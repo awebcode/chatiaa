@@ -29,13 +29,10 @@ const VideoMessage = dynamic(() => import("./typeMessages/VideoMessage"), {
 
 const MessageCard = ({
   message,
-  isLastSeenMessage,
 }: {
   message: IMessage;
-  isLastSeenMessage: boolean;
 }) => {
   const { user: currentUser } = useMessageState();
-  const isUserOnline = true;
   const isCurrentUserMessage = message?.sender?._id === currentUser?._id;
 
   return (
@@ -55,40 +52,30 @@ const MessageCard = ({
             <TextMessage
               isCurrentUserMessage={isCurrentUserMessage}
               message={message}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
             />
           )}
           {message?.type === "video" && (
             <VideoMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
             />
           )}
           {message?.type === "audio" && (
             <VoiceMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
             />
           )}
           {message?.type === "image" && (
             <ImageMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
             />
           )}
           {message?.type === "application" && (
             <PdfMessage
               message={message}
               isCurrentUserMessage={isCurrentUserMessage}
-              isLastSeenMessage={isLastSeenMessage}
-              isUserOnline={isUserOnline}
             />
           )}
         </div>
@@ -97,8 +84,6 @@ const MessageCard = ({
           <CallNotify
             message={message}
             isCurrentUserMessage={isCurrentUserMessage}
-            isLastSeenMessage={isLastSeenMessage}
-            isUserOnline={isUserOnline}
           />
         )}
       </div>{" "}
@@ -107,8 +92,6 @@ const MessageCard = ({
         <NotifyMessage
           message={message}
           isCurrentUserMessage={isCurrentUserMessage}
-          isLastSeenMessage={isLastSeenMessage}
-          isUserOnline={isUserOnline}
         />
       )}
     </>

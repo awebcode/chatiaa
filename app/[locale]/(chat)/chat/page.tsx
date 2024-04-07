@@ -25,7 +25,7 @@ const PrefetchMessages = dynamic(
     loading: () => <LoaderComponent />,
   }
 );
-
+import Navbar from "@/components/Navbar";
 // Now you can use these components as usual, but they will be loaded lazily.
 
 const page = async ({
@@ -48,7 +48,7 @@ const page = async ({
         </div>
         {/* Rightside */}
         <div
-          className={`h-[91vh] md:h-[88vh] border w-full ${
+          className={`h-screen md:h-[88vh] border w-full ${
             searchParams?.chatId ? "block basis-[100%] w-full" : "hidden"
           }  md:block`}
         >

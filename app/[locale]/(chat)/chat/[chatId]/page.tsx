@@ -6,6 +6,7 @@ import PrefetchMyChats from "../../components/mychats/PrefetchChats";
 // import EmptyChat from "../../components/Empty";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
+import Navbar from "@/components/Navbar";
 
 const LeftSideClientWrapper = dynamic(() => import("../../components/LeftSide"), {
   loading: () => <LoaderComponent />,
@@ -31,10 +32,11 @@ const EmptyChat = dynamic(() => import("../../components/Empty"), {
 const page = ({ params }: { params: { chatId: string } }) => {
   return (
     <div>
+      {/* {!params?.chatId && <Navbar />} */}
       <div className="flexBetween gap-2 overflow-hidden">
         {/* Left side */}
         <div
-          className={`h-screen md:h-[88vh] basis-[100%] ${
+          className={`h-screen ${!params?.chatId?"md:h-[88vh]":"h-screen"} basis-[100%] ${
             params?.chatId ? "hidden" : "block"
           } md:block w-full md:basis-2/4 border `}
         >
@@ -44,9 +46,7 @@ const page = ({ params }: { params: { chatId: string } }) => {
         </div>
         {/* Rightside */}
         <div
-          className={`h-screen md:h-[88vh] border w-full ${
-            params?.chatId ? "block basis-[100%] w-full" : "hidden"
-          }  md:block`}
+          className={`h-screen w-full`}
         >
           {params?.chatId ? (
             <MainClientWrapper>
