@@ -32,7 +32,7 @@ export default function EmojiBottomSheet({
       <SheetContent side={"bottom"}>
         <EmojiPicker
           open
-          className="w-screen h-auto block mx-auto transition-all duration-500"
+          className="block mx-auto w-full overflow-scroll"
           onEmojiClick={(e) => {
             onEmojiClick(e, message._id);
             setIsOpenReactModal(false);
