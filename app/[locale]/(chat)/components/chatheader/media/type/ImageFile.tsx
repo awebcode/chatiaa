@@ -2,7 +2,6 @@ import { IMessage } from "@/context/reducers/interfaces";
 import Image from "next/image";
 import React from "react";
 
-
 import TooltipWrapper from "./TooltipWrapper";
 import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
@@ -10,7 +9,7 @@ import FullScreenPreview from "../FullScreen";
 import LoaderComponent from "@/components/Loader";
 import dynamic from "next/dynamic";
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 const ImageFile = ({ message }: { message: IMessage }) => {
   return (

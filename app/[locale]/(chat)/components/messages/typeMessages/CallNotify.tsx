@@ -2,28 +2,25 @@ import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
 import React from "react";
 import dynamic from "next/dynamic";
-import { ChatSkeleton } from "../../mychats/ChatSkeleton";
 import Time from "./Time";
 import LoaderComponent from "@/components/Loader";
-const SeenBy=dynamic(()=>import("./seenby/SeenBy"),{ loading: () => <LoaderComponent />,})
+const SeenBy = dynamic(() => import("./seenby/SeenBy"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
-  loading: () => <ChatSkeleton />,
-  ssr: false,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 // Import RepliedMessage dynamically
 const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"), {
-  // loading: () => <ChatSkeleton />,
-  ssr: false,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 const RREsystem = dynamic(() => import("../RRE/RREsystem"), {
-  // loading: () => <ChatSkeleton />,
-  ssr: false,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 const Status = dynamic(() => import("./Status"), {
-  // loading: () => <ChatSkeleton />,
-  ssr: false,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 const CallNotify = ({
   message,

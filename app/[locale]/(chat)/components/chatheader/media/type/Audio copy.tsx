@@ -9,7 +9,7 @@ import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import LoaderComponent from "@/components/Loader";
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 // Import RepliedMessage dynamically
 // styles

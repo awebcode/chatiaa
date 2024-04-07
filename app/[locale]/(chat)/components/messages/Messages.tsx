@@ -3,8 +3,8 @@
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-const MessageCard = dynamic(() => import("./MessageCard"));
-const NoChatProfile = dynamic(() => import("../NoChatProfile"));
+// const MessageCard = dynamic(() => import("./MessageCard"));
+// const NoChatProfile = dynamic(() => import("../NoChatProfile"));
 import { FaArrowDown } from "react-icons/fa";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -17,6 +17,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/navigation";
 import LoaderComponent from "@/components/Loader";
+import NoChatProfile from "../NoChatProfile";
+import MessageCard from "./MessageCard";
 export default function Messages({ chatId }: { chatId: string }) {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount, isSelectedChat } = useMessageState();

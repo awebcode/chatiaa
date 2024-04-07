@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button";
 import { handleSendCall } from "@/config/handleSendCall";
 import LoaderComponent from "@/components/Loader";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 const ChatHeader = () => {
@@ -38,7 +38,7 @@ const ChatHeader = () => {
   };
   useEffect(() => {
     if (!selectedChat) return router.replace("/chat");
-  }, [selectedChat,router,dispatch]);
+  }, [selectedChat, router, dispatch]);
   //  if (!selectedChat) return router.replace("/chat");
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50">

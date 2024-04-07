@@ -19,7 +19,7 @@ import {
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 const Media = dynamic(() => import("../media/Media"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolean }) {

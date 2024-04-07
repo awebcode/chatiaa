@@ -1,19 +1,19 @@
 import { IMessage } from "@/context/reducers/interfaces";
 import React from "react";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 
-const ImageFile = dynamic(() => import('./type/ImageFile'), {
-  loading: () => <LoaderComponent />,
+const ImageFile = dynamic(() => import("./type/ImageFile"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
-const VideoFile = dynamic(() => import('./type/Video'), {
-  loading: () => <LoaderComponent />,
+const VideoFile = dynamic(() => import("./type/Video"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
-const Pdf = dynamic(() => import('./type/Pdf'), {
-  loading: () => <LoaderComponent />,
+const Pdf = dynamic(() => import("./type/Pdf"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
-const AudioFile = dynamic(() => import('./type/Audio'), {
-  loading: () => <LoaderComponent />,
+const AudioFile = dynamic(() => import("./type/Audio"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 const Card = ({ message }: { message: IMessage }) => {

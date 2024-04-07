@@ -54,7 +54,7 @@ export default function ViewersDialog({ message }: { message: IMessage }) {
             className="shadow-lg w-full h-auto bg-transparent  text-[10px] md:text-sm py-3 px-3 rounded-md  outline-none border border-gray-400  transition-all duration-300"
           />
           <h1 className="text-right mx-2 font-medium text-gray-500">
-            Total  ({data?.pages[0]?.total})
+            Total ({data?.pages[0]?.total})
           </h1>
           {/* Infinite scrolling */}
           <div id="messageViewersTarget" style={{ height: "40vh", overflowY: "scroll" }}>
@@ -64,7 +64,7 @@ export default function ViewersDialog({ message }: { message: IMessage }) {
                 fetchNextPage();
               }}
               hasMore={hasNextPage} //searchText.trim() !== "" &&
-              loader={<LoaderComponent />}
+              loader={<LoaderComponent text="Fetching..." />}
               endMessage={
                 users &&
                 users?.length > 0 && ( //searchText.trim() !== ""
@@ -93,7 +93,7 @@ export default function ViewersDialog({ message }: { message: IMessage }) {
                   ) : null}
                 </div>
 
-                <h1>{isFetching ? <LoaderComponent /> : ""}</h1>
+                <h1>{isFetching ? <LoaderComponent text="Fetching..." /> : ""}</h1>
               </div>
             </InfiniteScroll>
           </div>

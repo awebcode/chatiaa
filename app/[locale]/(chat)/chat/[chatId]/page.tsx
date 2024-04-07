@@ -14,7 +14,8 @@ const LeftSideClientWrapper = dynamic(() => import("../../components/LeftSide"),
   loading: () => <LoaderComponent text="Fetching..."/>,
 });
 // const PrefetchMyChats = dynamic(() => import("../../components/mychats/PrefetchChats"), {
-//   loading: () => <LoaderComponent />,
+//   loading: () => <LoaderComponent 
+  // text="Fetching..."/>,
 // });
 const MainClientWrapper = dynamic(() => import("../../components/Main"), {
   loading: () => <LoaderComponent text="Fetching..." />,

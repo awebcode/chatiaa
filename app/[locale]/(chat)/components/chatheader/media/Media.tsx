@@ -1,19 +1,19 @@
 import LoaderComponent from "@/components/Loader";
 import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
-import {  getInitialFilesInChat } from "@/functions/chatActions";
-import {  useQuery } from "@tanstack/react-query";
+import { getInitialFilesInChat } from "@/functions/chatActions";
+import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React, { useState } from "react";
 const FilesSheet = dynamic(() => import("./FileSheet"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 const Media = () => {
   const { selectedChat } = useMessageState();
   const { data, isFetching, isLoading } = useQuery({
-    queryKey: [ "group"],
-    queryFn:()=> getInitialFilesInChat(selectedChat?.chatId as string),
+    queryKey: ["group"],
+    queryFn: () => getInitialFilesInChat(selectedChat?.chatId as string),
   });
   return (
     <>

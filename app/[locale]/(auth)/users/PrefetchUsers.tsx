@@ -7,11 +7,11 @@ import { redirect } from "@/navigation";
 import LoaderComponent from "@/components/Loader";
 const Users = dynamic(() => import("./Users"), {
   ssr: false,
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 export default async function PrefetchUsers() {
-   const data = await getServerSession(authOptions);
-  if (data && data.user && (data.user as any)?.role!=="admin") {
+  const data = await getServerSession(authOptions);
+  if (data && data.user && (data.user as any)?.role !== "admin") {
     redirect("/");
   }
   // if (!data?.user) {

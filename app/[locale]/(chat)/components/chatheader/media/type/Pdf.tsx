@@ -8,7 +8,7 @@ import { handleDownload } from "@/config/handleDownload";
 import FullScreenPreview from "../FullScreen";
 import LoaderComponent from "@/components/Loader";
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 const Pdf = ({ message }: { message: IMessage }) => {

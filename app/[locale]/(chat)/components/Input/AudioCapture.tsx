@@ -273,7 +273,7 @@ function CaptureAudio({ hide }: any) {
       </div>
       <div className="mx-4 py-2 px-4 text-white text-lg flex gap-3 justify-center items-center bg-search-input-container-background rounded-full drop-shadow-lg">
         {isRecording ? (
-          <div className="text-red-500 text-[10px] md:text-sm animate-pulse text-center">
+          <div className="text-gray-400 text-[10px] md:text-sm animate-pulse text-center">
             Recording... {formatTime(recordingDuration)}
           </div>
         ) : (
@@ -295,7 +295,7 @@ function CaptureAudio({ hide }: any) {
             )}
           </div>
         )}
-        <div className="w-24 md:w-60" ref={waveFormRef} hidden={isRecording}></div>
+        <div className="w-32 md:w-80" ref={waveFormRef} hidden={isRecording}></div>
         {recordedAudio && isPlaying && (
           <span className="text-xs md:text-sm">{formatTime(currentPlayBackTime)}</span>
         )}

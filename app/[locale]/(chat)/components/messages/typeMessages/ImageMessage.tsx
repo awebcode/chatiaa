@@ -2,18 +2,32 @@ import React from "react";
 import Image from "next/image";
 import { IMessage } from "@/context/reducers/interfaces";
 import { useMessageState } from "@/context/MessageContext";
-import { calculateTime } from "@/functions/formatTime";
 import dynamic from "next/dynamic";
 import Time from "./Time";
 import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
-import FullScreenPreview from "../../chatheader/media/FullScreen";
-const RREsystem = dynamic(() => import("../RRE/RREsystem"));
-const Status = dynamic(() => import("./Status"));
-const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
+import LoaderComponent from "@/components/Loader";
+const FullScreenPreview = dynamic(() => import("../../chatheader/media/FullScreen"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+const SeenBy = dynamic(() => import("./seenby/SeenBy"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
 
 // Import RepliedMessage dynamically
-const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"));
+const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+
+const RREsystem = dynamic(() => import("../RRE/RREsystem"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+const Status = dynamic(() => import("./Status"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
 function ImageMessage({
   message,
   isCurrentUserMessage,
@@ -38,7 +52,9 @@ function ImageMessage({
           <div className={""}>
             <div className={"relative"}>
               {/* Reply */}
-              <div className="pt-6"><RepliedMessage message={message} currentUser={currentUser as any} /></div>
+              <div className="pt-6">
+                <RepliedMessage message={message} currentUser={currentUser as any} />
+              </div>
               <Image
                 src={`${message.file.url}`}
                 alt={"Unknown file"}
@@ -63,10 +79,11 @@ function ImageMessage({
                 />
               )}
               {/* message status */}
-              <Status
-                isCurrentUserMessage={isCurrentUserMessage}
-                message={message}
-              />
+              <Status isCurrentUserMessage={isCurrentUserMessage} message={message} />
+              {/* Seen by lists */}
+              {message?.seenBy?.length > 0 && (
+                <SeenBy message={message} currentUser={currentUser as any} />
+              )}
             </div>
           </div>
         </div>

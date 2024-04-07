@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import dynamic from "next/dynamic";
 const SearchGroupModal = dynamic(() => import("./SearchGroupModal"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 export default function CreateGroupModal() {

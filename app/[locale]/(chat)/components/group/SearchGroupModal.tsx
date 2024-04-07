@@ -14,13 +14,13 @@ import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { getSenderFull } from "../logics/logics";
 import { Button } from "@/components/ui/button";
 const SliderUsers = dynamic(() => import("./SliderUsers"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 import LoaderComponent from "@/components/Loader";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const GroupCard = dynamic(() => import("./Card"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 export default function SearchGroupModal() {
   const dispatch = useMessageDispatch();
@@ -160,12 +160,11 @@ export default function SearchGroupModal() {
               next={() => {
                 fetchNextPage();
               }}
-              hasMore={hasNextPage} //searchText.trim() !== "" && 
-              loader={<LoaderComponent/>}
+              hasMore={hasNextPage} //searchText.trim() !== "" &&
+              loader={<LoaderComponent />}
               endMessage={
                 users &&
-                users?.length > 0 &&
-                  ( //searchText.trim() !== ""
+                users?.length > 0 && ( //searchText.trim() !== ""
                   <p className="text-green-400">
                     <b>all users here!</b>
                   </p>
@@ -188,7 +187,7 @@ export default function SearchGroupModal() {
                       )}
                 </div>
 
-                <h1>{isFetching ? <LoaderComponent/> : ""}</h1>
+                <h1>{isFetching ? <LoaderComponent /> : ""}</h1>
               </div>
             </InfiniteScroll>
           </div>

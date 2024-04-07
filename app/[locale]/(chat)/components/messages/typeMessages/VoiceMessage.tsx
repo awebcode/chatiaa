@@ -1,6 +1,6 @@
 import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
-import { calculateTime, formatTime } from "@/functions/formatTime";
+import { formatTime } from "@/functions/formatTime";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
@@ -9,13 +9,28 @@ import dynamic from "next/dynamic";
 import Time from "./Time";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import { handleDownload } from "@/config/handleDownload";
-import FullScreenPreview from "../../chatheader/media/FullScreen";
-const RREsystem = dynamic(() => import("../RRE/RREsystem"));
-const Status = dynamic(() => import("./Status"));
-const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"));
+import LoaderComponent from "@/components/Loader";
+
+const SeenBy = dynamic(() => import("./seenby/SeenBy"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
 
 // Import RepliedMessage dynamically
-const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"));
+const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+
+const RREsystem = dynamic(() => import("../RRE/RREsystem"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+const Status = dynamic(() => import("./Status"), {
+  loading: () => <LoaderComponent text="Fetching..." />,
+});
+
+// Import RepliedMessage dynamically
 // styles
 
 const formWaveSurferOptions = (ref: any) => ({
@@ -31,7 +46,7 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
-export default function VoiceMessage ({
+export default function VoiceMessage({
   message,
   isCurrentUserMessage,
 }: {
@@ -111,7 +126,7 @@ export default function VoiceMessage ({
             )}
           </div>
           <div className={"relative "}>
-             {/* reply */}
+            {/* reply */}
             <div className="pt-6">
               <RepliedMessage message={message} currentUser={currentUser as any} />
             </div>
@@ -135,15 +150,16 @@ export default function VoiceMessage ({
                 />
               )}
               {/* message status */}
-              <Status
-                isCurrentUserMessage={isCurrentUserMessage}
-                message={message}
-              />
+              <Status isCurrentUserMessage={isCurrentUserMessage} message={message} />
               {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
               <RiDownloadCloudFill
                 className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
                 onClick={() => handleDownload(message?.file?.url)}
               />
+              {/* Seen by lists */}
+              {message?.seenBy?.length > 0 && (
+                <SeenBy message={message} currentUser={currentUser as any} />
+              )}
             </div>
           </div>
         </div>

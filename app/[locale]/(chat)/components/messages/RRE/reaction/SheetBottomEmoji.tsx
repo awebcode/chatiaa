@@ -10,7 +10,7 @@ const EmojiPicker = dynamic(
       return module.default || module;
     });
   },
-  { ssr: false, loading: () => <LoaderComponent />, }
+  { ssr: false, loading: () => <LoaderComponent text="Fetching..." /> }
 );
 
 export default function EmojiBottomSheet({

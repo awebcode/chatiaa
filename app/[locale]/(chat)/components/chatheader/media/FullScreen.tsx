@@ -11,12 +11,12 @@ import LoaderComponent from "@/components/Loader";
 
 // Dynamically import PDFViewer component
 const PDFViewer = dynamic(() => import("../../Input/PdfViewer"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 // Dynamically import AudioFile component
 const AudioFile = dynamic(() => import("./type/Audio"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 // Now you can use PDFViewer and AudioFile components in your code.

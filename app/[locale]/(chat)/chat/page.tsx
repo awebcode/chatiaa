@@ -19,12 +19,14 @@ const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChat
 });
 
 // const MainClientWrapper = dynamic(() => import("../components/Main"), {
-//   loading: () => <LoaderComponent />,
+//   loading: () => <LoaderComponent 
+  // text="Fetching..."/>,
 // });
 // const PrefetchMessages = dynamic(
 //   () => import("../components/messages/PrefetchMessages"),
 //   {
-//     loading: () => <LoaderComponent />,
+//     loading: () => <LoaderComponent 
+  // text="Fetching..."/>,
 //   }
 // );
 // Now you can use these components as usual, but they will be loaded lazily.

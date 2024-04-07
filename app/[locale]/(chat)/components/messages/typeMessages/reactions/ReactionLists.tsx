@@ -171,7 +171,7 @@ const ReactionLists = ({
             fetchNextPage();
           }}
           hasMore={message.totalReactions > data.length && data.length >= 10}
-          loader={<LoaderComponent />}
+          loader={<LoaderComponent text="Fetching..." />}
           endMessage={
             data.length > 10 && (
               <div className="text-center text-xs text-green-400 pt-10">

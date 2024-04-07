@@ -37,7 +37,7 @@ const Drawer = () => {
   };
 
   const users = data?.pages.flatMap((page) => page?.onlineUsers);
- console.log({users})
+  console.log({ users });
   return (
     <>
       <div>
@@ -57,7 +57,7 @@ const Drawer = () => {
                 fetchNextPage();
               }}
               hasMore={hasNextPage}
-              loader={<LoaderComponent />}
+              loader={<LoaderComponent text="Fetching..." />}
               endMessage={
                 users &&
                 users?.length > 0 && (

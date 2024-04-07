@@ -13,7 +13,8 @@ import { ADD_REACTION_ON_MESSAGE } from "@/context/reducers/actions";
 import { v4 } from "uuid";
 
 // const EmojiBottomSheet = dynamic(() => import("./SheetBottomEmoji"), {
-//   // loading: () => <LoaderComponent />,
+//   // loading: () => <LoaderComponent 
+  // text="Fetching..."/>,
 // });
 
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";

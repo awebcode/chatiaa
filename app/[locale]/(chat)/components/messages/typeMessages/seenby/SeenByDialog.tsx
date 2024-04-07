@@ -11,10 +11,10 @@ import {
 import { IMessage } from "@/context/reducers/interfaces";
 import dynamic from "next/dynamic";
 const ViewersDialog = dynamic(() => import("./Viewers"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
-export default function SeenByDialog({message,}:{message:IMessage}) {
+export default function SeenByDialog({ message }: { message: IMessage }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -23,7 +23,7 @@ export default function SeenByDialog({message,}:{message:IMessage}) {
       <DialogContent className="max-h-screen ">
         <DialogHeader>
           <DialogTitle>Seen by </DialogTitle>
-          <DialogDescription>These users  are seen this message</DialogDescription>
+          <DialogDescription>These users are seen this message</DialogDescription>
         </DialogHeader>
 
         <ViewersDialog message={message} />

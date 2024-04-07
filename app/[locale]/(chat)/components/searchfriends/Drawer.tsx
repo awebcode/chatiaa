@@ -56,7 +56,7 @@ const Drawer = () => {
                 fetchNextPage();
               }}
               hasMore={searchText.trim() !== "" && hasNextPage}
-              loader={<LoaderComponent />}
+              loader={<LoaderComponent text="Fetching..." />}
               endMessage={
                 users &&
                 users?.length > 0 &&

@@ -1,18 +1,18 @@
 import { IMessage } from "@/context/reducers/interfaces";
 import React from "react";
 
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 
 const FullScreenPreview = dynamic(() => import("../FullScreen"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 const TooltipWrapper = dynamic(() => import("./TooltipWrapper"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";

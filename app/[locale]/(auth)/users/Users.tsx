@@ -21,14 +21,14 @@ import moment from "moment";
 import LoaderComponent from "@/components/Loader";
 
 const UserDropdownMenu = dynamic(() => import("./UserDropdown"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 import { useMessageState } from "@/context/MessageContext";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const Users = () => {
   const { onlineUsers } = useOnlineUsersStore();
-  const {user:currentUser}=useMessageState()
+  const { user: currentUser } = useMessageState();
   const [searchTerm, setSearchTerm] = useState("");
   const searchText = useDebounce(searchTerm, 600);
   const { data, isFetching, fetchNextPage, hasNextPage } = useInfiniteQuery({
@@ -56,10 +56,8 @@ const Users = () => {
 
   const users = data?.pages.flatMap((page) => page?.users);
 
- 
   return (
     <>
-    
       <div>
         <div className="menu p-4   bg-base-200 text-base-content overflow-y-scroll">
           <div className="flex justify-between">
@@ -78,7 +76,9 @@ const Users = () => {
             </div>
             <div>
               <TableCell colSpan={3}>Total users</TableCell>
-              <TableCell className="text-right font-bold">({data?.pages[0]?.total})</TableCell>
+              <TableCell className="text-right font-bold">
+                ({data?.pages[0]?.total})
+              </TableCell>
             </div>
           </div>
 
@@ -135,9 +135,7 @@ const Users = () => {
                             />
                             <span
                               className={`absolute bottom-2 right-3 rounded-full  p-[6px] ${
-                                user?.isOnline
-                                  ? "bg-green-500"
-                                  : "bg-rose-500"
+                                user?.isOnline ? "bg-green-500" : "bg-rose-500"
                               }`}
                             ></span>
                           </TableCell>
