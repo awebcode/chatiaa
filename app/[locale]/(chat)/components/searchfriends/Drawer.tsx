@@ -5,6 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { getAllUsers } from "@/functions/authActions";
 
 import dynamic from "next/dynamic";
+import LoaderComponent from "@/components/Loader";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const UserCard = dynamic(() => import("./UserCard"));
@@ -56,7 +57,7 @@ const Drawer = () => {
                 fetchNextPage();
               }}
               hasMore={searchText.trim() !== "" && hasNextPage}
-              loader={<div>Loading...</div>}
+            loader={<LoaderComponent/>}
               endMessage={
                 users &&
                 users?.length > 0 &&

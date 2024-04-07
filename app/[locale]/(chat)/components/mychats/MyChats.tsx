@@ -13,6 +13,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
 import { SET_CHATS } from "@/context/reducers/actions";
 import FriendsCard from "./FriendCard";
+import LoaderComponent from "@/components/Loader";
 
 const MyChats = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -105,11 +106,7 @@ const MyChats = () => {
               dataLength={chats ? chats?.length : 0}
               next={fetchNextPage}
               hasMore={!isLoading && hasNextPage}
-              loader={
-                <div className="flex justify-center items-center mt-6 ">
-                  <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
-                </div>
-              }
+               loader={<LoaderComponent/>}
               endMessage={
                 !isLoading &&chats?.length>10&& (
                   <div className="text-center text-2xl text-green-400 pt-10">

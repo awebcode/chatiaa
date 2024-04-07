@@ -18,6 +18,7 @@ import { allMessages } from "@/functions/messageActions";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/navigation";
+import LoaderComponent from "@/components/Loader";
 export default function Messages({ chatId }: { chatId: string }) {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
@@ -125,17 +126,13 @@ export default function Messages({ chatId }: { chatId: string }) {
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-2 md:p-4 bg-base-200 h-[76vh] md:h-[70vh] overflow-y-auto overflow-x-hidden flex flex-col-reverse"
+      className="menu p-2 bg-base-200 h-[82vh]  overflow-y-auto overflow-x-hidden flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
         next={fetchNextPage}
         hasMore={!isLoading && hasNextPage}
-        loader={
-          <div className="flex justify-center items-center mt-6 ">
-            <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
-          </div>
-        }
+         loader={<LoaderComponent/>}
         endMessage={
           !isLoading && (
             <div className="text-center text-2xl text-green-400 pt-10">
@@ -154,7 +151,7 @@ export default function Messages({ chatId }: { chatId: string }) {
         scrollableTarget="MessagesscrollableTarget"
         scrollThreshold={0.6}
       >
-        <div className="flex flex-col-reverse gap-3 p-2 m-2">
+        <div className="flex flex-col-reverse gap-3 p-2 m-4 mb-[60px]">
           <div id="messageEndTarget" ref={messageEndRef}></div>
           {/* typing indicator */}
 

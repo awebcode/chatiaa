@@ -14,6 +14,7 @@ import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { getSenderFull } from "../logics/logics";
 import { Button } from "@/components/ui/button";
 import SliderUsers from "./SliderUsers";
+import LoaderComponent from "@/components/Loader";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const GroupCard = dynamic(() => import("./Card"));
@@ -156,7 +157,7 @@ export default function SearchGroupModal() {
                 fetchNextPage();
               }}
               hasMore={hasNextPage} //searchText.trim() !== "" && 
-              loader={<div>Loading...</div>}
+              loader={<LoaderComponent/>}
               endMessage={
                 users &&
                 users?.length > 0 &&

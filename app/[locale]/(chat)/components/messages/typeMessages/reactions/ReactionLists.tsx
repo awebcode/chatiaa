@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { PopoverArrow, PopoverClose, PopoverContent } from "@radix-ui/react-popover";
 import { useTheme } from "next-themes";
 import { axiosClient } from "@/config/AxiosConfig";
+import LoaderComponent from "@/components/Loader";
 
 const ReactionLists = ({
   message,
@@ -170,11 +171,7 @@ const ReactionLists = ({
             fetchNextPage();
           }}
           hasMore={message.totalReactions > data.length && data.length >= 10}
-          loader={
-            <div className="flex justify-center items-center mt-8">
-              <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>
-            </div>
-          }
+          loader={<LoaderComponent />}
           endMessage={
             data.length > 10 && (
               <div className="text-center text-xs text-green-400 pt-10">

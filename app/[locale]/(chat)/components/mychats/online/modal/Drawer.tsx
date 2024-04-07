@@ -6,6 +6,7 @@ import { getAllUsers, getOnlineUsers } from "@/functions/authActions";
 
 import dynamic from "next/dynamic";
 import { Tuser } from "@/store/types";
+import LoaderComponent from "@/components/Loader";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const UserCard = dynamic(() => import("./UserCard"));
@@ -56,11 +57,10 @@ const Drawer = () => {
                 fetchNextPage();
               }}
               hasMore={hasNextPage}
-              loader={<div>Loading...</div>}
+              loader={<LoaderComponent />}
               endMessage={
                 users &&
-                users?.length > 0 &&
-                (
+                users?.length > 0 && (
                   <p className="text-green-400">
                     <b>all online users here!</b>
                   </p>
@@ -75,10 +75,12 @@ const Drawer = () => {
         })} */}
                 {users && users?.length > 0 ? (
                   users?.map((user: Tuser) => {
-                    return <UserCard user={user} key={user._id+Date.now()} />;
+                    return <UserCard user={user} key={user._id + Date.now()} />;
                   })
                 ) : (
-                  <h1 className="text-sm md:text-xl m-4 text-center">No Online User Found!</h1>
+                  <h1 className="text-sm md:text-xl m-4 text-center">
+                    No Online User Found!
+                  </h1>
                 )}
 
                 <h1>{isFetching ? "isFetching" : ""}</h1>

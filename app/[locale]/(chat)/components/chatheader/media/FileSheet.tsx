@@ -27,6 +27,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import FullScreenPreview from "./FullScreen";
+import LoaderComponent from "@/components/Loader";
 export default function FilesSheet({ total }: { total: number }) {
   const { selectedChat } = useMessageState();
   const [filter, setFilter] = useState("all");
@@ -109,7 +110,7 @@ export default function FilesSheet({ total }: { total: number }) {
                   fetchNextPage();
                 }}
                 hasMore={hasNextPage}
-                loader={<div>Loading...</div>}
+                loader={<LoaderComponent/>}
                 endMessage={
                   <p className="text-green-400">
                     <b>all files here!</b>

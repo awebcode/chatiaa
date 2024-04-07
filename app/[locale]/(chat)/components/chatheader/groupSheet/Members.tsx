@@ -8,6 +8,7 @@ import React, {  useMemo, useState } from "react";
 import Card from "./Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddMembers from "./add/AddMembers";
+import LoaderComponent from "@/components/Loader";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 const Members = () => {
   const dispatch = useMessageDispatch();
@@ -72,10 +73,9 @@ const Members = () => {
               dataLength={users ? users?.length : 0}
               next={() => {
                 fetchNextPage();
-                console.log("next grp call")
               }}
               hasMore={hasNextPage}
-              loader={<div>Loading...</div>}
+              loader={<LoaderComponent/>}
               endMessage={
                 users &&
                 users?.length > 0 && (
