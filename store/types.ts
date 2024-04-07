@@ -8,7 +8,7 @@ export type Tuser = {
   createdAt: string;
   lastActive: string;
   isOnline:boolean;
-  onlineStatus: ['online', 'busy', 'offline'],
+   onlineStatus: 'online' | 'busy' | 'offline';
   socketId:string
 };
 

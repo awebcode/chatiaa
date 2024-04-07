@@ -139,15 +139,16 @@ const Home = () => {
 
 // Card component
 const Card = ({ icon, title, description, color }: any) => (
-  <div className={`w-full sm:w-1/2 md:w-1/4 p-1 md:p-4   `}>
+  <div className={`w-full sm:w-1/2 md:w-1/4 p-1 md:p-4`}>
     <div
-      className={` rounded p-6 shadow-md text-${color}-500 hover:ring-2 ring-${color}-500 duration-300 `}
+      className={`rounded p-6 shadow-md text-${color}-500 duration-500 transition-all   hover:ring-2 hover:ring-yellow-500`}
     >
       <div className="mb-4">{icon}</div>
-      <h2 className="text-lg  font-semibold mb-2">{title}</h2>
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
       <p className="text-gray-500 text-sm">{description}</p>
     </div>
   </div>
 );
+
 
 export default Home;

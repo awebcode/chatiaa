@@ -3,8 +3,8 @@ import nextIntl from "next-intl/plugin";
 const withNextIntl = nextIntl();
 
 const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
+  // reactStrictMode: true,
+  // swcMinify: true,
   images: {
     domains: [
       "res.cloudinary.com",

@@ -18,6 +18,7 @@ const Status = ({
   isCurrentUserMessage: boolean;
 }) => {
   const { selectedChat, user: currentUser } = useMessageState();
+  console.log({sender:message?.sender})
   return (
     <div
       className={`absolute bottom-1 ${
@@ -46,7 +47,7 @@ const Status = ({
           </TooltipProvider>
           <span
             className={`absolute bottom-0 right-0 rounded-full p-[4px] ${
-              message?.sender?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
+              message?.sender?.onlineStatus==="online" ? "animate-pulse bg-green-500" : "bg-rose-500"
             }`}
           ></span>
         </div>

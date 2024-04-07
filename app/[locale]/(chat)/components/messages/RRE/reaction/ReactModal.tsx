@@ -12,11 +12,12 @@ import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { ADD_REACTION_ON_MESSAGE } from "@/context/reducers/actions";
 import { v4 } from "uuid";
 
-const EmojiBottomSheet = dynamic(() => import("./SheetBottomEmoji"), {
-  // loading: () => <LoaderComponent />,
-});
+// const EmojiBottomSheet = dynamic(() => import("./SheetBottomEmoji"), {
+//   // loading: () => <LoaderComponent />,
+// });
 
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import EmojiBottomSheet from "./SheetBottomEmoji";
 
 const ReactModal = ({
   message,
