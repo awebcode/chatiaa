@@ -47,7 +47,7 @@ const page = async ({
         </div>
         {/* Rightside */}
         <div
-          className={`h-screen md:h-[88vh] border w-full `}
+          className={`h-screen hidden md:block md:h-[88vh] border w-full `}
         >
           {/* {searchParams?.chatId ? (
             <MainClientWrapper>

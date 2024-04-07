@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import React, { ReactNode, memo, useEffect } from "react";
 const ChatHeader = dynamic(() => import("./chatheader/ChatHeader") as any, {
   ssr: false,
-  loading: () => <LoaderComponent />,
+  // loading: () => <LoaderComponent />,
 });
 // const Input = dynamic(() => import("./Input/Input"),{ssr:false});
 import { useSocketContext } from "@/context/SocketContextProvider";
@@ -11,7 +11,7 @@ import { useMessageState } from "@/context/MessageContext";
 // import ChatHeader from "./chatheader/ChatHeader";
 // import Input from "./Input/Input";
 const Input = dynamic(() => import("./Input/Input"), {
-  loading: () => <LoaderComponent />,
+  // loading: () => <LoaderComponent />,
 });
 import LoaderComponent from "@/components/Loader";
 const MainClientWrapper = ({ children }: { children: ReactNode }) => {
