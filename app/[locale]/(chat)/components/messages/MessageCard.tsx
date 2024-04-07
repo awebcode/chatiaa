@@ -8,23 +8,18 @@ import LoaderComponent from "@/components/Loader";
 
 const TextMessage = dynamic(() => import("./typeMessages/TextMessage"), {
   loading:()=><LoaderComponent/>,
-  ssr:false
 });
 const ImageMessage = dynamic(() => import("./typeMessages/ImageMessage"), {
   loading: () => <LoaderComponent text="Fetching..." />,
-  ssr: false,
 });
 const VoiceMessage = dynamic(() => import("./typeMessages/VoiceMessage"), {
   loading: () => <LoaderComponent text="Fetching..."/>,
-  ssr: false,
 });
 const PdfMessage = dynamic(() => import("./typeMessages/PdfMessage"), {
   loading: () => <LoaderComponent text="Fetching..."/>,
-  ssr: false,
 });
 const VideoMessage = dynamic(() => import("./typeMessages/VideoMessage"), {
   loading: () => <LoaderComponent text="Fetching..."/>,
-  ssr: false,
 });
 
 const MessageCard = ({
