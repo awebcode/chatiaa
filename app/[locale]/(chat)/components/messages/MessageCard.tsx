@@ -2,28 +2,28 @@ import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
 import React from "react";
 import dynamic from "next/dynamic";
-import { ChatSkeleton } from "../mychats/ChatSkeleton";
 import NotifyMessage from "./typeMessages/NotifyRemoveMessage";
 import CallNotify from "./typeMessages/CallNotify";
+import LoaderComponent from "@/components/Loader";
 
 const TextMessage = dynamic(() => import("./typeMessages/TextMessage"), {
-  // loading:()=><ChatSkeleton/>,
+  loading:()=><LoaderComponent/>,
   ssr:false
 });
 const ImageMessage = dynamic(() => import("./typeMessages/ImageMessage"), {
-  loading: () => <ChatSkeleton />,
+  loading: () => <LoaderComponent text="Fetching..." />,
   ssr: false,
 });
 const VoiceMessage = dynamic(() => import("./typeMessages/VoiceMessage"), {
-  loading: () => <ChatSkeleton />,
+  loading: () => <LoaderComponent text="Fetching..."/>,
   ssr: false,
 });
 const PdfMessage = dynamic(() => import("./typeMessages/PdfMessage"), {
-  loading: () => <ChatSkeleton />,
+  loading: () => <LoaderComponent text="Fetching..."/>,
   ssr: false,
 });
 const VideoMessage = dynamic(() => import("./typeMessages/VideoMessage"), {
-  loading: () => <ChatSkeleton />,
+  loading: () => <LoaderComponent text="Fetching..."/>,
   ssr: false,
 });
 

@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { CiMicrophoneOn } from "react-icons/ci";
-import { AiOutlineSmile } from "react-icons/ai"; // Emoji icon
 import { MdSend } from "react-icons/md"; // Send icon
 import dynamic from "next/dynamic";
 import { TbClockEdit } from "react-icons/tb";
-// const CaptureAudio = dynamic(() => import("./AudioCapture"));
-// const ImageCapture = dynamic(() => import("./CaptureImage"));
-import CaptureAudio from "./AudioCapture";
-import ImageCapture from "./CaptureImage";
+const CaptureAudio = dynamic(() => import("./AudioCapture"));
+const ImageCapture = dynamic(() => import("./CaptureImage"));
+// import CaptureAudio from "./AudioCapture";
+// import ImageCapture from "./CaptureImage";
 
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -21,6 +20,7 @@ import { v4 } from "uuid";
 import { updateSenderMessagesUI } from "@/config/functions";
 import { FaReply } from "react-icons/fa";
 import { Emoji, EmojiStyle } from "emoji-picker-react";
+import LoaderComponent from "@/components/Loader";
 
 const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"), { ssr: false });
 const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"),{ssr:false});
@@ -42,7 +42,6 @@ const Input = () => {
   const clickOutsideEmojiRef: any = useClickAway(() => setOpenEmoji(false));
   const dispatch = useMessageDispatch();
   const onEmojiClick = (e: Temoji) => {
-    console.log({e})
     // Render the Emoji component and get its value
 
     // Append the value of the Emoji component to the message

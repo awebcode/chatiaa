@@ -2,23 +2,17 @@ import { IMessage } from "@/context/reducers/interfaces";
 import Image from "next/image";
 import React from "react";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import moment from "moment";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "@/navigation";
+
 import TooltipWrapper from "./TooltipWrapper";
-import { BsDownload } from "react-icons/bs";
 import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import FullScreenPreview from "../FullScreen";
+import LoaderComponent from "@/components/Loader";
+import dynamic from "next/dynamic";
+const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
+  loading: () => <LoaderComponent />,
+});
 const ImageFile = ({ message }: { message: IMessage }) => {
-  const senderImage = message.sender?.image;
-  const Router = useRouter();
   return (
     <div className="relative inline-block h-32 w-32">
       <Image
@@ -34,6 +28,7 @@ const ImageFile = ({ message }: { message: IMessage }) => {
         className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
         onClick={() => handleDownload(message?.file?.url)}
       />
+      <Time message={message} isCurrentUserMessage={true} />
       <TooltipWrapper message={message} />
     </div>
   );

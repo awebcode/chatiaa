@@ -14,7 +14,6 @@ import {
 import { Link } from "@/navigation";
 import { BsThreeDots } from "react-icons/bs";
 import { Tuser } from "@/store/types";
-import UpdateUserProfileDialog from "../components/UpdUserProfileByAdmin";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { deleteUserByAdmin } from "@/functions/authActions";

@@ -57,7 +57,7 @@ const Drawer = () => {
                 fetchNextPage();
               }}
               hasMore={searchText.trim() !== "" && hasNextPage}
-            loader={<LoaderComponent/>}
+              loader={<LoaderComponent />}
               endMessage={
                 users &&
                 users?.length > 0 &&
@@ -83,7 +83,7 @@ const Drawer = () => {
                   <h1 className="text-sm md:text-xl m-4 text-center">No User Found!</h1>
                 )}
 
-                <h1>{isFetching ? "isFetching" : ""}</h1>
+                <h1>{isFetching ? <LoaderComponent /> : ""}</h1>
               </div>
             </InfiniteScroll>
           </div>

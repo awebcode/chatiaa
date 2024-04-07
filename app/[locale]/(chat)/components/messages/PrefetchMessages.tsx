@@ -2,9 +2,11 @@ import React from "react";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 const Messages = dynamic(() => import("./Messages"), {
   ssr: false,
+  loading: () => <LoaderComponent text="Fetching..."/>,
 });
 import { allMessagesServerAction } from "@/functions/serverActions";
 import dynamic from "next/dynamic";
+import LoaderComponent from "@/components/Loader";
 export default async function PrefetchMessages({ chatId }: { chatId: string }) {
   const queryClient = new QueryClient();
 

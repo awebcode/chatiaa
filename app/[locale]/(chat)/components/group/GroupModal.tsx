@@ -1,3 +1,4 @@
+import LoaderComponent from "@/components/Loader";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +11,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import dynamic from "next/dynamic";
-const SearchGroupModal = dynamic(() => import("./SearchGroupModal"));
+const SearchGroupModal = dynamic(() => import("./SearchGroupModal"), {
+  loading: () => <LoaderComponent />,
+});
 
 export default function CreateGroupModal() {
   return (

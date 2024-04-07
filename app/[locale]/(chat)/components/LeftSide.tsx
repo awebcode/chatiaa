@@ -1,15 +1,15 @@
 "use client";
 import React, { ReactNode } from "react";
 const SearchDrawer = dynamic(() => import("./searchfriends/SearchDrawer"), {
-  loading: () => <LoaderComponent/>,
+  loading: () => <LoaderComponent text="Fetching..."/>,
 });
 
 const CreateGroupModal = dynamic(() => import("./group/GroupModal"), {
-  loading: () => <LoaderComponent/>,
+  loading: () => <LoaderComponent text="Fetching..."/>,
 });
 
 const OnlineFriends = dynamic(() => import("./mychats/online/OnlieFriends"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
@@ -20,7 +20,7 @@ const LeftSideClientWrapper = ({ children }: { children: ReactNode }) => {
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser } = useMessageState();
   return (
-    <div className="border flex flex-col">
+    <div className="border border-gray-700 flex flex-col">
       <div className="m-4">
         <SearchDrawer />
         <CreateGroupModal />

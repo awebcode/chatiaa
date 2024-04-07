@@ -1,3 +1,4 @@
+import LoaderComponent from "@/components/Loader";
 import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
 import {  getInitialFilesInChat } from "@/functions/chatActions";
@@ -5,7 +6,9 @@ import {  useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React, { useState } from "react";
-const FilesSheet = dynamic(() => import("./FileSheet"));
+const FilesSheet = dynamic(() => import("./FileSheet"), {
+  loading: () => <LoaderComponent />,
+});
 const Media = () => {
   const { selectedChat } = useMessageState();
   const { data, isFetching, isLoading } = useQuery({

@@ -8,24 +8,25 @@ import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 
 const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
 const EmptyChat = dynamic(() => import("../components/Empty"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..."/>,
 });
-const MainClientWrapper = dynamic(() => import("../components/Main"), {
-  loading: () => <LoaderComponent />,
-});
+
 const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <LoaderComponent text="Fetching..." />,
 });
-const PrefetchMessages = dynamic(
-  () => import("../components/messages/PrefetchMessages"),
-  {
-    loading: () => <LoaderComponent />,
-  }
-);
-import Navbar from "@/components/Navbar";
+
+// const MainClientWrapper = dynamic(() => import("../components/Main"), {
+//   loading: () => <LoaderComponent />,
+// });
+// const PrefetchMessages = dynamic(
+//   () => import("../components/messages/PrefetchMessages"),
+//   {
+//     loading: () => <LoaderComponent />,
+//   }
+// );
 // Now you can use these components as usual, but they will be loaded lazily.
 
 const page = async ({
@@ -38,9 +39,7 @@ const page = async ({
       <div className="flexBetween gap-2 overflow-hidden">
         {/* Left side */}
         <div
-          className={`h-[91vh] md:h-[88vh] basis-[100%] ${
-            searchParams?.chatId ? "hidden" : "block"
-          } md:block w-full md:basis-2/4 border `}
+          className={`h-[91vh] md:h-[88vh] basis-[100%]  w-full md:basis-3/6 border `}
         >
           <LeftSideClientWrapper>
             <PrefetchMyChats />
@@ -48,17 +47,16 @@ const page = async ({
         </div>
         {/* Rightside */}
         <div
-          className={`h-screen md:h-[88vh] border w-full ${
-            searchParams?.chatId ? "block basis-[100%] w-full" : "hidden"
-          }  md:block`}
+          className={`h-screen md:h-[88vh] border w-full `}
         >
-          {searchParams?.chatId ? (
+          {/* {searchParams?.chatId ? (
             <MainClientWrapper>
               <PrefetchMessages chatId={searchParams?.chatId as string} />
             </MainClientWrapper>
           ) : (
             <EmptyChat />
-          )}
+          )} */}
+          <EmptyChat />
         </div>
       </div>
     </>

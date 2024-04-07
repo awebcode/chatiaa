@@ -135,9 +135,7 @@ const MyChats = () => {
                 )}
               </div>
               {isFetching && (
-                <div className="flex justify-center items-center mt-6 ">
-                  <BiLoaderCircle className="animate-spin h-7 w-7 text-blue-600 rounded-full relative" />
-                </div>
+               <LoaderComponent/>
               )}
             </InfiniteScroll>
             <Button

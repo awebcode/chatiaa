@@ -26,7 +26,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import FullScreenPreview from "./FullScreen";
+
 import LoaderComponent from "@/components/Loader";
 export default function FilesSheet({ total }: { total: number }) {
   const { selectedChat } = useMessageState();

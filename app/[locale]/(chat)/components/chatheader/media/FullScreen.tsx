@@ -7,12 +7,17 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 import dynamic from "next/dynamic";
+import LoaderComponent from "@/components/Loader";
 
 // Dynamically import PDFViewer component
-const PDFViewer = dynamic(() => import("../../Input/PdfViewer"));
+const PDFViewer = dynamic(() => import("../../Input/PdfViewer"), {
+  loading: () => <LoaderComponent />,
+});
 
 // Dynamically import AudioFile component
-const AudioFile = dynamic(() => import("./type/Audio"));
+const AudioFile = dynamic(() => import("./type/Audio"), {
+  loading: () => <LoaderComponent />,
+});
 
 // Now you can use PDFViewer and AudioFile components in your code.
 

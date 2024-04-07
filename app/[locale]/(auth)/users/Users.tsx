@@ -18,7 +18,11 @@ import { Tuser } from "@/store/types";
 import Image from "next/image";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import moment from "moment";
-import UserDropdownMenu from "./UserDropdown";
+import LoaderComponent from "@/components/Loader";
+
+const UserDropdownMenu = dynamic(() => import("./UserDropdown"), {
+  loading: () => <LoaderComponent />,
+});
 import { useMessageState } from "@/context/MessageContext";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 

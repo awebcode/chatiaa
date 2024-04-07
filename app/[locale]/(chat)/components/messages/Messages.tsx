@@ -2,7 +2,6 @@
 
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useEffect, useRef, useState } from "react";
-import { findLastSeenMessageIndex } from "../logics/logics";
 import dynamic from "next/dynamic";
 const MessageCard = dynamic(() => import("./MessageCard"));
 const NoChatProfile = dynamic(() => import("../NoChatProfile"));
@@ -13,7 +12,6 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
 import { IMessage } from "@/context/reducers/interfaces";
-import { BiLoaderCircle } from "react-icons/bi";
 import { allMessages } from "@/functions/messageActions";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";

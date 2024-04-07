@@ -6,7 +6,10 @@ import TooltipWrapper from "./TooltipWrapper";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import { handleDownload } from "@/config/handleDownload";
 import FullScreenPreview from "../FullScreen";
-const Time = dynamic(() => import("../../../messages/typeMessages/Time"));
+import LoaderComponent from "@/components/Loader";
+const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
+  loading: () => <LoaderComponent />,
+});
 
 const Pdf = ({ message }: { message: IMessage }) => {
   const senderImage = message.sender?.image;
@@ -21,6 +24,7 @@ const Pdf = ({ message }: { message: IMessage }) => {
         className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
         onClick={() => handleDownload(message?.file?.url)}
       />
+      <Time message={message} isCurrentUserMessage={true} />
       <TooltipWrapper message={message} />
     </div>
   );

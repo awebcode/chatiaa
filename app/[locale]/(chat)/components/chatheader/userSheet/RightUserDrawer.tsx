@@ -16,7 +16,11 @@ import {
   useBlockMutation,
   useDeleteSingleChatMutation,
 } from "../../mutations/Chatmutations";
-import Media from "../media/Media";
+import dynamic from "next/dynamic";
+import LoaderComponent from "@/components/Loader";
+const Media = dynamic(() => import("../media/Media"), {
+  loading: () => <LoaderComponent />,
+});
 
 export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolean }) {
   const { selectedChat } = useMessageState();

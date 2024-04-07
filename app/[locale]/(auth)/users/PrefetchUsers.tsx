@@ -4,7 +4,11 @@ import dynamic from "next/dynamic";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
 import { redirect } from "@/navigation";
-const Users = dynamic(() => import("./Users"), { ssr: false });
+import LoaderComponent from "@/components/Loader";
+const Users = dynamic(() => import("./Users"), {
+  ssr: false,
+  loading: () => <LoaderComponent />,
+});
 export default async function PrefetchUsers() {
    const data = await getServerSession(authOptions);
   if (data && data.user && (data.user as any)?.role!=="admin") {

@@ -13,11 +13,15 @@ import { SET_CHATS, SET_SELECTED_CHAT } from "@/context/reducers/actions";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { getSenderFull } from "../logics/logics";
 import { Button } from "@/components/ui/button";
-import SliderUsers from "./SliderUsers";
+const SliderUsers = dynamic(() => import("./SliderUsers"), {
+  loading: () => <LoaderComponent />,
+});
 import LoaderComponent from "@/components/Loader";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
-const GroupCard = dynamic(() => import("./Card"));
+const GroupCard = dynamic(() => import("./Card"), {
+  loading: () => <LoaderComponent />,
+});
 export default function SearchGroupModal() {
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
@@ -184,7 +188,7 @@ export default function SearchGroupModal() {
                       )}
                 </div>
 
-                <h1>{isFetching ? "isFetching" : ""}</h1>
+                <h1>{isFetching ? <LoaderComponent/> : ""}</h1>
               </div>
             </InfiniteScroll>
           </div>

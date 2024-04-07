@@ -1,6 +1,9 @@
 import React from "react";
 import dynamic from "next/dynamic";
-const Register = dynamic(() => import("../components/Register"));
+import LoaderComponent from "@/components/Loader";
+const Register = dynamic(() => import("../components/Register"), {
+  loading: () => <LoaderComponent />,
+});
 
 const page = () => {
   return (

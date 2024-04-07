@@ -1,5 +1,4 @@
 "use client";
-import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import Image from "next/image";
 import React, { useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
@@ -13,8 +12,13 @@ import { useTypingStore } from "@/store/useTyping";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { Button } from "@/components/ui/button";
 import { handleSendCall } from "@/config/handleSendCall";
-const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"));
-const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"));
+import LoaderComponent from "@/components/Loader";
+const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
+  loading: () => <LoaderComponent />,
+});
+const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"), {
+  loading: () => <LoaderComponent />,
+});
 
 const ChatHeader = () => {
   const { socket } = useSocketContext();
