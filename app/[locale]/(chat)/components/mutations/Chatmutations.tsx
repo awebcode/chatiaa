@@ -92,7 +92,7 @@ export const useAccessChatMutation = (closeDialogId: string) => {
       }
 
       document.getElementById(closeDialogId)?.click();
-      router.replace(`?chatId=${chat.chatData?._id}`);
+      router.push(`/chat/${chat.chatData?._id}`);
       // setIsOpen(false);
     },
   });
