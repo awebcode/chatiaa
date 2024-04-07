@@ -77,7 +77,7 @@ const DisplayReaction = ({
             setIsOpenReactionListModal(!isOpenReactionListModal);
             setMessageId(message._id);
           }}
-          className="relative  cursor-pointer flex gap-1 bg-gray-700 border border-black p-1 rounded-lg"
+          className="relative  cursor-pointer flex gap-1 bg-gray-200 dark:bg-gray-700 border border-black p-1 rounded-lg"
         >
           {reactionsGroup.slice(0, 4).map((react, i) => {
             return (
@@ -92,7 +92,7 @@ const DisplayReaction = ({
           })}
 
           {message.totalReactions > 0 && (
-            <span className="text-xs">{message.totalReactions}</span>
+            <span className="text-[10px]">{message.totalReactions}</span>
           )}
         </PopoverTrigger>
         <ReactionLists

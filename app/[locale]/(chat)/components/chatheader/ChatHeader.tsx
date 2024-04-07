@@ -37,7 +37,7 @@ const ChatHeader = () => {
     localStorage.removeItem("selectedChat");
   };
   useEffect(() => {
-    if (!selectedChat) return router.push("/chat");
+    if (!selectedChat) return router.replace("/chat");
   }, [selectedChat,router,dispatch]);
   //  if (!selectedChat) return router.replace("/chat");
   return (

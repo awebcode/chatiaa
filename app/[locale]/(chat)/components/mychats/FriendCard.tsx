@@ -107,7 +107,7 @@ const FriendsCard: React.FC<{
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
     // router.push(`?chatId=${chat?._id}`);
-     router.push(`/chat/${chat?._id}`);
+     router.replace(`/chat/${chat?._id}`);
     // if (chat.isGroupChat) {
     //   socket.emit("setup", { id: chat?._id } as any);
     // }

@@ -86,7 +86,22 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
                 }
               }}
             >
-              Block User
+              {selectedChat?.chatBlockedBy ? (
+                selectedChat?.chatBlockedBy?.some(
+                  (user) => user?._id === currentUser?._id
+                ) ? (
+                  <span className="text-blue-500">Unblock</span>
+                ) : selectedChat?.chatBlockedBy?.length > 0 &&
+                  selectedChat?.chatBlockedBy?.some(
+                    (user) => user?._id !== currentUser?._id
+                  ) ? (
+                  <span className="">
+                    {selectedChat?.chatBlockedBy[0].name} Blocked you
+                  </span>
+                ) : (
+                  <span className="">Block</span>
+                )
+              ) : null}
             </Button>
             <Button
               className="w-full block"
