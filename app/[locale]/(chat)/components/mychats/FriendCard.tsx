@@ -107,7 +107,7 @@ const FriendsCard: React.FC<{
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
     // router.push(`?chatId=${chat?._id}`);
-    // router.push(`/chat/${chat?._id}`);
+     router.push(`/chat/${chat?._id}`);
     // if (chat.isGroupChat) {
     //   socket.emit("setup", { id: chat?._id } as any);
     // }
@@ -150,9 +150,8 @@ const FriendsCard: React.FC<{
 
       //emit seenby socket here
     } else if (
-      !chat?.isGroupChat &&
-      (chat?.latestMessage?.status === "unseen" ||
-        chat?.latestMessage?.status === "delivered") &&
+       //////
+      chat?.latestMessage?.status !== "seen" &&
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
       dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
@@ -169,10 +168,10 @@ const FriendsCard: React.FC<{
   return (
     <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
-        <Link
-          href={`/chat/${chat?._id}`}
-          prefetch
-          shallow
+        <div
+          // href={`/chat/${chat?._id}`}
+          // prefetch
+          // shallow
           className="flex items-center gap-2 basis-[90%] cursor-pointer"
           onClick={() => handleClick(chat._id as string)}
         >
@@ -265,7 +264,7 @@ const FriendsCard: React.FC<{
               )}
             </span>
           </div>
-        </Link>
+        </div>
         <div className="flex gap-5 items-center ">
           {/* Chat status */}
           {chat?.onCallMembers > 0 ? (
