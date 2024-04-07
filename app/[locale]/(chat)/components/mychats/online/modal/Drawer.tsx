@@ -83,7 +83,7 @@ const Drawer = () => {
                   </h1>
                 )}
 
-                <h1>{isFetching ? "isFetching" : ""}</h1>
+                <h1>{isFetching ? <LoaderComponent text="Fetching..." /> : ""}</h1>
               </div>
             </InfiniteScroll>
           </div>

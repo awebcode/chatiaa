@@ -53,7 +53,6 @@ const Drawer = () => {
             <InfiniteScroll
               dataLength={users ? users?.length : 0}
               next={() => {
-                console.log("next call");
                 fetchNextPage();
               }}
               hasMore={searchText.trim() !== "" && hasNextPage}
@@ -83,7 +82,7 @@ const Drawer = () => {
                   <h1 className="text-sm md:text-xl m-4 text-center">No User Found!</h1>
                 )}
 
-                <h1>{isFetching ? <LoaderComponent /> : ""}</h1>
+                <h1>{isFetching ? <LoaderComponent text="Fetching..." /> : ""}</h1>
               </div>
             </InfiniteScroll>
           </div>
