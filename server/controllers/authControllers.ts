@@ -149,7 +149,7 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
                 .map((chat) => chat.users)
                 .flat(),
             },
-            $and: [{ _id: { $ne: req.id } }],
+            $and: [{ _id: { $ne: req.id } }, { ...keyword }],
           }
         : {
             $and: [{ _id: { $ne: req.id } }, { ...keyword }],

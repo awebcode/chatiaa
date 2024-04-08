@@ -11,13 +11,16 @@ import {
 } from "@/components/ui/sheet";
 import { useMessageState } from "@/context/MessageContext";
 import Image from "next/image";
-import { BsThreeDots } from "react-icons/bs";
+import { BsPersonLock, BsThreeDots } from "react-icons/bs";
 import {
   useBlockMutation,
   useDeleteSingleChatMutation,
+  useLeaveChatMutation,
 } from "../../mutations/Chatmutations";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
+import { CiLogout } from "react-icons/ci";
+import { MdDelete } from "react-icons/md";
 const Media = dynamic(() => import("../media/Media"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
@@ -37,6 +40,11 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
       ? "unblock"
       : "block",
   };
+
+    const leaveMutation = useLeaveChatMutation(
+      selectedChat?._id as any,
+      currentUser?._id as any
+    );
   // end delete block systems
   return (
     <div className="relative grid grid-cols-2 gap-2 w-full ">
@@ -78,7 +86,7 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
           </div>
           <div className="grid gap-4 py-4">
             <Button
-              className="w-full block"
+              className="w-full text-sm  border-violet-600 hover:border-violet-700 duration-300"
               variant={"outline"}
               onClick={() => {
                 if (confirm("Are you sure?")) {
@@ -86,6 +94,7 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
                 }
               }}
             >
+              <BsPersonLock className="text-violet-600" />{" "}
               {selectedChat?.chatBlockedBy ? (
                 selectedChat?.chatBlockedBy?.some(
                   (user) => user?._id === currentUser?._id
@@ -104,15 +113,26 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
               ) : null}
             </Button>
             <Button
-              className="w-full block"
+              className="w-full text-sm  border-rose-600 hover:border-rose-700 duration-300"
               variant={"outline"}
               onClick={() => {
-                if (confirm("Are you sure?")) {
+                if (confirm("Are you sure to delete?")) {
                   deleteSignleChatMutation.mutateAsync();
                 }
               }}
             >
-              Delete Chat
+              <MdDelete className="text-rose-600" /> Delete Chat
+            </Button>
+            <Button
+              className="w-full  border-emerald-500 hover:border-emerald-600 duration-300"
+              variant={"outline"}
+              onClick={() => {
+                if (confirm("Are you sure to leave?")) {
+                  leaveMutation.mutateAsync();
+                }
+              }}
+            >
+              <CiLogout className="text-emerald-500" /> Leave Chat
             </Button>
           </div>
         </SheetContent>

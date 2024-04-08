@@ -4,16 +4,18 @@ import Image from "next/image";
 import React from "react";
 
 const GroupCard: React.FC<{ user: Tuser }> = ({ user }) => {
-  const { selectedAddGroupUsers, addAddGroupSelectUser } = useGroupStore();
-
+  const selectedAddGroupUsers = useGroupStore((s) => s.selectedAddGroupUsers);
+  const addAddGroupSelectUser = useGroupStore((s) => s.addAddGroupSelectUser);
   const handleClick = () => {
     addAddGroupSelectUser(user);
   };
   return (
     <div
       onClick={handleClick}
-      className={`p-2 rounded-md  dark:text-white cursor-pointer  dark:bg-gray-800 dark:hover:bg-gray-700 bg-gray-200 hover:bg-gray-300  duration-500 ${
-        selectedAddGroupUsers.some((u) => u._id === user._id) ? "!bg-neutral-600" : ""
+      className={`p-2 rounded-md  dark:text-white cursor-pointer    duration-500 ${
+        selectedAddGroupUsers.some((u) => u._id === user._id)
+          ? "bg-emerald-500"
+          : "dark:bg-gray-800 dark:hover:bg-gray-700 bg-gray-200 hover:bg-gray-300"
       }`}
     >
       <div className="flex items-center gap-3">

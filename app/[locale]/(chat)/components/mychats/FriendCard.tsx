@@ -73,6 +73,7 @@ const FriendsCard: React.FC<{
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
+      _id: chat?._id,
       chatId: chat?._id,
       chatName: chat?.chatName,
       latestMessage: chat?.latestMessage,
@@ -116,7 +117,8 @@ const FriendsCard: React.FC<{
 
     //push group message seen by in message or latest message
     if (
-      // chat?.isGroupChat &&
+      chat?.latestMessage &&
+      (chat?.latestMessage?.content || chat?.latestMessage?.file) &&
       (!chat?.latestMessage?.isSeen || chat?.latestMessage?.status !== "seen") &&
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
@@ -150,6 +152,8 @@ const FriendsCard: React.FC<{
       //emit seenby socket here
     } else if (
       //////
+      chat?.latestMessage &&
+      (chat?.latestMessage?.content || chat?.latestMessage?.file) &&
       chat?.latestMessage?.status !== "seen" &&
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {

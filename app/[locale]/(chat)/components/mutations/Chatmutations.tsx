@@ -41,8 +41,11 @@ export const useAccessChatMutation = (closeDialogId: string) => {
     mutationFn: (data) => accessChats(data),
 
     onSuccess: (chat) => {
+      console.log({ createdChat: chat });
+      dispatch({ type: CLEAR_MESSAGES });
       const isFriend = getSenderFull(currentUser, chat.chatData?.users);
       const chatData = {
+        _id: chat?.chatData?._id,
         chatId: chat?.chatData?._id,
         latestMessage: chat?.chatData?.latestMessage,
         chatCreatedAt: chat?.chatData?.createdAt,
@@ -72,7 +75,7 @@ export const useAccessChatMutation = (closeDialogId: string) => {
       // setSelectedChat(chatData as any);
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
       localStorage.setItem("selectedChat", JSON.stringify(chatData));
-       router.push(`/chat/${chat.chatData?._id}`);
+      router.push(`/chat/${chat.chatData?._id}`);
       if (chat?.isNewChat) {
         dispatch({ type: SET_CHATS, payload: chat.chatData });
         if (chat?.chatData?.isOnline) {
@@ -119,6 +122,8 @@ export const useBlockMutation = () => {
 };
 
 export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const { socket } = useSocketContext();
   const removeOnlineUser = useOnlineUsersStore((s) => s.removeOnlineUser);
   const { selectedChat, user: currentUser } = useMessageState();
@@ -128,10 +133,14 @@ export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => 
     onSuccess: (data) => {
       toast.success("Chat deleted successfully!");
       if (onChat || chatId === selectedChat?.chatId) {
+        dispatch({ type: CLEAR_MESSAGES });
         dispatch({
           type: SET_SELECTED_CHAT,
           payload: null,
         });
+        localStorage.removeItem("selectedChat");
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
+        router.replace("/chat");
       }
       dispatch({
         type: DELETE_CHAT,
@@ -148,18 +157,28 @@ export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => 
 
 //leave chat
 export const useLeaveChatMutation = (chatId: string, userId: string) => {
+  const router = useRouter();
   const { socket } = useSocketContext();
   const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => leaveChat(chatId, userId),
     onSuccess: (data) => {
       toast.success("You Leave from the chat!");
       if (chatId === selectedChat?.chatId) {
+        dispatch({ type: CLEAR_MESSAGES });
         dispatch({
           type: SET_SELECTED_CHAT,
-          payload: [],
+          payload: null,
         });
+        dispatch({
+          type: LEAVE_CHAT,
+          payload: { chatId },
+        });
+        localStorage.removeItem("selectedChat");
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
+        router.replace("/chat");
       }
       dispatch({
         type: LEAVE_CHAT,
@@ -245,7 +264,6 @@ export const useRemoveAdminFromGroup = (chatId: string, user: Tuser) => {
 
 //delete all messages in chat
 
-
 export const useDeleteAllMessagesInAChatMutation = (chatId: string) => {
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
@@ -253,10 +271,11 @@ export const useDeleteAllMessagesInAChatMutation = (chatId: string) => {
     mutationFn: () => deleteAllMessagesInAChat(chatId),
     onSuccess: (data) => {
       toast.success("All messages deleted successfully!");
-        dispatch({
-          type: DELETE_ALL_MESSAGE_IN_CHAT,payload:{chatId}
-        });
-     
+      dispatch({
+        type: DELETE_ALL_MESSAGE_IN_CHAT,
+        payload: { chatId },
+      });
+
       socket.emit("deletedAllMessageInChatNotify", {
         chatId,
       });

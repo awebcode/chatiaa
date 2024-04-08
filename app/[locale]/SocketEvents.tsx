@@ -201,7 +201,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         !data.chat?.isGroupChat &&
         //delivered message
         data.receiverId === currentUserRef.current?._id &&
-        ["online","busy"].includes(currentUserRef?.current?.onlineStatus as string)
+        ["online", "busy"].includes(currentUserRef?.current?.onlineStatus as string)
       ) {
         //play sound
         soundRef.current?.play();
@@ -287,7 +287,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         } else {
           if (
             data.chat.status !== "seen" &&
-            ["online", "busy"].includes(currentUserRef?.current?.onlineStatus as string)
+            ["online", "busy"].includes(
+              currentUserRef?.current?.onlineStatus as string
+            ) &&
+            data?.sender?._id !== currentUserRef.current?._id
           ) {
             //  data.chat.users?.some((user: any) =>
             //   onlineUsersRef.current.some(
@@ -652,11 +655,13 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   //deletedAllMessageInChatNotify
   const deletedAllMessageInChatNotify = useCallback((data: any) => {
-
     if (data.chatId === selectedChatRef?.current?.chatId) {
-      dispatch({ type: DELETE_ALL_MESSAGE_IN_CHAT,payload:data });
+      dispatch({ type: DELETE_ALL_MESSAGE_IN_CHAT, payload: data });
     } else {
-      dispatch({ type: DELETE_ALL_MESSAGE_IN_CHAT,payload:{...data,type:"update-only-chats"} });
+      dispatch({
+        type: DELETE_ALL_MESSAGE_IN_CHAT,
+        payload: { ...data, type: "update-only-chats" },
+      });
     }
   }, []);
   useEffect(() => {

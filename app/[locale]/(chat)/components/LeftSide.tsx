@@ -20,7 +20,7 @@ const LeftSideClientWrapper = ({ children }: { children: ReactNode }) => {
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser } = useMessageState();
   return (
-    <div className="border border-gray-700 flex flex-col">
+    <div className=" flex flex-col">
       <div className="m-4">
         <SearchDrawer />
         <CreateGroupModal />

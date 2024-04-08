@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import React, { ReactNode, memo, useEffect } from "react";
 const ChatHeader = dynamic(() => import("./chatheader/ChatHeader") as any, {
   ssr: false,
-  // loading: () => <LoaderComponent 
+  // loading: () => <LoaderComponent
   // text="Fetching..."/>,
 });
 // const Input = dynamic(() => import("./Input/Input"),{ssr:false});
@@ -12,7 +12,7 @@ import { useMessageState } from "@/context/MessageContext";
 // import ChatHeader from "./chatheader/ChatHeader";
 // import Input from "./Input/Input";
 const Input = dynamic(() => import("./Input/Input"), {
-  // loading: () => <LoaderComponent 
+  // loading: () => <LoaderComponent
   // text="Fetching..."/>,
 });
 import LoaderComponent from "@/components/Loader";
@@ -25,7 +25,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, [selectedChat?.chatId, socket]); //selectedChat
 
   return (
-    <div className="relative top-0 w-full h-screen ">
+    <div className="relative border-l border-l-gray-200 dark:border-l-gray-700 top-0 w-full h-screen ">
       {/* chat header */}
       <div className="absolute top-0 h-auto w-full z-50  !overflow-hidden p-2">
         {" "}

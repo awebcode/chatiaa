@@ -37,9 +37,16 @@ const NoChatProfile = ({ selectedChat }: { selectedChat: IChat }) => {
           {selectedChat?.userInfo?.email}
         </h2>
         <h2 className="text-center text-xs md:text-sm font-semibold mt-3">
-          {moment(selectedChat?.userInfo?.createdAt).format("llll")}
+          {selectedChat?.isGroupChat
+            ? moment(selectedChat?.chatCreatedAt).format("llll")
+            : moment(selectedChat?.userInfo?.createdAt).format("llll")}
         </h2>
-        <p className="text-center text-xs mt-1">Product Manager</p>
+        <p className="text-center text-xs mt-1">
+          {" "}
+          {selectedChat?.isGroupChat
+            ? selectedChat?.groupInfo?.description
+            : selectedChat?.userInfo?.bio}
+        </p>
         <div className="flex text-[10px] md:text-x justify-center mt-5">
           <a href="#" className="text-blue-500 hover:text-blue-700 mx-3">
             Twitter

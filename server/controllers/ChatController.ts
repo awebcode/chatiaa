@@ -448,7 +448,7 @@ export const updateGroupNamePhoto = async (
     if (message.trim() !== "") {
       const updateGroupMessage = await sentGroupNotifyMessage({
         chatId: chatId,
-        user: req.id,
+        user: currentUser as any,
         message,
       });
       const updateGroupData = {
@@ -614,7 +614,7 @@ export const addToGroup = async (
         const user = await User.findById(userId);
         const addUsersToGroupMessage = await sentGroupNotifyMessage({
           chatId: chatId,
-          user: req.id,
+          user: currentUser as any,
           message: `${currentUser?.name} added ${user?.name} to the group `,
         });
         const addUsersToGroupData = {

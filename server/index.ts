@@ -287,7 +287,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("userRemoveFromGroupNotify", async (data: any) => {
     const userRemoveMessage = await sentGroupNotifyMessage({
       chatId: data.chatId,
-      user: data.currentUser._id,
+      user: data.currentUser,
       message: `${data.currentUser.name} remove ${data.user.name}  from the group`,
     });
     const userRemoveData = {
@@ -306,7 +306,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("makeAdminToGroupNotify", async (data: any) => {
     const makeAdminMessage = await sentGroupNotifyMessage({
       chatId: data.chatId,
-      user: data.currentUser._id,
+      user: data.currentUser,
       message: `${data.currentUser.name} added ${data.user.name} as  group admin`,
     });
     const makeAdminData = {
@@ -325,7 +325,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("adminRemoveFromGroupNotify", async (data: any) => {
     const adminRemoveMessage = await sentGroupNotifyMessage({
       chatId: data.chatId,
-      user: data.currentUser._id,
+      user: data.currentUser,
       message: `${data.currentUser.name} removed ${data.user.name} from  group admin`,
     });
     const adminRemoveData = {

@@ -40,7 +40,7 @@ const Media = () => {
           <FilesSheet total={data?.total} />
         </div>
       ) : (
-        <h1 className="text-lg font-medium text-center text-gray-200">No files</h1>
+        <h1 className="text-sm md:text-lg font-medium text-center text-gray-200">No files</h1>
       )}
     </>
   );

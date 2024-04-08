@@ -17,12 +17,14 @@ const SliderUsers = dynamic(() => import("./SliderUsers"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
 import LoaderComponent from "@/components/Loader";
+import { useRouter } from "@/navigation";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const GroupCard = dynamic(() => import("./Card"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
 export default function SearchGroupModal() {
+  const router=useRouter()
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser } = useMessageState();
@@ -55,6 +57,7 @@ export default function SearchGroupModal() {
       const isFriend = getSenderFull(currentUser, chat.users);
       toast.success("Group created successfully!");
       const chatData = {
+        _id: chat?._id,
         chatId: chat?._id,
         latestMessage: chat?.latestMessage,
         chatCreatedAt: chat?.createdAt,
@@ -76,10 +79,18 @@ export default function SearchGroupModal() {
             : "",
           createdAt: !chat.isGroupChat ? isFriend?.createdAt : "",
         } as any,
+        groupInfo: {
+          description: (chat as any)?.description,
+          image: { url: (chat as any)?.image?.url },
+        },
+        isOnline: chat?.isOnline,
+        onCallMembers: chat?.onCallMembers,
       };
       socket.emit("groupCreatedNotify", { chatId: chat._id, chat });
 
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
+      localStorage.setItem("selectedChat", JSON.stringify(chatData));
+       router.push(`/chat/${chat?._id}`);
       dispatch({ type: SET_CHATS, payload: chatData });
       document.getElementById("closeCreateGroupDialog")?.click();
     },
@@ -121,11 +132,11 @@ export default function SearchGroupModal() {
             />
             <Button
               disabled={selectedAddGroupUsers.length < 2 || groupName.trim() === ""}
-              className="absolute right-1 top-[22px] bg-blue-600 btn m-1 text-xs rounded-md p-[7px] capitalize "
+              className="absolute right-1 top-[22px]  btn m-1 text-xs rounded-md p-[7px] capitalize "
               onClick={() => createGroupHandler()}
             >
               {groupMutaion.isPending ? (
-                <span className="animate-pulse">Creating...</span>
+               <LoaderComponent text="Creating..."/>
               ) : (
                 "+Create"
               )}

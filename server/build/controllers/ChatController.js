@@ -367,7 +367,7 @@ const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 
         if (message.trim() !== "") {
             const updateGroupMessage = yield (0, functions_1.sentGroupNotifyMessage)({
                 chatId: chatId,
-                user: req.id,
+                user: currentUser,
                 message,
             });
             const updateGroupData = {
@@ -494,7 +494,7 @@ const addToGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 const user = yield UserModel_1.User.findById(userId);
                 const addUsersToGroupMessage = yield (0, functions_1.sentGroupNotifyMessage)({
                     chatId: chatId,
-                    user: req.id,
+                    user: currentUser,
                     message: `${currentUser === null || currentUser === void 0 ? void 0 : currentUser.name} added ${user === null || user === void 0 ? void 0 : user.name} to the group `,
                 });
                 const addUsersToGroupData = {

@@ -13,11 +13,21 @@ import Image from "next/image";
 import { BsThreeDots } from "react-icons/bs";
 import Media from "../media/Media";
 import Members from "./Members";
+import { Button } from "@/components/ui/button";
+import { CiLogout } from "react-icons/ci";
+import { MdDelete } from "react-icons/md";
+import { useDeleteSingleChatMutation, useLeaveChatMutation } from "../../mutations/Chatmutations";
 const UpdateGroupDialog = dynamic(() => import("./update/UpdateGroupDialog"));
 export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boolean }) {
-  const { selectedChat } = useMessageState();
-  console.log({ selectedChat });
-  
+  const { selectedChat,user:currentUser } = useMessageState();
+  const leaveMutation = useLeaveChatMutation(
+    selectedChat?._id as any,
+    currentUser?._id as any
+  );
+  const deleteSignleChatMutation = useDeleteSingleChatMutation(
+    selectedChat?._id as any,
+    false
+  );
   return (
     <div className="relative grid grid-cols-2 gap-2 w-full ">
       <Sheet>
@@ -74,6 +84,35 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
           </div>
           <div className="grid gap-4 py-4">
             <Members />
+          </div>
+
+          <div className="flex items-center justify-around  py-2 gap-2">
+            <Button
+              className="w-full text-sm border-emerald-500 hover:border-emerald-600 duration-300"
+              variant={"outline"}
+              onClick={() => {
+                if (confirm("Are you sure to leave?")) {
+                  leaveMutation.mutateAsync();
+                }
+              }}
+            >
+              <CiLogout className="text-emerald-500" /> Leave Chat
+            </Button>
+            {selectedChat?.groupAdmin?.some(
+              (user) => user?._id === currentUser?._id
+            ) && (
+              <Button
+                className="w-full text-sm  border-rose-600 hover:border-rose-700 duration-300"
+                variant={"outline"}
+                onClick={() => {
+                  if (confirm("Are you sure to delete?")) {
+                    deleteSignleChatMutation.mutateAsync();
+                  }
+                }}
+              >
+                <MdDelete className="text-rose-600"/>  Delete Chat
+              </Button>
+            )}
           </div>
         </SheetContent>
       </Sheet>

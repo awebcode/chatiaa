@@ -45,7 +45,8 @@ export interface IChat {
   groupAdmin?: Tuser[];
   users: Tuser[];
   unseenCount: number;
-  createdAt:number| string;
+  createdAt: number | string;
+  chatCreatedAt: number | string;
   chatBlockedBy: Tuser[];
   image: { url: string };
   isOnline: boolean;

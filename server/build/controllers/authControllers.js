@@ -145,7 +145,7 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                         .map((chat) => chat.users)
                         .flat(),
                 },
-                $and: [{ _id: { $ne: req.id } }],
+                $and: [{ _id: { $ne: req.id } }, Object.assign({}, keyword)],
             }
             : {
                 $and: [{ _id: { $ne: req.id } }, Object.assign({}, keyword)],

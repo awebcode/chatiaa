@@ -21,6 +21,7 @@ import { FaEdit } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Textarea } from "@/components/ui/textarea";
 import { IoClose } from "react-icons/io5";
+import LoaderComponent from "@/components/Loader";
 export default function UpdateGroupDialog() {
   const { socket } = useSocketContext();
   const { selectedChat } = useMessageState();
@@ -46,14 +47,14 @@ export default function UpdateGroupDialog() {
     const newErrors = { ...errors };
 
     // Check if group name exceeds character limit
-    if (groupName.length > 100) {
+    if (groupName?.length > 100) {
       newErrors.groupName = "Group name must be 100 characters or less";
     } else {
       newErrors.groupName = "";
     }
 
     // Check if group description exceeds character limit
-    if (groupDescription.length > 100) {
+    if (groupDescription?.length > 100) {
       newErrors.groupDescription = "Group description must be 100 characters or less";
     } else {
       newErrors.groupDescription = "";
@@ -109,8 +110,8 @@ export default function UpdateGroupDialog() {
       groupDescription === selectedChat?.groupInfo?.description;
 
     // Check if group name or description exceeds 100 characters
-    const isGroupNameExceedsLimit = groupName.length > 40;
-    const isDescriptionExceedsLimit = groupDescription.length > 100;
+    const isGroupNameExceedsLimit = groupName?.length > 40;
+    const isDescriptionExceedsLimit = groupDescription?.length > 100;
 
     // Return true if either condition is met
     return (
@@ -210,7 +211,7 @@ export default function UpdateGroupDialog() {
             onClick={handleSubmit}
           >
             {updateGroupMutation.isPending ? (
-              <span className="animate-pulse">Saving...</span>
+              <LoaderComponent text="Saving..."/>
             ) : (
               "Save changes"
             )}

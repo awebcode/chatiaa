@@ -32,10 +32,12 @@ const RREsystem = ({
           <BsReply
             onClick={() => onReply(message)}
             className={`${
-              isReply?._id === message?._id
+              isReply&&isReply?._id === message?._id
                 ? "text-violet-500 text-lg md:text-xl rotate-180"
                 : "text-blue-500"
-            }  text-sm md:text-lg cursor-pointer transition-all duration-500 ${isCurrentUserMessage?"":"rotate-180"}`}
+            }  text-sm md:text-lg cursor-pointer transition-all duration-500 ${
+              isCurrentUserMessage ? "" : "rotate-180"
+            }`}
           />
         </div>
         {/* emoji */}
@@ -43,7 +45,7 @@ const RREsystem = ({
           <DropdownMenuTrigger className="border-none outline-none">
             <HiOutlineEmojiHappy
               className={`${
-                isEdit?._id === message?._id
+               isEdit&& isEdit?._id === message?._id
                   ? "text-violet-500 text-lg md:text-xl"
                   : "text-blue-500"
               }  text-sm md:text-lg cursor-pointer transition-all duration-500`}
