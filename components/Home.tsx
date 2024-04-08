@@ -74,7 +74,7 @@ const Home = () => {
       icon: <RiFileTransferFill className="w-8 h-8 text-lime-500 mb-4" />,
       title: "View all send Files in new window with lazy loading and infinite scrolling",
       description:
-        "View Sending Files in a Separate Tab/window. Utilize features like Messenger or WhatsApp for a seamless experience.",
+        "View Sending Files in a Separate Tab/window.full application data fetching using (SSR) and infinite scrolling and code spiliting that&apos;s why it&apos;s very big application but super fast loading. Utilize features like Messenger or WhatsApp for a seamless experience.",
       color: "lime",
     },
   ];

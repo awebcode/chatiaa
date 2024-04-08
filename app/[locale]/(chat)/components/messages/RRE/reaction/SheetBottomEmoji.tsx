@@ -24,7 +24,7 @@ export default function EmojiBottomSheet({
   setIsOpenReactModal: any;
 }) {
   return (
-    <div className="flex md:hidden w-full">
+    <div className="flex  w-full">
       {" "}
       {/* <SheetTrigger asChild>
           <MdAdd className={`text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer `} />

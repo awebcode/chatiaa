@@ -15,7 +15,7 @@ const EmptyChat = dynamic(() => import("../components/Empty"), {
 });
 
 const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 // const MainClientWrapper = dynamic(() => import("../components/Main"), {

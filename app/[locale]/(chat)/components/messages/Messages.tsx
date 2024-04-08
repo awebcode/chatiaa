@@ -45,7 +45,6 @@ export default function Messages({ chatId }: { chatId: string }) {
     initialPageParam: 0,
     staleTime: 24 * 60 * 60 * 1000,
   });
- 
 
   useEffect(() => {
     dispatch({
@@ -120,8 +119,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   //      router.push("/chat");
   //    }
   //  }, [roomId]);
-  
-   
+
   // console.log({messages})
   return (
     <div
@@ -132,7 +130,7 @@ export default function Messages({ chatId }: { chatId: string }) {
         dataLength={messages ? messages?.length : 0}
         next={fetchNextPage}
         hasMore={!isLoading && hasNextPage}
-         loader={<LoaderComponent/>}
+        loader={<LoaderComponent />}
         endMessage={
           !isLoading && (
             <div className="text-center text-2xl text-green-400 pt-10">
@@ -149,7 +147,9 @@ export default function Messages({ chatId }: { chatId: string }) {
         }}
         inverse={true}
         scrollableTarget="MessagesscrollableTarget"
-        scrollThreshold={1}
+        scrollThreshold={0.7}
+        refreshFunction={() => {}}
+        pullDownToRefresh
       >
         <div className="flex flex-col-reverse gap-3 p-2 m-4 mb-[60px]">
           <div id="messageEndTarget" ref={messageEndRef}></div>
@@ -186,18 +186,18 @@ export default function Messages({ chatId }: { chatId: string }) {
             <NoChatProfile selectedChat={selectedChat as any} />
           )}
         {/* when selectedChat have no chat */}
-        {selectedChat&&!isLoading&& !isFetching && data?.pages[0]?.total === 0 &&  (
+        {selectedChat && !isLoading && !isFetching && data?.pages[0]?.total === 0 && (
           <NoChatProfile selectedChat={selectedChat as any} />
         )}
         <div
-          className={`absolute left-1/2 bottom-6  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${
+          className={`absolute left-1/2 bottom-8  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${
             showScrollToBottomButton
               ? "opacity-100 translate-y-100 scale-100"
               : "translate-y-0 opacity-0 scale-0"
           }`}
           onClick={() => scrollToBottom()}
         >
-          <FaArrowDown className="w-5  h-5 mt-1 animate-bounce text-green-500" />
+          <FaArrowDown className="w-5  h-5 mt-1 animate-bounce text-blue-500" />
         </div>
       </InfiniteScroll>
     </div>

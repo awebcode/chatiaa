@@ -7,7 +7,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 const PrefetchMyChats = dynamic(() => import("../../components/mychats/PrefetchChats"), {
-  loading: () => <LoaderComponent text="Fetching..."/>,
+  // loading: () => <LoaderComponent text="Fetching..."/>,
 });
 
 const LeftSideClientWrapper = dynamic(() => import("../../components/LeftSide"), {
