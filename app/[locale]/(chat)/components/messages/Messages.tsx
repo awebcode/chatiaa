@@ -123,8 +123,9 @@ export default function Messages({ chatId }: { chatId: string }) {
   // console.log({messages})
   return (
     <div
+      style={{ scrollBehavior: "smooth" }} // Add smooth scrolling behavior
       id="MessagesscrollableTarget"
-      className="menu p-1 bg-base-200 h-[82vh]  overflow-y-auto overflow-x-hidden flex flex-col-reverse"
+      className="menu p-1 bg-base-200 h-[80vh]  overflow-scroll  flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
@@ -144,13 +145,13 @@ export default function Messages({ chatId }: { chatId: string }) {
           overflow: "auto",
 
           height: "100%",
+          scrollBehavior: "smooth"
         }}
         inverse={true}
         scrollableTarget="MessagesscrollableTarget"
-        scrollThreshold={0.1}
-       
+        scrollThreshold={0.6}
       >
-        <div className="flex flex-col-reverse gap-3 p-2 md:m-1 mb-[60px]">
+        <div className="flex flex-col-reverse gap-3 p-2 m-1 mb-[70px]">
           <div id="messageEndTarget" ref={messageEndRef}></div>
           {/* typing indicator */}
 
