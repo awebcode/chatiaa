@@ -6,24 +6,25 @@ import React from "react";
 // import EmptyChat from "../../components/Empty";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
+import { ChatSkeleton } from "../../components/mychats/ChatSkeleton";
 const PrefetchMyChats = dynamic(() => import("../../components/mychats/PrefetchChats"), {
-  // loading: () => <LoaderComponent text="Fetching..."/>,
+  loading: () => <ChatSkeleton/>,
 });
 
 const LeftSideClientWrapper = dynamic(() => import("../../components/LeftSide"), {
-  loading: () => <LoaderComponent text="Fetching..."/>,
+  loading: () => <ChatSkeleton/>,
 });
 // const PrefetchMyChats = dynamic(() => import("../../components/mychats/PrefetchChats"), {
 //   loading: () => <LoaderComponent 
   // text="Fetching..."/>,
 // });
 const MainClientWrapper = dynamic(() => import("../../components/Main"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  loading: () => <LoaderComponent text="Fetching messages..." />,
 });
 const PrefetchMessages = dynamic(
   () => import("../../components/messages/PrefetchMessages"),
   {
-    loading: () => <LoaderComponent text="Fetching..."/>,
+    loading: () => <LoaderComponent text="Fetching messages..."/>,
   }
 );
 const EmptyChat = dynamic(() => import("../../components/Empty"), {

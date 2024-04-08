@@ -27,7 +27,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <div className="relative top-0 w-full h-full ">
       {/* chat header */}
-      <div className="fixed top-0 w-full z-50  overflow-hidden">
+      <div className=" w-full z-50  overflow-hidden">
         {" "}
         <ChatHeader />
       </div>
