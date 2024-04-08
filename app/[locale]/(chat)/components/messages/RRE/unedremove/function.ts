@@ -30,7 +30,7 @@ export const unsent_remove_Message_function = async (
   if (data?.status === "unsent") {
     try {
       const res = await updateMessageStatusAsUnsent(data as any);
-      if (dispatch && socket && res.sucess) {
+      if (dispatch && socket) {
         dispatch({
           type: REMOVE_UNSENT_MESSAGE,
           payload: data,

@@ -9,8 +9,8 @@ export interface IMessage {
     url: string;
     public_id: string;
   };
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number | string;
+  updatedAt: number | string;
   isReply: {
     messageId: IMessage;
     repliedBy: Tuser;
@@ -30,7 +30,7 @@ export interface IMessage {
   seenBy: Tuser[];
   totalseenBy: number;
   isSeen: boolean;
-  tempMessageId:string
+  tempMessageId: string;
 }
 
 export interface IChat {
@@ -45,7 +45,7 @@ export interface IChat {
   groupAdmin?: Tuser[];
   users: Tuser[];
   unseenCount: number;
-  createdAt: string;
+  createdAt:number| string;
   chatBlockedBy: Tuser[];
   image: { url: string };
   isOnline: boolean;

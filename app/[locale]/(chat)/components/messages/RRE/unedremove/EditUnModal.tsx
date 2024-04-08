@@ -25,8 +25,8 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       receiverId: selectedChat?.userInfo?._id,
     };
     const res = await unsent_remove_Message_function(dispatch, socket, data);
-    if (res.response.data.statusCode === 400) {
-      toast.error(res.response.data.message);
+    if (res.response?.data?.statusCode === 400) {
+      toast.error(res.response?.data?.message);
     }
   };
   ///removeFromAllHandler
@@ -40,8 +40,8 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       receiverId: selectedChat?.userInfo?._id,
     };
     const res = await unsent_remove_Message_function(dispatch, socket, data);
-    if (res.response?.status === 400 || res.response?.status === 500) {
-      toast.error(res.response.data.message);
+    if (res.response?.data?.statusCode === 400) {
+      toast.error(res.response?.data?.message);
     }
   };
   //BackRemoveFromAllHandler
@@ -55,8 +55,8 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       receiverId: selectedChat?.userInfo?._id,
     };
     const res = await unsent_remove_Message_function(dispatch, socket, data);
-    if (res.response?.status === 400 || res.response?.status === 500) {
-      toast.error(res.response.data.message);
+    if (res.response?.data?.statusCode === 400) {
+      toast.error(res.response?.data?.message);
     }
   };
   //unsentHandler
@@ -70,8 +70,8 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       receiverId: selectedChat?.userInfo?._id,
     };
     const res = await unsent_remove_Message_function(dispatch, socket, data);
-    if (res.response?.status === 400 || res.response?.status === 500) {
-      toast.error(res.response.data.message);
+    if (res.response?.data?.statusCode === 400) {
+      toast.error(res.response?.data?.message);
     }
   };
   return (

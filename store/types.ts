@@ -5,11 +5,11 @@ export type Tuser = {
   image: string;
   bio: string;
   role: string;
-  createdAt: string;
-  lastActive: string;
-  isOnline:boolean;
-   onlineStatus: 'online' | 'busy' | 'offline';
-  socketId:string
+  createdAt: string | number;
+  lastActive: string | number;
+  isOnline: boolean;
+  onlineStatus: "online" | "offline" | "busy";
+  socketId: string;
 };
 
 //reactions
@@ -22,11 +22,11 @@ export type Reaction = {
   reactBy: Tuser;
 
   messageId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | number;
+  updatedAt: string | number;
 };
 //reactions group
 export type ReactionGroup = {
- _id: string;
- count:number
+  _id: string;
+  count: number;
 };

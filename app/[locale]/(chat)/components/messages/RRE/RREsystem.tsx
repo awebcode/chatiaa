@@ -15,18 +15,15 @@ const RREsystem = ({
   message: IMessage;
   isCurrentUserMessage: boolean;
 }) => {
-  const { onReply, isReply} =
-    useEditReplyStore();
-  
+  const { onReply, isReply, isEdit } = useEditReplyStore();
 
   //emoji
   const [isOpenReactModal, setIsOpenReactModal] = useState(false);
 
-  
   return (
     <div className="">
       <div
-        className={`flex items-center gap-2 ${
+        className={`flex items-center justify-center gap-2 ${
           isCurrentUserMessage ? "" : "flex-row-reverse"
         }`}
       >
@@ -34,13 +31,23 @@ const RREsystem = ({
         <div className={`relative`}>
           <BsReply
             onClick={() => onReply(message)}
-            className={`${isReply ? "text-blue-500" : ""}text-lg cursor-pointer`}
+            className={`${
+              isReply?._id === message?._id
+                ? "text-violet-500 text-lg md:text-xl rotate-180"
+                : "text-blue-500"
+            }  text-sm md:text-lg cursor-pointer transition-all duration-500 ${isCurrentUserMessage?"":"rotate-180"}`}
           />
         </div>
         {/* emoji */}
-        <DropdownMenu >
+        <DropdownMenu>
           <DropdownMenuTrigger className="border-none outline-none">
-            <HiOutlineEmojiHappy className="text-lg cursor-pointer" />
+            <HiOutlineEmojiHappy
+              className={`${
+                isEdit?._id === message?._id
+                  ? "text-violet-500 text-lg md:text-xl"
+                  : "text-blue-500"
+              }  text-sm md:text-lg cursor-pointer transition-all duration-500`}
+            />
           </DropdownMenuTrigger>
           <ReactModal
             isCurrentUserMessage={isCurrentUserMessage}
@@ -53,7 +60,10 @@ const RREsystem = ({
           <div className="relative">
             <DropdownMenuTrigger className="border-none outline-none">
               {" "}
-              <HiDotsVertical className="text-lg cursor-pointer relative" />
+              <HiDotsVertical
+                className={`text-blue-500
+                  text-sm md:text-lg cursor-pointer transition-all duration-500`}
+              />
             </DropdownMenuTrigger>
             <EditUnModal message={message} />
           </div>

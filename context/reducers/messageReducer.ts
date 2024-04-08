@@ -668,7 +668,7 @@ export const messageReducer = (state: State, action: Action): State => {
                   ? {
                       ...message,
                       status: "removed",
-                      updatedAt: Date.now().toString(),
+                      updatedAt: Date.now(),
                       removedBy: action.payload.updatedBy,
                     }
                   : message
@@ -681,7 +681,7 @@ export const messageReducer = (state: State, action: Action): State => {
                   ? {
                       ...message,
                       status: "reBack",
-                      updatedAt: Date.now().toString(),
+                      updatedAt: Date.now(),
                       removedBy: action.payload.updatedBy,
                     }
                   : message
@@ -693,7 +693,7 @@ export const messageReducer = (state: State, action: Action): State => {
                       ...message,
                       status: "unsent",
                       content: "unsent",
-                      updatedAt: Date.now().toString(),
+                      updatedAt: Date.now(),
 
                       removedBy: action.payload.updatedBy,
                     }
