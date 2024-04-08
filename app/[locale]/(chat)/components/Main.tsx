@@ -25,18 +25,18 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, [selectedChat?.chatId, socket]); //selectedChat
 
   return (
-    <div className="relative top-0 w-full h-full ">
+    <div className="relative top-0 w-full h-screen ">
       {/* chat header */}
-      <div className="absolute top-0 w-full z-50  !overflow-hidden p-2">
+      <div className="absolute top-0 h-auto w-full z-50  !overflow-hidden p-2">
         {" "}
         <ChatHeader />
       </div>
       {/* Message */}
-      <div className="w-full fixed  md:absolute  py-2   bottom-9 md:bottom-6  z-10">
+      <div className="w-full h-full fixed  md:absolute  py-2  top-24 md:top-28 bottom-9 md:bottom-6  z-10">
         {children}
       </div>
       {/* Inpute */}
-      <div className="w-full fixed  md:absolute bottom-0 z-20">
+      <div className="w-full fixed h-auto md:absolute bottom-0 z-20">
         {" "}
         <Input />
       </div>

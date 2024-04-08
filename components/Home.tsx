@@ -9,6 +9,7 @@ import { LuFolderSync } from "react-icons/lu";
 import { RiFileTransferFill } from "react-icons/ri";
 import { TbUsersGroup } from "react-icons/tb";
 import { AiOutlineUser, AiOutlineGroup } from "react-icons/ai";
+import { ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
 const Footer = dynamic(() => import("./Footer"));
 
 const Home = () => {
@@ -76,6 +77,22 @@ const Home = () => {
       description:
         "View Sending Files in a Separate Tab/window.full application data fetching using (SSR) and infinite scrolling and code spiliting that&apos;s why it&apos;s very big application but super fast loading. Utilize features like Messenger or WhatsApp for a seamless experience.",
       color: "lime",
+    },
+    {
+      icon: <ChatBubbleIcon className="w-8 h-8 text-violet-500 mb-4" />,
+      title:
+        "Enhanced Chat Experience with Real-time Reactions, Message Editing,Message viewers, and More",
+      description:
+        "Experience an advanced chat interface with features like on-message emoji reactions, real-time message viewers, reply functionality, message editing, unsending, removal options, and more. Our application boasts seamless file transfer, utilizes SSR for fast data fetching, incorporates infinite scrolling, and code splitting for lightning-fast loading. Enjoy a Messenger or WhatsApp-like experience for effortless communication.",
+      color: "violet",
+    },
+
+    {
+      icon: <ChatBubbleLeftIcon className="w-8 h-8 text-emerald-500 mb-4" />,
+      title: "Elevate Your Chat Experience with Advanced Features",
+      description:
+        "Unleash the potential of your chats with our feature-rich application. From on-message emoji reactions to real-time message viewers, reply options, and message editing, we've got you covered. With additional functionalities like file transfer in a separate tab and lightning-fast data fetching using SSR and infinite scrolling, our application promises a next-level experience reminiscent of Messenger or WhatsApp. Elevate your communication game today.",
+      color: "emerald",
     },
   ];
 
