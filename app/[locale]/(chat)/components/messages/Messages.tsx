@@ -124,13 +124,13 @@ export default function Messages({ chatId }: { chatId: string }) {
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-2 bg-base-200 h-[82vh]  overflow-y-auto overflow-x-hidden flex flex-col-reverse"
+      className="menu p-1 bg-base-200 h-[82vh]  overflow-y-auto overflow-x-hidden flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
         next={fetchNextPage}
         hasMore={!isLoading && hasNextPage}
-        loader={<LoaderComponent />}
+        loader={<LoaderComponent text="Fetching messages..." />}
         endMessage={
           !isLoading && (
             <div className="text-center text-2xl text-green-400 pt-10">
@@ -147,11 +147,10 @@ export default function Messages({ chatId }: { chatId: string }) {
         }}
         inverse={true}
         scrollableTarget="MessagesscrollableTarget"
-        scrollThreshold={0.7}
-        refreshFunction={() => {}}
-        pullDownToRefresh
+        scrollThreshold={0.1}
+       
       >
-        <div className="flex flex-col-reverse gap-3 p-2 m-4 mb-[60px]">
+        <div className="flex flex-col-reverse gap-3 p-2 md:m-1 mb-[60px]">
           <div id="messageEndTarget" ref={messageEndRef}></div>
           {/* typing indicator */}
 

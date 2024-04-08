@@ -105,7 +105,7 @@ const ReactModal = ({
       {/*  */}
 
       <Sheet>
-        <SheetTrigger asChild>
+        <SheetTrigger>
           <MdAdd
             onClick={() => setIsOpenEmojiModal(!isOpenEmojiModal)}
             className={`flex text-gray-400 dark:text-gray-300 h-5 w-5 md:h-6 md:w-6 mr-1 cursor-pointer `}
