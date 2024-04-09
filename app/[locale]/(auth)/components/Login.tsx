@@ -72,7 +72,7 @@ const Login = () => {
         <div className="my-5">
           <button
             onClick={handleGoogleLogin}
-            className="w-full text-center py-3 my-3 border flex space-x-2 items-center justify-center border-slate-200 rounded-lg  hover:border-slate-400 hover:text-gray-100 hover:shadow transition duration-150"
+            className="w-full text-center py-3 my-3 border flex space-x-2 items-center justify-center border-slate-200 rounded-lg  hover:border-slate-400 hover:text-gray-300 hover:shadow transition duration-150"
           >
             <Image
               height={24}
@@ -89,7 +89,7 @@ const Login = () => {
         <div className="my-5">
           <button
             onClick={handleGithubLogin}
-            className="w-full text-center py-3 my-3 border flex space-x-2 items-center justify-center border-slate-200 rounded-lg  hover:border-slate-400 hover:text-gray-100 hover:shadow transition duration-150"
+            className="w-full text-center py-3 my-3 border flex space-x-2 items-center justify-center border-slate-200 rounded-lg  hover:border-slate-400 hover:text-gray-300 hover:shadow transition duration-150"
           >
             <Image
               height={24}

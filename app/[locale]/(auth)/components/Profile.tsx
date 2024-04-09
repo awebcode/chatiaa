@@ -23,7 +23,7 @@ const Profile = async () => {
   return (
     <div className="container mx-auto flex items-center justify-center h-[60vh]">
       <div className="flex flex-col p-8 rounded-lg shadow-md max-w-lg">
-        <UpdateMyProfileDialog currentUser={user}/>
+        <UpdateMyProfileDialog currentUser={user} />
         <h1 className="text-2xl font-semibold mb-4">{user?.name}'s Profile</h1>
         <div className="flex flex-col items-center space-x-4">
           <Image
@@ -38,7 +38,7 @@ const Profile = async () => {
             <p className="text-lg font-semibold">Id:- {(user as any)?._id}</p>
             <p className="text-lg font-semibold">{user?.name}</p>
             <p className="text-gray-500">{user?.email}</p>
-             <p className="text-gray-600 text-xs">Bio:{user?.bio}</p>
+            {user?.bio && <p className="text-gray-600 text-xs">Bio:{user?.bio}</p>}
             <p className="text-gray-600">
               Joined:-{moment(user?.createdAt).format("llll")}
             </p>

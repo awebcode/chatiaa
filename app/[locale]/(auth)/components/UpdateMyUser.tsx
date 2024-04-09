@@ -23,6 +23,7 @@ import { updateUser } from "@/functions/authActions";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Tuser } from "@/store/types";
 import RevalidateTag from "@/functions/serverActions";
+import LoaderComponent from "@/components/Loader";
 export default function UpdateMyProfileDialog({currentUser}:{currentUser:Tuser}) {
   // const { user: currentUser } = useMessageState();
   const [selectedImage, setSelectedImage] = useState<File | null | string>(null);
@@ -169,7 +170,9 @@ export default function UpdateMyProfileDialog({currentUser}:{currentUser:Tuser})
               </div>
             </div>
           )}
-          {(!previewImage || !previewImage.includes("blob") || previewImage.includes("cloudinary")) && (
+          {(!previewImage ||
+            !previewImage.includes("blob") ||
+            previewImage.includes("cloudinary")) && (
             <div className="">
               <Label htmlFor="image" className="text-right">
                 Image
@@ -251,7 +254,7 @@ export default function UpdateMyProfileDialog({currentUser}:{currentUser:Tuser})
             onClick={handleSubmit}
           >
             {updateUserMutation.isPending ? (
-              <span className="animate-pulse">Saving...</span>
+              <LoaderComponent text="Saving..." />
             ) : (
               "Save changes"
             )}
