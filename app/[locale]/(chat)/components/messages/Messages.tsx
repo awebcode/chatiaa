@@ -120,7 +120,6 @@ export default function Messages({ chatId }: { chatId: string }) {
   //    }
   //  }, [roomId]);
 
-  console.log({messages})
   return (
     <div
       id="MessagesscrollableTarget"

@@ -21,7 +21,7 @@ const LeftSideClientWrapper = ({
   chatId,
 }: {
   children: ReactNode;
-  chatId: string;
+  chatId?: string;
 }) => {
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser } = useMessageState();
