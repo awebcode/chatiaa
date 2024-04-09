@@ -32,7 +32,7 @@ const SeenByGroup = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser })
         ) : (
           (chat?.latestMessage?.status === "delivered"||!chat?.latestMessage?.isSeen) &&
           chat?.latestMessage?.sender?._id !== currentUser?._id && (
-            <div className="h-5 w-5 bg-blue-500 rounded-full"></div>
+            <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
           )
         )}
         {/* seen */}

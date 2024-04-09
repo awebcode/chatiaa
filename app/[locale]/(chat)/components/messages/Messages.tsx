@@ -150,8 +150,8 @@ export default function Messages({ chatId }: { chatId: string }) {
         scrollThreshold={0.6}
       >
         {/* //mb-[66px] */}
-        <div className="flex flex-col-reverse gap-3 p-2 m-1 "> 
-          <div id="messageEndTarget" className="pb-4" ref={messageEndRef}></div>
+        <div className="flex flex-col-reverse gap-3 p-2  m-1 "> 
+          <div id="messageEndTarget" className="pb-4 mb-4 md:pb-3 md:mb-0" ref={messageEndRef}></div>
           {/* typing indicator */}
 
           <TypingIndicator onFriendListCard={false} />
