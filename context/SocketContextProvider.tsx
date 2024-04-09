@@ -27,7 +27,7 @@ const SocketContextProvider = ({ children }: SocketContextProviderProps) => {
     () =>
       io(
         process.env.NODE_ENV === "production"
-          ? "https://chat-final-xx1.onrender.com"
+          ? "https://chatiaa-server.onrender.com"
           : "http://localhost:5000",
         socketOptions
       ),
