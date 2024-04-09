@@ -39,7 +39,10 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             {
                 path: "isReply.messageId",
                 select: "content file type",
-                populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+                populate: {
+                    path: "sender",
+                    select: "name image email lastActive createdAt onlineStatus",
+                },
             },
             {
                 path: "isReply.repliedBy",
@@ -48,7 +51,10 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             {
                 path: "isEdit.messageId",
                 select: "content file type",
-                populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+                populate: {
+                    path: "sender",
+                    select: "name image email lastActive createdAt onlineStatus",
+                },
             },
             {
                 path: "isEdit.editedBy",
@@ -163,7 +169,7 @@ const sendMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 const fileType = yield (0, functions_1.getFileType)(file);
                 const url = yield cloudinary_1.v2.uploader.upload(file.path, {
                     resource_type: "raw",
-                    folder: "messengaria_2024",
+                    folder: "Chatiaa_2024",
                     format: file.mimetype === "image/svg+xml" ? "png" : "",
                 });
                 const localFilePath = file.path;
@@ -411,7 +417,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 const fileType = yield (0, functions_1.getFileType)(file);
                 const url = yield cloudinary_1.v2.uploader.upload(file.path, {
                     resource_type: "raw",
-                    folder: "messengaria_2024",
+                    folder: "Chatiaa_2024",
                     format: file.mimetype === "image/svg+xml" ? "png" : "",
                 });
                 const localFilePath = file.path;
@@ -445,7 +451,10 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                     {
                         path: "isReply.messageId",
                         select: "content file type",
-                        populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+                        populate: {
+                            path: "sender",
+                            select: "name image email lastActive createdAt onlineStatus",
+                        },
                     },
                     {
                         path: "isReply.repliedBy",
@@ -504,7 +513,10 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             {
                 path: "isReply.messageId",
                 select: "content file type",
-                populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+                populate: {
+                    path: "sender",
+                    select: "name image email lastActive createdAt onlineStatus",
+                },
             },
             {
                 path: "isReply.repliedBy",
@@ -554,7 +566,7 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 const fileType = yield (0, functions_1.getFileType)(file);
                 const url = yield cloudinary_1.v2.uploader.upload(file.path, {
                     resource_type: "raw",
-                    folder: "messengaria_2024",
+                    folder: "Chatiaa_2024",
                     format: file.mimetype === "image/svg+xml" ? "png" : "",
                 });
                 const localFilePath = file.path;

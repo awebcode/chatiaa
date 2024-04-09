@@ -1,7 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { FaCamera} from "react-icons/fa";
-import { Tabs,  TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { FaCamera } from "react-icons/fa";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
@@ -22,7 +27,7 @@ const CaptureMedia = () => {
       .then((blob) => {
         const file = new File(
           [blob],
-          `messengaria_cameraPhoto_photo_${
+          `Chatiaa_cameraPhoto_photo_${
             Date.now() + Math.floor(Math.random() * 10000)
           }.jpg`,
           {
@@ -42,14 +47,14 @@ const CaptureMedia = () => {
     document.body.appendChild(a);
     a.style = "display: none";
     a.href = url;
-    a.download = `messengaria_download_${Date.now() + Math.floor(Math.random() * 10000)}`;
+    a.download = `Chatiaa_download_${Date.now() + Math.floor(Math.random() * 10000)}`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
   const mediaRecorderRef = useRef<MediaRecorder | null | any>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [recordingTime, setRecordingTime] = useState<any>(0);
-    const [videoPlaybackTime, setVideoPlaybackTime] = useState<any>(0);
+  const [videoPlaybackTime, setVideoPlaybackTime] = useState<any>(0);
   // video recording start
   const startVideoRecording = useCallback(() => {
     setIsRecording(true);
@@ -104,10 +109,10 @@ const CaptureMedia = () => {
     setRecordedChunks(recordedChunks.filter((video: any) => video !== file));
   };
 
-   const handleVideoPlaybackTimeUpdate = (event: any) => {
-     const currentTime = event.target.currentTime;
-     setVideoPlaybackTime(currentTime);
-   };
+  const handleVideoPlaybackTimeUpdate = (event: any) => {
+    const currentTime = event.target.currentTime;
+    setVideoPlaybackTime(currentTime);
+  };
   return (
     <Dialog>
       <DialogTrigger>

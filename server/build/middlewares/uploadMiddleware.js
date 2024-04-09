@@ -10,7 +10,7 @@ const storage = multer_1.default.diskStorage({
         cb(null, "uploads"); // Set the destination folder
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now() + "messengaria_files"}-${file.originalname}`); // Define the filename
+        cb(null, `${Date.now() + "Chatiaa_files"}-${file.originalname}`); // Define the filename
     },
 });
 // Define the file filter function

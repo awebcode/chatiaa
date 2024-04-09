@@ -38,7 +38,7 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         const generator = new random_avatar_generator_1.AvatarGenerator();
         const randomAvatarUrl = generator.generateRandomAvatar();
         const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(randomAvatarUrl, {
-            folder: "messengaria",
+            folder: "Chatiaa",
             format: "png", // Specify the format as PNG
         });
         // Get the secure URL of the uploaded image from Cloudinary
@@ -332,7 +332,7 @@ const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 yield cloudinary_1.v2.uploader.destroy(publicId);
             }
             const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(req.file.path, {
-                folder: "messengaria",
+                folder: "Chatiaa",
             });
             imageUpdate = cloudinaryResponse.secure_url;
         }

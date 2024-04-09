@@ -27,7 +27,7 @@ const register = async (req: Request | any, res: Response, next: NextFunction) =
     const generator = new AvatarGenerator();
     const randomAvatarUrl = generator.generateRandomAvatar();
     const cloudinaryResponse = await v2.uploader.upload(randomAvatarUrl, {
-      folder: "messengaria",
+      folder: "Chatiaa",
       format: "png", // Specify the format as PNG
     });
 
@@ -376,7 +376,7 @@ export const updateUser = async (
         await v2.uploader.destroy(publicId);
       }
       const cloudinaryResponse = await v2.uploader.upload(req.file.path, {
-        folder: "messengaria",
+        folder: "Chatiaa",
       });
 
       imageUpdate = cloudinaryResponse.secure_url;

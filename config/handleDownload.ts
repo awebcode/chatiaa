@@ -8,7 +8,7 @@ export const handleDownload = async (url: string) => {
     // Create a temporary anchor element
     const anchor = document.createElement("a");
     anchor.href = window.URL.createObjectURL(blob);
-    anchor.download = `Messengaria_files_${Math.floor(Math.random() * 1000)}`; // Set the download attribute to specify the file name
+    anchor.download = `Chatiaa_files_${Math.floor(Math.random() * 1000)}`; // Set the download attribute to specify the file name
     anchor.click();
 
     // Cleanup

@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void
   ) => {
-    cb(null, `${Date.now() + "messengaria_files"}-${file.originalname}`); // Define the filename
+    cb(null, `${Date.now() + "Chatiaa_files"}-${file.originalname}`); // Define the filename
   },
 });
 

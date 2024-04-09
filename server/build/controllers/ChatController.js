@@ -277,7 +277,7 @@ const createGroupChat = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         const generator = new random_avatar_generator_1.AvatarGenerator();
         const randomAvatarUrl = generator.generateRandomAvatar();
         const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(randomAvatarUrl, {
-            folder: "messengaria",
+            folder: "Chatiaa",
             format: "png", // Specify the format as PNG
         });
         const groupChat = yield ChatModel_1.Chat.create({
@@ -342,7 +342,7 @@ const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 
                 yield cloudinary_1.v2.uploader.destroy(foundChat.image.public_id);
             }
             const cloudinaryResponse = yield cloudinary_1.v2.uploader.upload(req.file.path, {
-                folder: "messengaria",
+                folder: "Chatiaa",
             });
             imageUpdate = {
                 image: {

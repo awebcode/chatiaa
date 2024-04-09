@@ -1,3 +1,4 @@
+"use client"
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React from "react";
@@ -11,7 +12,8 @@ import { TbUsersGroup } from "react-icons/tb";
 import { AiOutlineUser, AiOutlineGroup } from "react-icons/ai";
 import { ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
 const Footer = dynamic(() => import("./Footer"));
-
+import { motion } from "framer-motion";
+import AnimateSvg from "./AnimateSvg";
 const Home = () => {
   // Define an array of card items with their respective icon, title, description, and icon color
   const cardItems = [
@@ -98,28 +100,45 @@ const Home = () => {
 
   return (
     <div className="container mx-auto flex flex-wrap items-center justify-center h-screen">
-      {/* Left side with text and button */}
       <div className="w-full md:w-1/2 p-1 md:p-4 flex flex-col items-start py-24 sm:py-0">
-        <h1 className="text-3xl md:text-6xl font-bold leading-10 tracking-tight dark:text-gray-300">
-          <span className="text-wrap md:text-nowrap ">Let&apos;s Connect</span>{" "}
+        <motion.h1
+          initial={{ opacity: 0, y: -50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-3xl md:text-6xl font-bold leading-10 tracking-tight dark:text-gray-300"
+        >
+          <span className="text-wrap md:text-nowrap ">Let's Connect</span>{" "}
           <span className="text-wrap md:text-nowrap mt-4">with your customer</span>{" "}
           <span>in Real Time</span>
-        </h1>
+        </motion.h1>
 
-        <p className="xl:text-lg mt-10 mb-6 tracking-wider font-medium dark:text-gray-500 text-gray-800">
+        <motion.p
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="xl:text-lg mt-10 mb-6 tracking-wider font-medium dark:text-gray-500 text-gray-800"
+        >
           Great application that allow you to chat and calling any place any time without
           any interruption
-        </p>
-        <Link
+        </motion.p>
+
+        <motion.a
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
           href="/login"
           className="text-white uppercase py-3 px-6 sm:py-4 sm:px-8 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 duration-150"
         >
           Get Started
-        </Link>
+        </motion.a>
       </div>
 
-      {/* Right side with image */}
-      <div className="w-full md:w-1/2 p-4">
+      <motion.div
+        initial={{ opacity: 0, x: -100 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="w-full md:w-1/2 p-4"
+      >
         <Image
           height={1000}
           width={1000}
@@ -129,15 +148,19 @@ const Home = () => {
           alt="Chat Image"
           className="w-full h-auto rounded"
         />
-      </div>
+      </motion.div>
 
-      {/* Bottom section with cards */}
       <div className="w-full mt-8 p-1 md:p-4">
-        <h1 className="text-3xl md:text-4xl text-center my-2 md:my-4 dark:text-gray-300 font-bold leading-10 tracking-tight">
+        <motion.h1
+          initial={{ opacity: 0, y: -120 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="text-3xl md:text-4xl text-center my-2 md:my-4 dark:text-gray-300 font-bold leading-10 tracking-tight"
+        >
           Features for a better experience.
-        </h1>
-        {/* Card elements */}
-        <div className="flex gap-1 items-center flex-wrap justify-around">
+        </motion.h1>
+
+        <motion.div className="flex gap-1 items-center flex-wrap justify-around">
           {cardItems.map((item, index) => (
             <Card
               key={index}
@@ -145,26 +168,32 @@ const Home = () => {
               title={item.title}
               description={item.description}
               color={item.color}
+              delay={index * 0.1} // Add delay for staggered animation
             />
           ))}
-        </div>
+        </motion.div>
+        <AnimateSvg />
       </div>
       <Footer />
     </div>
   );
 };
 
-// Card component
-const Card = ({ icon, title, description, color }: any) => (
-  <div className={`w-full sm:w-1/2 md:w-1/4 p-1 md:p-4`}>
+const Card = ({ icon, title, description, color, delay }: any) => (
+  <motion.div
+    initial={{ opacity: 0, y: -50 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay }}
+    className={`w-full sm:w-1/2 md:w-1/2 p-1 md:p-4`}
+  >
     <div
       className={`rounded p-6 shadow-md text-${color}-500 duration-500 transition-all   hover:ring-2 hover:ring-yellow-500`}
     >
       <div className="mb-4">{icon}</div>
-      <h2 className="text-lg font-semibold mb-2">{title}</h2>
-      <p className="text-gray-500 text-sm">{description}</p>
+      <motion.h2 className="text-lg font-semibold mb-2">{title}</motion.h2>
+      <motion.p className="text-gray-500 text-sm">{description}</motion.p>
     </div>
-  </div>
+  </motion.div>
 );
 
 

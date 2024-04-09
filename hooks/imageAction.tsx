@@ -17,7 +17,7 @@ export const UseImageActions = () => {
 
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
-      link.download = "Messengaria-" + Math.floor(Math.random() * 100000);
+      link.download = "Chatiaa-" + Math.floor(Math.random() * 100000);
 
       document.body.appendChild(link);
       link.click();
@@ -28,8 +28,8 @@ export const UseImageActions = () => {
   };
 
   const handlePreviewToggle = (url: string) => {
-      openPreview(url);
-      console.log("clicked")
+    openPreview(url);
+    console.log("clicked");
   };
 
   const PreviewModal = () => {

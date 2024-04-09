@@ -10,7 +10,7 @@ import { Reaction } from "../model/reactModal";
 import { v2 } from "cloudinary";
 import fs from "fs";
 import mongoose from "mongoose";
-import {  io } from "../index";
+import { io } from "../index";
 import { getFileType } from "./functions";
 import { MessageSeenBy } from "../model/seenByModel";
 import { emitEventToGroupUsers } from "../common/groupSocket";
@@ -25,13 +25,16 @@ export const allMessages = async (
     const page = parseInt(req.query.page) || 1;
     // const skip = (page - 1) * limit;
 
-     const skip = parseInt(req.query.skip) || 0;
+    const skip = parseInt(req.query.skip) || 0;
     let messages: any = await Message.find({ chat: req.params.chatId })
       .populate([
         {
           path: "isReply.messageId",
           select: "content file type",
-          populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+          populate: {
+            path: "sender",
+            select: "name image email lastActive createdAt onlineStatus",
+          },
         },
         {
           path: "isReply.repliedBy",
@@ -40,7 +43,10 @@ export const allMessages = async (
         {
           path: "isEdit.messageId",
           select: "content file type",
-          populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+          populate: {
+            path: "sender",
+            select: "name image email lastActive createdAt onlineStatus",
+          },
         },
         {
           path: "isEdit.editedBy",
@@ -48,7 +54,10 @@ export const allMessages = async (
         },
       ])
 
-      .populate("sender removedBy unsentBy", "name image email lastActive createdAt onlineStatus")
+      .populate(
+        "sender removedBy unsentBy",
+        "name image email lastActive createdAt onlineStatus"
+      )
       .populate("chat")
       .sort({ _id: -1 })
       .limit(limit)
@@ -178,7 +187,7 @@ export const sendMessage = async (
 
           const url = await v2.uploader.upload(file.path, {
             resource_type: "raw",
-            folder: "messengaria_2024",
+            folder: "Chatiaa_2024",
             format: file.mimetype === "image/svg+xml" ? "png" : "",
           });
 
@@ -246,7 +255,10 @@ export const sendMessage = async (
 
       // Create and populate message
       let message: any = await Message.create(newMessage);
-      message = await message.populate("sender chat", "name image email lastActive createdAt onlineStatus");
+      message = await message.populate(
+        "sender chat",
+        "name image email lastActive createdAt onlineStatus"
+      );
       message = await message.populate("chat");
       message = await User.populate(message, {
         path: "chat.users",
@@ -501,7 +513,7 @@ export const replyMessage = async (
 
           const url = await v2.uploader.upload(file.path, {
             resource_type: "raw",
-            folder: "messengaria_2024",
+            folder: "Chatiaa_2024",
             format: file.mimetype === "image/svg+xml" ? "png" : "",
           });
 
@@ -539,7 +551,10 @@ export const replyMessage = async (
             {
               path: "isReply.messageId",
               select: "content file type",
-              populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+              populate: {
+                path: "sender",
+                select: "name image email lastActive createdAt onlineStatus",
+              },
             },
             {
               path: "isReply.repliedBy",
@@ -607,7 +622,10 @@ export const replyMessage = async (
         {
           path: "isReply.messageId",
           select: "content file type",
-          populate: { path: "sender", select: "name image email lastActive createdAt onlineStatus" },
+          populate: {
+            path: "sender",
+            select: "name image email lastActive createdAt onlineStatus",
+          },
         },
         {
           path: "isReply.repliedBy",
@@ -666,7 +684,7 @@ export const editMessage = async (
 
           const url = await v2.uploader.upload(file.path, {
             resource_type: "raw",
-            folder: "messengaria_2024",
+            folder: "Chatiaa_2024",
             format: file.mimetype === "image/svg+xml" ? "png" : "",
           });
 

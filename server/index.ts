@@ -37,7 +37,7 @@ export const io = new Server(server, {
 // Enable CORS for all routes
 
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://messengaria.vercel.app"], // Allow requests from this specific origin
+  origin: ["http://localhost:3000", "https://chatiaa.vercel.app"], // Allow requests from this specific origin
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
@@ -78,8 +78,6 @@ const checkOnlineUsers = async (userId: string, socketId: string) => {
     }
   }
 };
-
-
 
 // Function to get the socket connected user from the User model
 export const getSocketConnectedUser = async (id: string | Types.ObjectId) => {
