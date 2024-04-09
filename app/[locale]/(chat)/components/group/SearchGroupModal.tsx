@@ -83,7 +83,7 @@ export default function SearchGroupModal() {
           description: (chat as any)?.description,
           image: { url: (chat as any)?.image?.url },
         },
-        isOnline: chat?.isOnline,
+        isOnline: true,
         onCallMembers: chat?.onCallMembers,
       };
       socket.emit("groupCreatedNotify", { chatId: chat._id, chat });

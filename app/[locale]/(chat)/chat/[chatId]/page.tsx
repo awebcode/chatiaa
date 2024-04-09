@@ -40,18 +40,18 @@ const page = ({ params }: { params: { chatId: string } }) => {
       <div className="flexBetween gap-2 overflow-hidden">
         {/* Left side */}
         <div
-          className={`h-screen ${!params?.chatId?"md:h-[88vh]":"h-screen"} basis-[100%] ${
+          className={`h-screen ${
+            !params?.chatId ? "md:h-[88vh]" : "h-screen"
+          } basis-[100%] ${
             params?.chatId ? "hidden" : "block"
           } md:block w-full md:basis-2/4 border `}
         >
-          <LeftSideClientWrapper>
+          <LeftSideClientWrapper chatId={params?.chatId as string}>
             <PrefetchMyChats />
           </LeftSideClientWrapper>
         </div>
         {/* Rightside */}
-        <div
-          className={`h-screen w-full`}
-        >
+        <div className={`h-screen w-full`}>
           {params?.chatId ? (
             <MainClientWrapper>
               <PrefetchMessages chatId={params?.chatId as string} />

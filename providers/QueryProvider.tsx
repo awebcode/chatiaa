@@ -13,8 +13,8 @@ export const ReactQueryClientProvider = ({ children }: { children: React.ReactNo
             // above 0 to avoid refetching immediately on the client
             staleTime: 24 * 60 * 60 * 1000,
 
-            refetchOnWindowFocus: false,
-            refetchOnMount: false,
+            refetchOnWindowFocus: true,
+            refetchOnMount: true,
           },
         },
       })

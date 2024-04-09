@@ -15,7 +15,6 @@ export async function checkIfAnyUserIsOnline(
     _id: { $in: userIds, $ne: reqId },
     onlineStatus: { $in: ["online", "busy"] },
   });
-
   // Map the online status to userIds
   const onlineUserIds = onlineUsers.map((user) => user?._id?.toString());
 

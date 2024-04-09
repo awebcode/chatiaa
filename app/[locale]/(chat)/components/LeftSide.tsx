@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 const SearchDrawer = dynamic(() => import("./searchfriends/SearchDrawer"), {
   // loading: () => <LoaderComponent text="Fetching..."/>,
 });
@@ -16,9 +16,22 @@ import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useMessageState } from "@/context/MessageContext";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
-const LeftSideClientWrapper = ({ children }: { children: ReactNode }) => {
+const LeftSideClientWrapper = ({
+  children,
+  chatId,
+}: {
+  children: ReactNode;
+  chatId: string;
+}) => {
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser } = useMessageState();
+
+  useEffect(() => {
+    if (localStorage.getItem("selectedChat") && !chatId) {
+      localStorage.removeItem("selectedChat");
+    }
+  }, [chatId]);
+
   return (
     <div className=" flex flex-col">
       <div className="m-4">
@@ -29,7 +42,7 @@ const LeftSideClientWrapper = ({ children }: { children: ReactNode }) => {
       {onlineUsers.filter((curr) => curr.userInfo?._id !== currentUser?._id).length >
         0 && <OnlineFriends />}
       {/* my friends server rendering here */}
-      {children}
+      <div className="overflow-y-auto"> {children}</div>
     </div>
   );
 };

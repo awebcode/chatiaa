@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import moment from "moment";
@@ -18,6 +18,7 @@ import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import {
   CLEAR_MESSAGES,
   SEEN_PUSH_USER_GROUP_MESSAGE,
+  SEEN_PUSH_USER_GROUP_MESSAGE_MY_SIDE,
   SET_SELECTED_CHAT,
   UPDATE_CHAT_STATUS,
 } from "@/context/reducers/actions";
@@ -27,11 +28,13 @@ import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import SeenBy from "./status/SeenBy";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
+import SeenByGroup from "./status/SeeByGroup";
 const Modal = dynamic(() => import("./Modal"));
 
 const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useMessageDispatch();
@@ -65,11 +68,12 @@ const FriendsCard: React.FC<{
     },
   });
 
-  const handleClick = (chatId: string) => {
+  const handleClick = async (chatId: string) => {
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
+    queryClient.invalidateQueries({ queryKey: ["messages"] });
     if (selectedChat?.chatId === chatId) return;
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
-
     //select chat
     const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
@@ -103,7 +107,6 @@ const FriendsCard: React.FC<{
 
     // router.replace
     // router.push(`/chat?chatId=${chat?._id}`);
-
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
     // router.push(`?chatId=${chat?._id}`);
@@ -123,6 +126,7 @@ const FriendsCard: React.FC<{
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
       //&& !chat?.latestMessage?.isSeen
+
       const pushData = {
         chatId: chat?._id,
         messageId: chat?.latestMessage?._id,
@@ -133,20 +137,21 @@ const FriendsCard: React.FC<{
       //emit event to server
       socket.emit("seenPushGroupMessage", pushData);
       //update sender side
-      dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE, payload: pushData });
+      dispatch({ type: SEEN_PUSH_USER_GROUP_MESSAGE_MY_SIDE, payload: pushData });
+
       //send to db
-      pushSeenByMutation.mutate({
+      pushSeenByMutation.mutateAsync({
         chatId: chat?._id,
         messageId: chat?.latestMessage?._id as any,
       });
 
       //update message status as seen
       if (chat?.latestMessage?.status !== "seen") {
-        updateMessageStatus({ chatId: chat?._id, status: "seen" }).catch(console.error);
+        await updateMessageStatus({ chatId: chat?._id, status: "seen" });
       }
       dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
       // updateStatusMutation.mutate(chatId);
-      updateAllMessageStatusAsSeen(chatId).catch(console.error);
+      await updateAllMessageStatusAsSeen(chatId);
       // Proceed with other code
 
       //emit seenby socket here
@@ -158,10 +163,8 @@ const FriendsCard: React.FC<{
       chat?.latestMessage?.sender?._id !== currentUser?._id
     ) {
       dispatch({ type: UPDATE_CHAT_STATUS, payload: { chatId, status: "seen" } });
-      updateStatusMutation.mutate(chatId);
+      updateStatusMutation.mutateAsync(chatId);
     }
-
-    // queryclient.invalidateQueries({ queryKey: ["messages", chatId] });
   };
 
   // console.log({chat})
@@ -276,18 +279,20 @@ const FriendsCard: React.FC<{
             >
               Join call
             </Button>
+          ) : // ) : chat?.isGroupChat ? (
+          //   <SeenBy chat={chat as any} currentUser={currentUser as any} />
+          // ) : (
+          //   RenderStatus(
+          //     chat,
+          //     chat?.latestMessage as any,
+          //     "onFriendListCard",
+          //     chat?.unseenCount,
+          //     false
+          //   )
+          // )}
+          chat?.isGroupChat ? (
+            <SeenByGroup chat={chat as any} currentUser={currentUser as any} />
           ) : (
-            // ) : chat?.isGroupChat ? (
-            //   <SeenBy chat={chat as any} currentUser={currentUser as any} />
-            // ) : (
-            //   RenderStatus(
-            //     chat,
-            //     chat?.latestMessage as any,
-            //     "onFriendListCard",
-            //     chat?.unseenCount,
-            //     false
-            //   )
-            // )}
             <SeenBy chat={chat as any} currentUser={currentUser as any} />
           )}
 

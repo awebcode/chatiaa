@@ -6,6 +6,7 @@ import React, { FormEvent, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
+import LoaderComponent from "@/components/Loader";
 
 const Register = () => {
   const queryClient=useQueryClient()
@@ -168,7 +169,7 @@ const Register = () => {
             <button
               disabled={loading}
               type="submit"
-              className="w-full py-3 font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg border-indigo-500 hover:shadow inline-flex space-x-2 items-center justify-center"
+              className="w-full py-3 font-medium text-white bg-violet-600 hover:bg-violet-500 rounded-lg border-indigo-500 hover:shadow inline-flex space-x-2 items-center justify-center"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -186,11 +187,11 @@ const Register = () => {
               </svg>
               <span>
                 {loading ? (
-                  <div className="flex items-center gap-x-1">
+                  <>
                     {" "}
-                    <BiLoaderCircle className="animate-spin h-7 w-7 text-gray-600 rounded-full relative" />
-                    Creating...
-                  </div>
+                    <BiLoaderCircle className="animate-spin h-7 w-7 text-white rounded-full relative" />
+                 Creating...
+                  </>
                 ) : (
                   "Register"
                 )}

@@ -46,7 +46,7 @@ const Status = ({
           </TooltipProvider>
           <span
             className={`absolute bottom-0 right-0 rounded-full p-[4px] ${
-              message?.sender?.onlineStatus==="online" ? "animate-pulse bg-green-500" : "bg-rose-500"
+              selectedChat?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
             }`}
           ></span>
         </div>

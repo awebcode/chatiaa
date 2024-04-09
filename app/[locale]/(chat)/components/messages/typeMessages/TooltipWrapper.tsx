@@ -30,7 +30,7 @@ const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => 
         <TooltipContent className=" dark:bg-gray-100  p-4 flex  gap-2 rounded-3xl">
           <div className="mt-2 h-16 w-16 md:h-20 md:w-20 flex p-2 flex-col justify-center items-center">
             {" "}
-            <div className="relative  p-[2px] h-16 w-16 ring md:ring-2 ring-violet-500 rounded-full">
+            <div className="relative  p-[2px] h-10 w-10  md:h-16 md:w-16 ring md:ring-2 ring-violet-500 rounded-full">
               {" "}
               <Image
                 height={35}
@@ -40,12 +40,12 @@ const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => 
                 src={user?.image}
               />
               <span
-                className={` absolute bottom-1 -right-0 rounded-full ring-1 ring-gray-900 p-[6px] ${
+                className={` absolute bottom-1 -right-0 rounded-full ring-1 ring-gray-900 p-1 md:p-[6px] ${
                   user?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
                 }`}
               ></span>
             </div>
-            <div className="flex items-center justify-center mt-4 gap-1">
+            <div className="flex items-center justify-center mt-4 mr-2 gap-1">
               {/* Video Icon */}
               <div className="rounded-full bg-white dark:bg-gray-700 hover:bg-opacity-80 shadow p-2 text-xl">
                 <FaVideo
@@ -77,7 +77,7 @@ const TooltipContentComponent = ({ user,chat }: { user: Tuser,chat?:IChat }) => 
           <div>
             <Button
               onClick={() => Router.push(`/user/profile/${user?._id}`)}
-              className="w-full text-sm bg-blue-600 cursor-pointer"
+              className="w-full text-xs md:text-sm bg-blue-600 cursor-pointer"
               variant={"ghost"}
             >
               View Profile

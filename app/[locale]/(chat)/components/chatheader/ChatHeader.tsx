@@ -13,6 +13,7 @@ import { useSocketContext } from "@/context/SocketContextProvider";
 import { Button } from "@/components/ui/button";
 import { handleSendCall } from "@/config/handleSendCall";
 import LoaderComponent from "@/components/Loader";
+import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
@@ -27,14 +28,15 @@ const ChatHeader = () => {
   const dispatch = useMessageDispatch();
   const { typingUsers } = useTypingStore();
   const isUserOnline = selectedChat?.isOnline as boolean;
+  const queryClient = useQueryClient();
 
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
-    router.push("/chat");
-
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
+    router.push("/chat");
   };
   // useEffect(() => {
   //   if (!selectedChat) return  window.history.pushState(null, "", "/chat");

@@ -120,7 +120,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   //    }
   //  }, [roomId]);
 
-  // console.log({messages})
+  console.log({messages})
   return (
     <div
       id="MessagesscrollableTarget"
@@ -150,7 +150,8 @@ export default function Messages({ chatId }: { chatId: string }) {
         scrollableTarget="MessagesscrollableTarget"
         scrollThreshold={0.6}
       >
-        <div className="flex flex-col-reverse gap-3 p-2 m-1 mb-[66px]">
+        {/* //mb-[66px] */}
+        <div className="flex flex-col-reverse gap-3 p-2 m-1 pb-2"> 
           <div id="messageEndTarget" ref={messageEndRef}></div>
           {/* typing indicator */}
 

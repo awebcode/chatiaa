@@ -54,10 +54,14 @@ export const markMessageAsDeliverdAfteronlineFriend = async (
       const receiverId = await getSocketConnectedUser(
         chat.latestMessage?.sender.toString()
       );
+      // const senderId = await getSocketConnectedUser(
+      //  userId
+      // );
       if (receiverId) {
-        io.to(receiverId.socketId).emit("receiveDeliveredAllMessageAfterReconnect", {
-          chatId: chat?._id,
-        });
+        io.to(receiverId.socketId)
+          .emit("receiveDeliveredAllMessageAfterReconnect", {
+            chatId: chat?._id,
+          });
       }
     }
   });

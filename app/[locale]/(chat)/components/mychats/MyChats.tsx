@@ -100,7 +100,7 @@ const MyChats = () => {
           <div
             id="ChatscrollableTarget"
             style={{ height: "80vh", overflowY: "auto" }}
-            className="mt-2 z-50 "
+            className="mt-2 z-50 overflow-scroll"
           >
             <InfiniteScroll
               dataLength={chats ? chats?.length : 0}
@@ -118,8 +118,8 @@ const MyChats = () => {
               scrollThreshold={0.6}
             >
               <div
-                className={`flex flex-col gap-2 z-50 ${
-                  chats.length > 6 ? "min-h-[80vh]" : "h-auto"
+                className={`flex flex-col gap-2 z-50 overflow-y-scroll ${
+                  chats.length > 6 ? "h-[60vh]" : "min-h-[60vh]"
                 } `}
               >
                 {isLoading ? (

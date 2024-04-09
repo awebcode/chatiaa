@@ -131,6 +131,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     updateAllMessageStatusAsDelivered(currentUser?._id as any);
   }, []);
   useEffect(() => {
+
     socket.emit("deliveredAllMessageAfterReconnect", {
       userId: currentUser?._id,
     });
@@ -256,7 +257,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
           });
           dispatch({
             type: UPDATE_LATEST_CHAT_MESSAGE,
-            payload: { ...data, status: "seen" },
+            payload: { ...data, status: "seen",isSeen:true },
           });
 
           const pushData = {
@@ -310,11 +311,8 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
               payload: { ...data, status: "delivered" },
             });
             socket.emit("deliveredGroupMessage", {
-              chat: {
-                ...data.chat,
-                latestMessage: { ...data.chat.latestMessage, isSeen: false },
-              },
-              _id: data._id,
+              ...data,
+              chatId: data?.chat?._id,
               status: "delivered",
             });
             //update status
@@ -405,6 +403,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   const handleOnlineUsers = useCallback(
     (user: { userId: string; socketId: string; userInfo: Tuser; chatId: string }) => {
       if (user) {
+
         if (user.userId !== currentUserRef?.current?._id) {
           addOnlineUser(user);
           dispatch({
@@ -458,6 +457,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   }, []);
   //UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND
   const handleAllDeliveredAfterReconnect = useCallback((data: any) => {
+    console.log({handleAllDeliveredAfterReconnect:data})
     dispatch({ type: UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND, payload: data });
   }, []);
   //groupChatLeaveNotifyReceivedHandler
@@ -542,11 +542,13 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   //handleDeliveredGroupMessage
   const handleDeliveredGroupMessage = useCallback((data: any) => {
-    dispatch({ type: UPDATE_CHAT_STATUS, payload: data });
-    dispatch({
-      type: UPDATE_LATEST_CHAT_MESSAGE,
-      payload: { ...data, status: "delivered" },
-    });
+   
+      dispatch({ type: UPDATE_CHAT_STATUS, payload: data });
+      dispatch({
+        type: UPDATE_LATEST_CHAT_MESSAGE,
+        payload: { ...data, status: "delivered",isCurrentUserMessage:true },
+      });
+    
   }, []);
   //handleUpdate_group_info_Received
   const handleUpdate_group_info_Received = useCallback((data: any) => {

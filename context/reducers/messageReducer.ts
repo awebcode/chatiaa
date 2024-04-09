@@ -32,6 +32,7 @@ import {
   RECEIVE_CALL_INVITATION,
   UPDATE_ON_CALL_COUNT,
   DELETE_ALL_MESSAGE_IN_CHAT,
+  SEEN_PUSH_USER_GROUP_MESSAGE_MY_SIDE,
 } from "./actions";
 import { Action, State } from "./interfaces";
 import {
@@ -52,15 +53,31 @@ export const messageReducer = (state: State, action: Action): State => {
 
     // set chats start
     case SET_CHATS:
+    case SET_CHATS:
       let updatedChats;
       if (Array.isArray(action.payload.chats)) {
-        //when scroll
-        updatedChats = [...action.payload.chats];
+        // When scrolling
+        updatedChats = action.payload.chats.map((chat: any) => {
+          // Check if the latest message status is "unseen"
+          if (chat.latestMessage && ["unseen"].includes(chat.latestMessage.status as string)) {
+            // Update the status to "delivered"
+            const updatedLatestMessage = { ...chat.latestMessage, status: "delivered" };
+            // Return the updated chat object
+            return { ...chat, latestMessage: updatedLatestMessage };
+          } else {
+            // If the status is not "unseen", return the chat object as is
+            return chat;
+          }
+        });
       } else {
-        //when new chat created new chat
+        // When a new chat is created
+        // Update the status of the new chat if necessary
+       
         updatedChats = [action.payload, ...state.chats];
       }
       return { ...state, chats: updatedChats, totalChats: action.payload.total };
+  
+
     //UPDATE_CHAT_STATUS
     case UPDATE_CHAT_STATUS:
       return {
@@ -69,12 +86,12 @@ export const messageReducer = (state: State, action: Action): State => {
         chats: state.chats.map((chat) =>
           chat._id === action.payload.chatId
             ? {
-                ...chat,
-                latestMessage: {
-                  ...(chat.latestMessage as any),
-                  status: action.payload.status,
-                },
-              }
+              ...chat,
+              latestMessage: {
+                ...(chat.latestMessage as any),
+                status: action.payload.status,
+              },
+            }
             : chat
         ),
       };
@@ -86,9 +103,9 @@ export const messageReducer = (state: State, action: Action): State => {
         chats: state.chats.map((chat) =>
           chat._id === action.payload.chatId
             ? {
-                ...chat,
-                latestMessage: null as any,
-              }
+              ...chat,
+              latestMessage: null as any,
+            }
             : chat
         ),
         messages: action.payload.type === "update-only-chats" ? state.messages : [],
@@ -97,7 +114,7 @@ export const messageReducer = (state: State, action: Action): State => {
     case UPDATE_LATEST_CHAT_MESSAGE:
       // Find the index of the chat being updated
       const updatedChatIndex = state.chats.findIndex(
-        (chat) => chat._id === action.payload.chat._id || action.payload.chatId
+        (chat) => chat._id === action.payload.chat?._id || action.payload.chatId
       );
 
       // If the chat is not found, return state as is
@@ -114,11 +131,14 @@ export const messageReducer = (state: State, action: Action): State => {
 
       // Remove the chat from its current position
       const newUpdatedChats = state.chats.filter(
-        (chat) => chat._id !== action.payload.chat._id || action.payload.chatId
+        (chat) => chat._id !== action.payload.chat?._id || action.payload.chatId
       );
+console.log({updatedChat:action.payload})
 
       // Add the updated chat at the beginning
-      newUpdatedChats.unshift(updatedChat);
+      if (!action.payload.isCurrentUserMessage) {
+        newUpdatedChats.unshift(updatedChat);
+      }
 
       return {
         ...state,
@@ -126,10 +146,10 @@ export const messageReducer = (state: State, action: Action): State => {
         messages: state.messages.map((message) =>
           message._id === action.payload._id || action.payload.messageId
             ? {
-                ...message,
+              ...message,
 
-                status: action.payload.status,
-              }
+              status: action.payload.status,
+            }
             : message
         ),
       };
@@ -149,12 +169,12 @@ export const messageReducer = (state: State, action: Action): State => {
         chats: state.chats.map((chat) =>
           chat._id === action.payload.chatId
             ? {
-                ...chat,
-                latestMessage: {
-                  ...(chat.latestMessage as any),
-                  status: action.payload.status,
-                },
-              }
+              ...chat,
+              latestMessage: {
+                ...(chat.latestMessage as any),
+                status: action.payload.status,
+              },
+            }
             : chat
         ),
       };
@@ -166,31 +186,31 @@ export const messageReducer = (state: State, action: Action): State => {
         chats: state.chats.map((chat) =>
           chat._id === action.payload.chatId
             ? {
-                ...chat,
-                // Check if the user is already in the group admin array
-                chatBlockedBy: chat.chatBlockedBy.some(
-                  (user) => user._id === action.payload.user._id
-                )
-                  ? chat.chatBlockedBy.filter(
-                      (user) => user._id !== action.payload.user._id
-                    ) // If yes, remove them
-                  : [...chat.chatBlockedBy, action.payload.user],
-              }
+              ...chat,
+              // Check if the user is already in the group admin array
+              chatBlockedBy: chat.chatBlockedBy.some(
+                (user) => user._id === action.payload.user._id
+              )
+                ? chat.chatBlockedBy.filter(
+                  (user) => user._id !== action.payload.user._id
+                ) // If yes, remove them
+                : [...chat.chatBlockedBy, action.payload.user],
+            }
             : chat
         ),
         //update if current blocked chat is selected chat
         selectedChat:
           state.selectedChat && state.selectedChat.chatId === action.payload.chatId
             ? {
-                ...state.selectedChat,
-                chatBlockedBy: state.selectedChat.chatBlockedBy.some(
-                  (user) => user._id === action.payload.user._id
+              ...state.selectedChat,
+              chatBlockedBy: state.selectedChat.chatBlockedBy.some(
+                (user) => user._id === action.payload.user._id
+              )
+                ? state.selectedChat.chatBlockedBy.filter(
+                  (user) => user._id !== action.payload.user._id
                 )
-                  ? state.selectedChat.chatBlockedBy.filter(
-                      (user) => user._id !== action.payload.user._id
-                    )
-                  : [...state.selectedChat.chatBlockedBy, action.payload.user],
-              }
+                : [...state.selectedChat.chatBlockedBy, action.payload.user],
+            }
             : null,
       };
     //LEAVE_FROM_GROUP_CHAT
@@ -201,10 +221,10 @@ export const messageReducer = (state: State, action: Action): State => {
         chats: state.chats.map((chat) =>
           chat._id === action.payload.chatId
             ? {
-                ...chat,
-                // Check if the user is already in the group admin array
-                users: chat.users.filter((user) => user._id !== action.payload.user._id), // If yes, remove them
-              }
+              ...chat,
+              // Check if the user is already in the group admin array
+              users: chat.users.filter((user) => user._id !== action.payload.user._id), // If yes, remove them
+            }
             : chat
         ),
         //update if current leave chat is selected chat
@@ -233,13 +253,13 @@ export const messageReducer = (state: State, action: Action): State => {
         selectedChat:
           state.selectedChat && state.selectedChat.groupAdmin
             ? {
-                ...state.selectedChat,
-                groupAdmin: state.selectedChat.groupAdmin.some(
-                  (user) => user._id === action.payload.user._id
-                )
-                  ? state.selectedChat.groupAdmin
-                  : [...state.selectedChat.groupAdmin, action.payload.user],
-              }
+              ...state.selectedChat,
+              groupAdmin: state.selectedChat.groupAdmin.some(
+                (user) => user._id === action.payload.user._id
+              )
+                ? state.selectedChat.groupAdmin
+                : [...state.selectedChat.groupAdmin, action.payload.user],
+            }
             : state.selectedChat,
       };
     //REMOVE_ADMIN_FROM_GROUP_CHAT
@@ -260,11 +280,11 @@ export const messageReducer = (state: State, action: Action): State => {
         }),
         selectedChat: state.selectedChat
           ? {
-              ...state.selectedChat,
-              groupAdmin: (state.selectedChat.groupAdmin || []).filter(
-                (u) => u._id !== action.payload.user._id
-              ),
-            }
+            ...state.selectedChat,
+            groupAdmin: (state.selectedChat.groupAdmin || []).filter(
+              (u) => u._id !== action.payload.user._id
+            ),
+          }
           : state.selectedChat,
       };
     //REMOVE_USER_FROM_GROUP_CHAT AS A ADMIN
@@ -285,13 +305,88 @@ export const messageReducer = (state: State, action: Action): State => {
         }),
         selectedChat: state.selectedChat
           ? {
-              ...state.selectedChat,
-              users: (state.selectedChat.users || []).filter(
-                (u) => u._id !== action.payload.user._id
-              ),
-            }
+            ...state.selectedChat,
+            users: (state.selectedChat.users || []).filter(
+              (u) => u._id !== action.payload.user._id
+            ),
+          }
           : state.selectedChat,
       };
+    case SEEN_PUSH_USER_GROUP_MESSAGE_MY_SIDE:
+     return {
+       ...state,
+       chats: state.chats.map((chat) => {
+         if (chat._id === action.payload.chatId) {
+           // Check if latestMessage exists and seenBy is an array
+           const updatedSeenBy = chat.latestMessage?.seenBy || [];
+           let totalseenBy = chat.latestMessage?.totalseenBy || 0;
+           // Check if the user is already in the seenBy array
+           const isUserSeen = updatedSeenBy.some(
+             (u) => u._id === action.payload.user._id
+           );
+           // If the user is not already in the seenBy array, add them
+           if (!isUserSeen) {
+             updatedSeenBy.push(action.payload.user);
+             totalseenBy += 1;
+           }
+
+           return {
+             ...chat,
+             latestMessage: {
+               ...(chat.latestMessage as any),
+               status: "seen",
+               seenBy: updatedSeenBy,
+               totalseenBy,
+               isSeen: true,
+             },
+           };
+         }
+         return chat;
+       }),
+       messages: state.messages.map((message) => {
+         let updated = message.seenBy || [];
+         let totalseenBy = message?.totalseenBy || 0;
+         if (
+           message.seenBy?.some(
+             (u: any) =>
+               u?._id === action.payload.user._id ||
+               (u?._id && u?.userId?._id === action.payload.user._id)
+           )
+         ) {
+           updated = (message.seenBy || []).filter(
+             (u: any) =>
+               u?._id !== action.payload.user._id &&
+               (!u._id || u?.userId?._id !== action.payload.user._id)
+           );
+           totalseenBy -= 1;
+         }
+
+         if (message._id === action.payload.messageId) {
+           // Check if latestMessage exists and seenBy is an array
+           const updatedSeenBy = updated;
+
+           // Check if the user is already in the seenBy array
+           const isUserSeen = updatedSeenBy.some(
+             (u) => u._id === action.payload.user._id
+           );
+
+           // If the user is not already in the seenBy array, add them
+           if (!isUserSeen) {
+             updatedSeenBy.push(action.payload.user);
+             totalseenBy += 1;
+           }
+
+           return {
+             ...message,
+             status: "seen",
+             seenBy: updatedSeenBy,
+             totalseenBy,
+             isSeen: true,
+           };
+         }
+         return { ...message, status: "seen", seenBy: updated, totalseenBy };
+       }),
+     };
     ///SEEN_PUSH_USER_GROUP_MESSAGE
     case SEEN_PUSH_USER_GROUP_MESSAGE:
       return {
@@ -319,7 +414,6 @@ export const messageReducer = (state: State, action: Action): State => {
                 status: "seen",
                 seenBy: updatedSeenBy,
                 totalseenBy,
-                isSeen: !action.payload?.isSocketData && true,
               },
             };
           }
@@ -340,7 +434,7 @@ export const messageReducer = (state: State, action: Action): State => {
                 u?._id !== action.payload.user._id &&
                 (!u._id || u?.userId?._id !== action.payload.user._id)
             );
-             totalseenBy-=1
+            totalseenBy -= 1;
           }
 
           if (message._id === action.payload.messageId) {
@@ -366,7 +460,7 @@ export const messageReducer = (state: State, action: Action): State => {
               isSeen: true,
             };
           }
-          return { ...message, status: "seen", seenBy: updated,  totalseenBy, };
+          return { ...message, status: "seen", seenBy: updated, totalseenBy };
         }),
       };
 

@@ -257,7 +257,7 @@ io.on("connection", (socket: Socket) => {
     const leaveMessage = await sentGroupNotifyMessage({
       chatId: data.chatId,
       user: data.currentUser,
-      message: `${data.currentUser.name} Leave from the group`,
+      message: `${data?.currentUser?.name} Leave from the group`,
     });
     const leaveData = {
       ...leaveMessage.toObject(),
@@ -356,7 +356,7 @@ io.on("connection", (socket: Socket) => {
     await emitEventToGroupUsers(
       socket,
       "deliveredGroupMessageReceived",
-      data.chatId,
+      data?.chatId,
       data
     );
   });

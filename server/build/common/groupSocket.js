@@ -44,8 +44,12 @@ const markMessageAsDeliverdAfteronlineFriend = (io, userId) => __awaiter(void 0,
         if (((_a = chat.latestMessage) === null || _a === void 0 ? void 0 : _a.status) === "unseen" &&
             ((_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b.sender.toString()) !== userId) {
             const receiverId = yield (0, __1.getSocketConnectedUser)((_c = chat.latestMessage) === null || _c === void 0 ? void 0 : _c.sender.toString());
+            // const senderId = await getSocketConnectedUser(
+            //  userId
+            // );
             if (receiverId) {
-                io.to(receiverId.socketId).emit("receiveDeliveredAllMessageAfterReconnect", {
+                io.to(receiverId.socketId)
+                    .emit("receiveDeliveredAllMessageAfterReconnect", {
                     chatId: chat === null || chat === void 0 ? void 0 : chat._id,
                 });
             }

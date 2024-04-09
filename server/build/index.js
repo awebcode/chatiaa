@@ -218,10 +218,11 @@ exports.io.on("connection", (socket) => {
     }));
     //leave from group chat
     socket.on("groupChatLeaveNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
         const leaveMessage = yield (0, functions_1.sentGroupNotifyMessage)({
             chatId: data.chatId,
             user: data.currentUser,
-            message: `${data.currentUser.name} Leave from the group`,
+            message: `${(_a = data === null || data === void 0 ? void 0 : data.currentUser) === null || _a === void 0 ? void 0 : _a.name} Leave from the group`,
         });
         const leaveData = Object.assign(Object.assign({}, leaveMessage.toObject()), { user: data.currentUser, chatId: data.chatId });
         yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "groupChatLeaveNotifyReceived", data.chatId, leaveData);
@@ -283,7 +284,7 @@ exports.io.on("connection", (socket) => {
     }));
     //deliveredGroupMessageReceived
     socket.on("deliveredGroupMessage", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "deliveredGroupMessageReceived", data.chatId, data);
+        yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "deliveredGroupMessageReceived", data === null || data === void 0 ? void 0 : data.chatId, data);
     }));
     ///deletedAllMessageInChatNotify
     socket.on("deletedAllMessageInChatNotify", (data) => __awaiter(void 0, void 0, void 0, function* () {
@@ -295,31 +296,31 @@ exports.io.on("connection", (socket) => {
     }));
     //calling system start
     socket.on("sent_call_invitation", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a;
+        var _b;
         if (data.isGroupChat) {
             yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "received_incoming_call", data.chatId, data);
             //  socket.emit("receiveMessage", message);
         }
         else {
             //all connected clients in room
-            socket.to((_a = data.receiver) === null || _a === void 0 ? void 0 : _a._id).emit("received_incoming_call", Object.assign({}, data));
+            socket.to((_b = data.receiver) === null || _b === void 0 ? void 0 : _b._id).emit("received_incoming_call", Object.assign({}, data));
         }
     }));
     //accept call
     socket.on("call_accepted", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        var _b;
+        var _c;
         //all connected clients in room
-        socket.to((_b = data.receiver) === null || _b === void 0 ? void 0 : _b._id).emit("user:call_accepted", Object.assign({}, data));
+        socket.to((_c = data.receiver) === null || _c === void 0 ? void 0 : _c._id).emit("user:call_accepted", Object.assign({}, data));
     }));
     //reject call
     socket.on("call_rejected", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        var _c;
+        var _d;
         //all connected clients in room
-        socket.to((_c = data.receiver) === null || _c === void 0 ? void 0 : _c._id).emit("user:call_rejected", Object.assign({}, data));
+        socket.to((_d = data.receiver) === null || _d === void 0 ? void 0 : _d._id).emit("user:call_rejected", Object.assign({}, data));
     }));
     //caller_call_rejected
     socket.on("caller_call_rejected", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        var _d;
+        var _e;
         //all connected clients in room
         if (data.isGroupChat) {
             yield (0, groupSocket_1.emitEventToGroupUsers)(socket, "caller_call_rejected_received", data.chatId, data);
@@ -327,12 +328,12 @@ exports.io.on("connection", (socket) => {
         }
         else {
             //all connected clients in room
-            socket.to((_d = data.receiver) === null || _d === void 0 ? void 0 : _d._id).emit("caller_call_rejected_received", Object.assign({}, data));
+            socket.to((_e = data.receiver) === null || _e === void 0 ? void 0 : _e._id).emit("caller_call_rejected_received", Object.assign({}, data));
         }
     }));
     //update:on-call-count
     socket.on("update:on-call-count", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        var _e;
+        var _f;
         const foundChat = yield ChatModel_1.Chat.findById(data.chatId);
         //all connected clients in room
         if (foundChat === null || foundChat === void 0 ? void 0 : foundChat.isGroupChat) {
@@ -343,7 +344,7 @@ exports.io.on("connection", (socket) => {
             // Populate users field if it's not already populated
             const receiver = yield (foundChat === null || foundChat === void 0 ? void 0 : foundChat.populate("users", "name email image lastActive"));
             //all single user
-            (_e = receiver === null || receiver === void 0 ? void 0 : receiver.users) === null || _e === void 0 ? void 0 : _e.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
+            (_f = receiver === null || receiver === void 0 ? void 0 : receiver.users) === null || _f === void 0 ? void 0 : _f.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
                 const isConnected = yield (0, exports.getSocketConnectedUser)(user === null || user === void 0 ? void 0 : user._id.toString());
                 if (isConnected) {
                     exports.io.to(isConnected === null || isConnected === void 0 ? void 0 : isConnected.socketId).emit("update:on-call-count_received", Object.assign({}, data));
@@ -353,7 +354,7 @@ exports.io.on("connection", (socket) => {
     }));
     //user-on-call-message
     socket.on("user-on-call-message", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        var _f;
+        var _g;
         const foundChat = yield ChatModel_1.Chat.findById(data.chatId);
         const userOncallMessage = yield (0, functions_1.sentGroupNotifyMessage)({
             chatId: data.chatId,
@@ -375,7 +376,7 @@ exports.io.on("connection", (socket) => {
             // Populate users field if it's not already populated
             const receiver = yield (foundChat === null || foundChat === void 0 ? void 0 : foundChat.populate("users", "name email image lastActive"));
             //all single user
-            (_f = receiver === null || receiver === void 0 ? void 0 : receiver.users) === null || _f === void 0 ? void 0 : _f.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
+            (_g = receiver === null || receiver === void 0 ? void 0 : receiver.users) === null || _g === void 0 ? void 0 : _g.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
                 const isConnected = yield (0, exports.getSocketConnectedUser)(user === null || user === void 0 ? void 0 : user._id.toString());
                 if (isConnected) {
                     exports.io.to(isConnected === null || isConnected === void 0 ? void 0 : isConnected.socketId).emit("user-on-call-message_received", Object.assign({}, userOncallData));
