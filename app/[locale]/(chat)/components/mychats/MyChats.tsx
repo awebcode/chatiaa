@@ -115,7 +115,7 @@ const MyChats = () => {
                 )
               }
               scrollableTarget="ChatscrollableTarget"
-              scrollThreshold={0.6}
+              // scrollThreshold={0.6}
             >
               <div
                 className={`flex flex-col gap-2 z-50 overflow-y-scroll ${

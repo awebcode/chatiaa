@@ -22,7 +22,7 @@ const Status = ({
     <div
       className={`absolute bottom-1 ${
         isCurrentUserMessage ? "-right-8" : "bottom-0 -left-8"
-      } flex items-end gap-1`}
+      } flex items-end md:gap-1`}
     >
       {message?.sender?._id === currentUser?._id ? (
         // Assuming RenderStatus is a function

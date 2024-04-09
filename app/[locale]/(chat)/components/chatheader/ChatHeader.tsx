@@ -44,7 +44,7 @@ const ChatHeader = () => {
   //  if (!selectedChat) return router.replace("/chat");
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         <span
           className=" cursor-pointer  md:p-[6px]  rounded-full"
           onClick={() => {
@@ -74,7 +74,7 @@ const ChatHeader = () => {
               />
 
               <span
-                className={` absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-[6px] ${
+                className={` absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-1 md:p-[6px] ${
                   selectedChat?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
                 }`}
               ></span>
