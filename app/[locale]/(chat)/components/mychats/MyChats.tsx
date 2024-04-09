@@ -106,16 +106,17 @@ const MyChats = () => {
               dataLength={chats ? chats?.length : 0}
               next={fetchNextPage}
               hasMore={!isLoading && hasNextPage}
-               loader={<LoaderComponent/>}
+              loader={<LoaderComponent />}
               endMessage={
-                !isLoading &&chats?.length>10&& (
+                !isLoading &&
+                chats?.length > 10 && (
                   <div className="text-center text-2xl text-green-400 pt-10">
                     You have viewed all chats!
                   </div>
                 )
               }
               scrollableTarget="ChatscrollableTarget"
-              // scrollThreshold={0.6}
+              scrollThreshold={1}
             >
               <div
                 className={`flex flex-col gap-2 z-50 overflow-y-scroll ${
@@ -134,9 +135,7 @@ const MyChats = () => {
                   </h1>
                 )}
               </div>
-              {isFetching && (
-               <LoaderComponent/>
-              )}
+              {isFetching && <LoaderComponent />}
             </InfiniteScroll>
             <Button
               onClick={scrollToTop}
