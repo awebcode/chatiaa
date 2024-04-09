@@ -38,9 +38,10 @@ const ChatHeader = () => {
     localStorage.removeItem("selectedChat");
     router.push("/chat");
   };
-  // useEffect(() => {
-  //   if (!selectedChat) return  window.history.pushState(null, "", "/chat");
-  // }, [selectedChat, router, dispatch]);
+  useEffect(() => {
+    const localStorageChat=localStorage.getItem("selectedChat")
+    if (!selectedChat||!localStorageChat) return  router.push("/chat");
+  }, [selectedChat, router, dispatch]);
   //  if (!selectedChat) return router.replace("/chat");
   return (
     <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">

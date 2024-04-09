@@ -27,7 +27,7 @@ const ChatStatus = ({ chatBlockedBy }: { chatBlockedBy?: Tuser[] }) => {
           <span className="font-medium mx-1">{selectedChat?.userInfo?.name}</span>
           <Link href="#" className="inline  text-blue-500 cursor-pointer mx-2">
             <DeleteButton
-              btnClassName="bg-blue-600 shadow-none m-0 hover:bg-transparent text-blue-500 inline w-auto bg-transparent border-none ring-none outline-none"
+              btnClassName="text-[10px] md:text-sm p-1 md:text-sm bg-blue-600 shadow-none m-0 hover:bg-transparent text-blue-500 inline w-auto bg-transparent border-none ring-none outline-none"
               navigatePath="#"
               buttonText={`Unblock`}
               title=""

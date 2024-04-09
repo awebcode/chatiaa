@@ -246,7 +246,7 @@ io.on("connection", (socket: Socket) => {
     if (receiverId) {
       socket
         .to(receiverId?.socketId)
-        .emit("singleChatDeletedNotifyReceived", { chatId: data.chatId });
+        .emit("singleChatDeletedNotifyReceived", data);
     }
   });
 

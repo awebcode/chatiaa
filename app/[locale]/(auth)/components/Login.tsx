@@ -14,22 +14,22 @@ const Login = () => {
   const router = useRouter();
   const handleGoogleLogin = async () => {
     const res = await signIn("google", {
-      callbackUrl: "/",
+      callbackUrl: "/chat",
     });
 
     if (res?.error) return setError(res.error);
       if (res?.ok) {
-        queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+        // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
       }
   };
 
   const handleGithubLogin = async () => {
     const res = await signIn("github", {
-      callbackUrl: "/",
+      callbackUrl: "/chat",
     });
     if (res?.error) return setError(res.error);
     if (res?.ok) {
-          queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+          // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
 
     }
   };
@@ -53,7 +53,7 @@ const Login = () => {
         return setError(res.error)
       };
       if (res?.ok)  {
-            queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+            // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
 
         router.push("/chat");
       }
@@ -62,7 +62,7 @@ const Login = () => {
       setloading(false);
     }
   };
-  if (session?.user) router.push("/chat");
+  if(session?.user?.name) router.push("/chat")
   return (
     <div className=" min-h-screen p-5">
       <div className="max-w-lg mx-auto   bg-white dark:bg-gray-800 p-8 rounded-xl shadow dark:shadow-none shadow-slate-300 dark:border dark:border-indigo-600">
@@ -164,8 +164,8 @@ const Login = () => {
               </svg>
               <span>
                 {loading ? (
-                  <div className="flex items-center gap-x-1">
-                    <BiLoaderCircle className="animate-spin h-7 w-7 text-white rounded-full relative" />
+                  <div className="flex gap-x-1 text-xs md:text-sm">
+                    <BiLoaderCircle className="animate-spin h-4 w-4 text-white rounded-full relative" />
                     signing...
                   </div>
                 ) : (

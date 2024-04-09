@@ -48,7 +48,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             { users: { $elemMatch: { $eq: userId } } },
         ],
     })
-        .populate("users", "-password")
+        .populate("users chatBlockedBy groupAdmin", "-password")
         .populate("latestMessage");
     isChat = yield UserModel_1.User.populate(isChat, {
         path: "latestMessage.sender",

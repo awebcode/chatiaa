@@ -110,7 +110,7 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
                 ) : (
                   <span className="">Block</span>
                 )
-              ) : null}
+              ) : "Block"}
             </Button>
             <Button
               className="w-full text-sm  border-rose-600 hover:border-rose-700 duration-300"
@@ -123,7 +123,7 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
             >
               <MdDelete className="text-rose-600" /> Delete Chat
             </Button>
-            <Button
+            {/* <Button
               className="w-full  border-emerald-500 hover:border-emerald-600 duration-300"
               variant={"outline"}
               onClick={() => {
@@ -133,7 +133,7 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
               }}
             >
               <CiLogout className="text-emerald-500" /> Leave Chat
-            </Button>
+            </Button> */}
           </div>
         </SheetContent>
       </Sheet>

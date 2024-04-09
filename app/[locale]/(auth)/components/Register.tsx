@@ -9,25 +9,25 @@ import { BiLoaderCircle } from "react-icons/bi";
 import LoaderComponent from "@/components/Loader";
 
 const Register = () => {
-  const queryClient=useQueryClient()
+  const queryClient = useQueryClient();
   const [loading, setloading] = useState(false);
   const { data: session } = useSession();
   const handleGoogleLogin = async () => {
     const res = await signIn("google");
-     if (res?.error){
-       throw new Error(res?.error)
-     }
-      
-    if(res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] })
+    if (res?.error) {
+      throw new Error(res?.error);
+    }
+
+    if (res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
   };
 
   const handleGithubLogin = async () => {
-   const res= await signIn("github");
-     if (res?.error){
-       throw new Error(res?.error)
-     }
-      
-    if(res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] })
+    const res = await signIn("github");
+    if (res?.error) {
+      throw new Error(res?.error);
+    }
+
+    if (res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
   };
 
   const [error, setError] = useState("");
@@ -69,10 +69,10 @@ const Register = () => {
         return setError(res.error);
       }
       if (res?.ok) {
-         queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] })
+        queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
 
         router.push("/chat");
-      };
+      }
     }
   };
   if (session?.user) router.push("/chat");
@@ -187,11 +187,11 @@ const Register = () => {
               </svg>
               <span>
                 {loading ? (
-                  <>
+                  <div className="flex gap-x-1 text-xs md:text-sm">
                     {" "}
-                    <BiLoaderCircle className="animate-spin h-7 w-7 text-white rounded-full relative" />
-                 Creating...
-                  </>
+                    <BiLoaderCircle className="inline animate-spin h-4 w-4 text-white rounded-full relative" />
+                    Creating...
+                  </div>
                 ) : (
                   "Register"
                 )}

@@ -44,15 +44,17 @@ export const useAccessChatMutation = (closeDialogId: string) => {
       console.log({ createdChat: chat });
       dispatch({ type: CLEAR_MESSAGES });
       const isFriend = getSenderFull(currentUser, chat.chatData?.users);
+      if(!isFriend)return
       const chatData = {
         _id: chat?.chatData?._id,
         chatId: chat?.chatData?._id,
         latestMessage: chat?.chatData?.latestMessage,
         chatCreatedAt: chat?.chatData?.createdAt,
-
+          
         groupChatName: chat?.chatData?.chatName,
         isGroupChat: chat?.chatData?.isGroupChat,
         groupAdmin: chat?.chatData?.groupAdmin,
+        chatBlockedBy: chat?.chatData?.chatBlockedBy,
         chatStatus: chat?.chatData?.chatStatus,
         users: chat?.chatData?.isGroupChat ? chat?.chatData?.users : null,
         userInfo: {
@@ -92,6 +94,7 @@ export const useAccessChatMutation = (closeDialogId: string) => {
           to: isFriend?._id,
           chat: chat.chatData,
           chatId: chat.chatData?._id,
+          sender:currentUser
         });
       }
 
@@ -150,6 +153,7 @@ export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => 
       socket.emit("singleChatDeletedNotify", {
         chatId,
         receiverId: data.receiverId,
+        senderId:currentUser?._id
       });
     },
   });

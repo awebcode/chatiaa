@@ -448,16 +448,17 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   const chatCreatedNotifyHandler = useCallback((data: any) => {
     // Implementation goes here
+    addOnlineUser({userId:data.sender?._id,socketId:data.sender?._id,userInfo:data.sender as any})
     dispatch({ type: SET_CHATS, payload: data.chat });
   }, []);
   //after join when close the network
   const singleChatDeletedNotifyReceivedHandler = useCallback((data: any) => {
     // Implementation goes here
+     removeOnlineUser({ userId: data.senderId } as any);
     dispatch({ type: DELETE_CHAT, payload: data });
   }, []);
   //UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND
   const handleAllDeliveredAfterReconnect = useCallback((data: any) => {
-    console.log({handleAllDeliveredAfterReconnect:data})
     dispatch({ type: UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND, payload: data });
   }, []);
   //groupChatLeaveNotifyReceivedHandler

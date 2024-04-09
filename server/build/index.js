@@ -213,7 +213,7 @@ exports.io.on("connection", (socket) => {
         if (receiverId) {
             socket
                 .to(receiverId === null || receiverId === void 0 ? void 0 : receiverId.socketId)
-                .emit("singleChatDeletedNotifyReceived", { chatId: data.chatId });
+                .emit("singleChatDeletedNotifyReceived", data);
         }
     }));
     //leave from group chat

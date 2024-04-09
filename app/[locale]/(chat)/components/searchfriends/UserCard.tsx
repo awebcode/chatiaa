@@ -30,8 +30,8 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
         </div>
         <div className="flex flex-col text-left gap-1">
           <h3 className="text-xs md:text-sm font-bold">{user.name}</h3>
-          <span className="text-[8px]">{user.email.slice(0, 30)}</span>
-          <span className="text-[8px]">
+          <span className="text-[10px] md:text-xs">{user.email.slice(0, 30)}</span>
+          <span className="text-[10px] md:text-xs">
             <span className="mr-1"> Joined</span>
             {moment((user as any).createdAt).fromNow()}
           </span>

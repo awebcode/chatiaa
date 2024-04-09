@@ -7,6 +7,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "../../components/mychats/ChatSkeleton";
+import EmptyChat from "../../components/Empty";
 const PrefetchMyChats = dynamic(() => import("../../components/mychats/PrefetchChats"), {
   loading: () => <ChatSkeleton/>,
 });
@@ -27,9 +28,7 @@ const PrefetchMessages = dynamic(
     loading: () => <LoaderComponent text="Fetching messages..."/>,
   }
 );
-const EmptyChat = dynamic(() => import("../../components/Empty"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
-});
+
 
 // Now you can use these components as usual, but they will be loaded lazily.
 

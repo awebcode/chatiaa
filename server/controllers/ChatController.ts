@@ -41,7 +41,7 @@ export const accessChat = async (
       { users: { $elemMatch: { $eq: userId } } },
     ],
   })
-    .populate("users", "-password")
+    .populate("users chatBlockedBy groupAdmin", "-password")
     .populate("latestMessage");
 
   isChat = await User.populate(isChat, {
