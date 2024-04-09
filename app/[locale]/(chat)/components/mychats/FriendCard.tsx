@@ -17,7 +17,6 @@ import { Link, useRouter } from "@/navigation";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import {
   CLEAR_MESSAGES,
-  SEEN_PUSH_USER_GROUP_MESSAGE,
   SEEN_PUSH_USER_GROUP_MESSAGE_MY_SIDE,
   SET_SELECTED_CHAT,
   UPDATE_CHAT_STATUS,
@@ -25,10 +24,15 @@ import {
 import { MessagePreview } from "./PreviewMessage";
 import { IChat } from "@/context/reducers/interfaces";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
-import SeenBy from "./status/SeenBy";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
-import SeenByGroup from "./status/SeeByGroup";
+
+// Dynamically import SeenBy component
+const SeenBy = dynamic(() => import("./status/SeenBy"));
+
+// Dynamically import SeenByGroup component
+const SeenByGroup = dynamic(() => import("./status/SeeByGroup"));
+
 const Modal = dynamic(() => import("./Modal"));
 
 const FriendsCard: React.FC<{
@@ -36,11 +40,9 @@ const FriendsCard: React.FC<{
 }> = ({ chat }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser, selectedChat } = useMessageState();
-  const { onlineUsers } = useOnlineUsersStore();
   const { typingUsers } = useTypingStore();
   //pushSeenByMutation
   const pushSeenByMutation = useMutation({

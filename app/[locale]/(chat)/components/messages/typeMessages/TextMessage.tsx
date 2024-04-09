@@ -34,7 +34,7 @@ const TextMessage = ({
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   return (
     <div
-      className={`flex items-center gap-0 max-w-sm  ${
+      className={`flex items-center gap-0 max-w-sm md:max-w-2xl  ${
         isCurrentUserMessage ? "" : "flex-row-reverse"
       }`}
     >

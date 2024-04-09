@@ -19,7 +19,7 @@ export const RenderStatus = (
     case "seen":
       message?.sender?._id === currentUser?._id && type === "onFriendListCard"
         ? (statusDiv = (
-            <div className="h-3 w-3 md:h-5 md:w-5 relative m-1">
+            <div className="h-4 w-4 md:h-5 md:w-5 relative md:m-1">
               <Image
                 height={15}
                 width={15}
@@ -46,40 +46,40 @@ export const RenderStatus = (
     case "delivered":
       message.sender?._id !== currentUser?._id && type === "onFriendListCard"
         ? (statusDiv = (
-            <div className="h-7 w-7 relative m-1 rounded-full bg-sky-500 flex items-center justify-center">
+            <div className="h-4 w-4 md:h-7 md:w-7 relative md:m-1 rounded-full bg-sky-500 flex items-center justify-center">
               <span className="text-gray-900 absolute text-[10px]">
                 {unseenCount > 0 ? (unseenCount > 99 ? "99+" : unseenCount) : ""}
               </span>
-              {/* <IoIosCheckmarkCircle className="h-3 w-3 md:h-5 md:w-5 relative  text-sky-600" /> */}
+              {/* <IoIosCheckmarkCircle className="h-4 w-4 md:h-5 md:w-5 relative  text-sky-600" /> */}
             </div>
           ))
         : (statusDiv = (
-            <div className="h-3 w-3 md:h-5 md:w-5 relative m-1">
-              <IoIosCheckmarkCircle className="h-3 w-3 md:h-5 md:w-5 relative text-gray-400" />
+            <div className="h-4 w-4 md:h-5 md:w-5 relative md:m-1">
+              <IoIosCheckmarkCircle className="h-4 w-4 md:h-5 md:w-5 relative text-gray-400" />
             </div>
           ));
       break;
     case "unseen":
       statusDiv = (
-        <div className="h-3 w-3 md:h-5 md:w-5 relative m-1">
-          <IoIosCheckmarkCircleOutline className="h-3 w-3 md:h-5 md:w-5 text-gray-400 rounded-full relative" />
+        <div className="h-4 w-4 md:h-5 md:w-5 relative md:m-1">
+          <IoIosCheckmarkCircleOutline className="h-4 w-4 md:h-5 md:w-5 text-gray-400 rounded-full relative" />
         </div>
       );
       break;
     default:
       !message._id && message.type === "text" //when message instanly update sender side without server response
         ? (statusDiv = (
-            // <div className="h-3 w-3 md:h-5 md:w-5 relative">
-            //   <RxTimer className="h-3 w-3 md:h-5 md:w-5 text-gray-500 rounded-full relative" />
+            // <div className="h-4 w-4 md:h-5 md:w-5 relative">
+            //   <RxTimer className="h-4 w-4 md:h-5 md:w-5 text-gray-500 rounded-full relative" />
             // </div>
-            <div className="h-3 w-3 md:h-5 md:w-5 relative ">
-              <BiLoaderCircle className="animate-spin h-3 w-3 md:h-5 md:w-5 text-blue-600 rounded-full relative" />
+            <div className="h-4 w-4 md:h-5 md:w-5 relative ">
+              <BiLoaderCircle className="animate-spin h-4 w-4 md:h-5 md:w-5 text-blue-600 rounded-full relative" />
             </div>
           ))
         : !message._id && message.type !== "text"
         ? (statusDiv = (
             <div className="h-6 w-6 relative ">
-              <BiLoaderCircle className="animate-spin h-4 w-4 md:h-6 md:w-6 text-blue-600 rounded-full relative" />
+              <BiLoaderCircle className="animate-spin h-5 w-5 md:h-6 md:w-6 text-blue-600 rounded-full relative" />
             </div>
           ))
         : null;

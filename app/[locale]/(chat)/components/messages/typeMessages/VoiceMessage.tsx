@@ -99,7 +99,7 @@ export default function VoiceMessage({
   };
 
   return (
-    <div className="flex items-center gap-2 ">
+    <div className="flex items-center gap-2 max-w-sm md:max-w-2xl">
       {/* Remove/Replay/Emoji */}
       <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
       <div className="flex flex-col justify-end items-end">
