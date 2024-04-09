@@ -11,6 +11,7 @@ const nextConfig = {
       "lh3.googleusercontent.com",
       "avatars.githubusercontent.com",
       "avataaars.io",
+      "lottie.host",
     ],
   },
   webpack: (config, options) => {
@@ -20,16 +21,16 @@ const nextConfig = {
       use: "raw-loader",
     });
     config.module.rules.push({
-       test: /\.(mp3)$/,
-       use: {
-         loader: "file-loader",
-         options: {
-           name: "[name].[ext]",
-           publicPath: "/_next/static/sounds/",
-           outputPath: "static/sounds/",
-         },
-       },
-     });
+      test: /\.(mp3)$/,
+      use: {
+        loader: "file-loader",
+        options: {
+          name: "[name].[ext]",
+          publicPath: "/_next/static/sounds/",
+          outputPath: "static/sounds/",
+        },
+      },
+    });
     return config;
   },
 };

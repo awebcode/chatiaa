@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React from "react";
@@ -14,6 +14,8 @@ import { ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
 const Footer = dynamic(() => import("./Footer"));
 import { motion } from "framer-motion";
 import AnimateSvg from "./AnimateSvg";
+import Lottie from "react-lottie";
+import * as ChatAnim from "./ChatLottie.json";
 const Home = () => {
   // Define an array of card items with their respective icon, title, description, and icon color
   const cardItems = [
@@ -97,7 +99,14 @@ const Home = () => {
       color: "emerald",
     },
   ];
-
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: ChatAnim,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
   return (
     <div className="container mx-auto flex flex-wrap items-center justify-center h-screen">
       <div className="w-full md:w-1/2 p-1 md:p-4 flex flex-col items-start py-24 sm:py-0">
@@ -108,7 +117,7 @@ const Home = () => {
           className="text-3xl md:text-6xl font-bold leading-10 tracking-tight dark:text-gray-300"
         >
           <span className="text-wrap md:text-nowrap ">Let's Connect</span>{" "}
-          <span className="text-wrap md:text-nowrap mt-4">with your customer</span>{" "}
+          <span className="text-wrap md:text-nowrap mt-4">with your friends</span>{" "}
           <span>in Real Time</span>
         </motion.h1>
 
@@ -139,15 +148,16 @@ const Home = () => {
         transition={{ duration: 0.5, delay: 0.5 }}
         className="w-full md:w-1/2 p-4"
       >
-        <Image
+        <Lottie options={defaultOptions} />
+        {/* <Image
           height={1000}
           width={1000}
           loading="lazy"
           quality={1000}
-          src="/chat.svg"
+          src="https://lottie.host/embed/ab53ab1c-ad4a-4055-97cb-797ea3556f03/9gCaBvFRqu.json"
           alt="Chat Image"
           className="w-full h-auto rounded"
-        />
+        /> */}
       </motion.div>
 
       <div className="w-full mt-8 p-1 md:p-4">
@@ -189,12 +199,32 @@ const Card = ({ icon, title, description, color, delay }: any) => (
     <div
       className={`rounded p-6 shadow-md text-${color}-500 duration-500 transition-all   hover:ring-2 hover:ring-yellow-500`}
     >
-      <div className="mb-4">{icon}</div>
-      <motion.h2 className="text-lg font-semibold mb-2">{title}</motion.h2>
-      <motion.p className="text-gray-500 text-sm">{description}</motion.p>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="mb-4"
+      >
+        {icon}
+      </motion.div>
+      <motion.h2
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.4 }}
+        className="text-lg font-semibold mb-2"
+      >
+        {title}
+      </motion.h2>
+      <motion.p
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay:0.5 }}
+        className="text-gray-500 text-sm"
+      >
+        {description}
+      </motion.p>
     </div>
   </motion.div>
 );
-
 
 export default Home;
