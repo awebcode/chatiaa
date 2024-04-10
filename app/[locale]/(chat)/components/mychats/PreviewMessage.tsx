@@ -22,7 +22,7 @@ export function MessagePreview({
     case "image":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          <span className="font-bold">{senderName}</span> sent an{" "}
+          <span className="font-bold text-blue-400">{senderName}</span> sent an{" "}
           <CiImageOn className="text-blue-500 text-lg inline mx-[1px]" />
           image
         </span>
@@ -31,7 +31,7 @@ export function MessagePreview({
     case "audio":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          <span className="font-bold">{senderName}</span> sent an{" "}
+          <span className="font-bold text-blue-400">{senderName}</span> sent an{" "}
           <AiOutlineAudio className="text-blue-500 text-lg inline mx-[1px]" /> audio
         </span>
       );
@@ -39,7 +39,7 @@ export function MessagePreview({
     case "video":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          <span className="font-bold">{senderName}</span> sent a{" "}
+          <span className="font-bold text-blue-400">{senderName}</span> sent a{" "}
           <MdOutlineOndemandVideo className="text-blue-500 text-lg inline mx-[1px]" />{" "}
           video
         </span>
@@ -48,7 +48,7 @@ export function MessagePreview({
     case "application":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          <span className="font-bold">{senderName}</span> sent a{" "}
+          <span className="font-bold text-blue-400">{senderName}</span> sent a{" "}
           <PiFilePdf className="text-blue-500 text-lg inline mx-[1px]" /> Pdf file
         </span>
       );
@@ -71,7 +71,7 @@ export function MessagePreview({
                 : "font-medium"
             }`}
           >
-            <span className="font-bold">{senderName}</span> {/* // chat?.latestMessage?.status !== "seen" */}
+            <span className="font-bold text-blue-400">{senderName}</span> {/* // chat?.latestMessage?.status !== "seen" */}
             {chat?.latestMessage?.content.length > 25
               ? chat?.latestMessage?.content.substring(0, 25) + "..."
               : chat?.latestMessage?.content}
