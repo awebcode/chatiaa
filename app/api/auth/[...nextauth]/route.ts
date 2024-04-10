@@ -1,7 +1,8 @@
+export const maxDuration = 5; // 5 seconds
+export const dynamic = "force-dynamic";
 
 import { authOptions } from "@/lib/authOptions";
 import NextAuth from "next-auth";
-
 
 const handler = NextAuth(authOptions);
 
