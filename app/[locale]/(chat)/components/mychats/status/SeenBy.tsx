@@ -32,7 +32,16 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
         ) : (
           chat?.latestMessage?.status === "delivered" &&
           chat?.latestMessage?.sender?._id !== currentUser?._id && (
-            <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
+            <>
+              <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
+              <span className="text-[10px] ">
+                {chat?.unseenCount > 0
+                  ? chat?.unseenCount > 99
+                    ? "99+"
+                    : chat?.unseenCount
+                  : ""}
+              </span>
+            </>
           )
         )}
         {/* seen */}
@@ -46,9 +55,7 @@ const SeenBy = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser }) => {
                 <TooltipProvider key={user?.userId?._id}>
                   <Tooltip>
                     <TooltipTrigger>
-                      <div
-                        className="h-4 w-4 rounded-full cursor-pointer "
-                      >
+                      <div className="h-4 w-4 rounded-full cursor-pointer ">
                         <Image
                           src={user?.userId?.image || user?.image}
                           height={20}

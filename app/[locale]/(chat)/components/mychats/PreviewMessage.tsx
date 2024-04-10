@@ -1,5 +1,4 @@
 import { AiOutlineAudio } from "react-icons/ai";
-import { getSenderFull } from "../logics/logics";
 import { MdOutlineOndemandVideo } from "react-icons/md";
 import { CiImageOn } from "react-icons/ci";
 import { PiFilePdf } from "react-icons/pi";
@@ -16,14 +15,14 @@ export function MessagePreview({
     chat?.latestMessage?.sender?._id === currentUser?._id
   const senderName =
     chat?.latestMessage?.sender?._id === currentUser?._id
-      ? "You"
-      : chat?.latestMessage?.sender?.name;
+      ? "you"
+      : chat?.latestMessage?.sender?.name.slice(0,10);
   let previewContent;
   switch (chat?.latestMessage?.type) {
     case "image":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          {senderName} sent an{" "}
+          <span className="font-bold">{senderName}</span> sent an{" "}
           <CiImageOn className="text-blue-500 text-lg inline mx-[1px]" />
           image
         </span>
@@ -32,7 +31,7 @@ export function MessagePreview({
     case "audio":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          {senderName} sent an{" "}
+          <span className="font-bold">{senderName}</span> sent an{" "}
           <AiOutlineAudio className="text-blue-500 text-lg inline mx-[1px]" /> audio
         </span>
       );
@@ -40,7 +39,7 @@ export function MessagePreview({
     case "video":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          {senderName} sent a{" "}
+          <span className="font-bold">{senderName}</span> sent a{" "}
           <MdOutlineOndemandVideo className="text-blue-500 text-lg inline mx-[1px]" />{" "}
           video
         </span>
@@ -49,7 +48,7 @@ export function MessagePreview({
     case "application":
       previewContent = (
         <span className={`${!chat?.latestMessage?.isSeen&&!isCurrentUserSender ? "font-bold" : ""}`}>
-          {senderName} sent a{" "}
+          <span className="font-bold">{senderName}</span> sent a{" "}
           <PiFilePdf className="text-blue-500 text-lg inline mx-[1px]" /> Pdf file
         </span>
       );
@@ -72,7 +71,7 @@ export function MessagePreview({
                 : "font-medium"
             }`}
           >
-            {/* // chat?.latestMessage?.status !== "seen" */}
+            <span className="font-bold">{senderName}</span> {/* // chat?.latestMessage?.status !== "seen" */}
             {chat?.latestMessage?.content.length > 25
               ? chat?.latestMessage?.content.substring(0, 25) + "..."
               : chat?.latestMessage?.content}

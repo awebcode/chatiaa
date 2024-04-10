@@ -13,6 +13,8 @@ const EmptyChat = () => {
   const defaultOptions = {
     loop: true,
     autoplay: true,
+    hover: false,
+    
     animationData: EmptyLOttie,
     rendererSettings: {
       preserveAspectRatio: "xMidYMid slice",

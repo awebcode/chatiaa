@@ -3,7 +3,7 @@ import { useSocketContext } from "@/context/SocketContextProvider";
 import { IMessage } from "@/context/reducers/interfaces";
 
 import useEditReplyStore from "@/store/useEditReply";
-import React from "react";
+import React, { useCallback } from "react";
 import { unsent_remove_Message_function } from "./function";
 import { toast } from "react-toastify";
 import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -74,8 +74,30 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       toast.error(res.response?.data?.message);
     }
   };
+  //coping
+  const onCopy = useCallback((text: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        toast.success("Text copied to clipboard");
+      },
+      (err) => {
+        toast.error("Could not copy text");
+      }
+    );
+  }, []);
   return (
     <DropdownMenuContent>
+      {message.type === "text" && (
+        <DropdownMenuItem
+          onClick={() => {
+            onCopy(message.content);
+          }}
+          className="cursor-pointer text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+        >
+          Copy
+        </DropdownMenuItem>
+      )}
+
       {isCurrentUserMessage && (
         <DropdownMenuItem
           onClick={() => {

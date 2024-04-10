@@ -1,7 +1,8 @@
+import { Button } from "@/components/ui/button";
 import { IMessage } from "@/context/reducers/interfaces";
 import { Tuser } from "@/store/types";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import { AiOutlineAudio } from "react-icons/ai";
 import { CiImageOn } from "react-icons/ci";
 import { FaFile, FaRegFilePdf } from "react-icons/fa";
@@ -14,6 +15,7 @@ const RepliedMessage = ({
   message: IMessage;
   currentUser: Tuser;
 }) => {
+  const [showFullMessage, setShowFullMessage] = useState(false);
   return (
     <div className=" w-full">
       {message && message.isReply ? (
@@ -121,12 +123,33 @@ const RepliedMessage = ({
           </span>
         </>
       ) : (
-        <span
-          className={"break-all text-sm  text-gray-600 dark:text-gray-200"}
-        >
-          {message?.status === "removed" && message.removedBy?._id === currentUser?._id
-            ? "Removed"
-            : message.content}
+        <span className={"break-all text-sm  text-gray-600 dark:text-gray-200"}>
+          {message?.status === "removed" &&
+          message.removedBy?._id === currentUser?._id ? (
+            "Removed"
+          ) : showFullMessage || message?.content?.length <= 300 ? (
+            <>
+              {message?.content}
+              {message?.content.length > 300 && (
+                <span
+                  className="ml-1 text-xs text-violet-400 cursor-pointer"
+                  onClick={() => setShowFullMessage(false)}
+                >
+                  see less...
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              {message?.content.slice(0, 300)}{" "}
+              <span
+                className="ml-1 text-xs text-blue-400 cursor-pointer"
+                onClick={() => setShowFullMessage(true)}
+              >
+                see more...
+              </span>
+            </>
+          )}
         </span>
       )}
     </div>

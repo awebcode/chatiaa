@@ -4,7 +4,6 @@ import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
 
 import {
-  ADD_EDITED_MESSAGE,
   ADD_REACTION_ON_MESSAGE,
   ADD_REPLY_MESSAGE,
   BLOCK_CHAT,
@@ -15,7 +14,6 @@ import {
   RECEIVE_CALL_INVITATION,
   REMOVE_ADMIN_FROM_GROUP_CHAT,
   REMOVE_UNSENT_MESSAGE,
-  REMOVE_USER_FROM_GROUP,
   SEEN_PUSH_USER_GROUP_MESSAGE,
   SET_CHATS,
   SET_MESSAGES,
@@ -30,7 +28,6 @@ import {
   USER_CALL_REJECTED,
   USER_CALL_ACCEPTED,
   UPDATE_ON_CALL_COUNT,
-  CLEAR_MESSAGES,
   DELETE_ALL_MESSAGE_IN_CHAT,
 } from "@/context/reducers/actions";
 import { IChat } from "@/context/reducers/interfaces";
@@ -48,11 +45,24 @@ import {
   updateMessageStatus,
 } from "@/functions/messageActions";
 import { axiosClient } from "@/config/AxiosConfig";
-import { IncomingCallDialog } from "./call/IncomingCall";
-import { RejectedCallDialog } from "./call/CallRejected";
-import { MyCallPage } from "./call/MyCall";
+
 import { Howl } from "howler";
 import { showNotification } from "@/config/showNotification";
+import { useNotificationStore } from "@/store/notificationStore";
+import dynamic from "next/dynamic";
+
+// Dynamic import for IncomingCallDialog component
+const IncomingCallDialog = dynamic(() => import("./call/IncomingCall"));
+
+// Dynamic import for RejectedCallDialog component
+const RejectedCallDialog = dynamic(() => import("./call/CallRejected"));
+
+// Dynamic import for MyCallPage component
+const MyCallPage = dynamic(() => import("./call/MyCall"));
+
+// Dynamic import for Notification component
+const Notification = dynamic(() => import("./(chat)/components/Notification"));
+
 const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   const queryClient = useQueryClient();
   const { socket } = useSocketContext();
@@ -69,6 +79,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   const { startTyping, stopTyping } = useTypingStore();
   const { addOnlineUser, removeOnlineUser, onlineUsers, setInitOnlineUsers } =
     useOnlineUsersStore();
+  const { addNotification, removeNotification } = useNotificationStore();
   const totalMessagesCountRef = useRef<number>(0); // Provide type annotation for number
   const selectedChatRef = useRef<IChat | null>(null); // Provide type annotation for IChat or null
   const currentUserRef = useRef<Tuser | null>(null); // Provide type annotation for Tuser or null
@@ -131,7 +142,6 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     updateAllMessageStatusAsDelivered(currentUser?._id as any);
   }, []);
   useEffect(() => {
-
     socket.emit("deliveredAllMessageAfterReconnect", {
       userId: currentUser?._id,
     });
@@ -143,7 +153,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         isIncomingMessage: true,
       });
       //  update latest chat for both side
-      console.log({ socketMessage: data });
+      console.log({ socketMessage: data,recIdCurrId:data.receiverId === currentUserRef.current?._id });
 
       if (selectedChatRef.current?.chatId === data.chat?._id) {
         useIncomingMessageStore.setState({
@@ -205,6 +215,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         ["online", "busy"].includes(currentUserRef?.current?.onlineStatus as string)
       ) {
         //play sound
+        addNotification(data);
         soundRef.current?.play();
         showNotification(data.sender.name, data.sender.image, data.content);
         useIncomingMessageStore.setState({
@@ -257,7 +268,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
           });
           dispatch({
             type: UPDATE_LATEST_CHAT_MESSAGE,
-            payload: { ...data, status: "seen",isSeen:true },
+            payload: { ...data, status: "seen", isSeen: true },
           });
 
           const pushData = {
@@ -301,6 +312,9 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
             //   )
             // )
             //play sound
+            addNotification(
+              data
+            );
             soundRef.current?.play();
             showNotification(data.sender.name, data.sender.image, data.content);
             useIncomingMessageStore.setState({
@@ -403,7 +417,6 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   const handleOnlineUsers = useCallback(
     (user: { userId: string; socketId: string; userInfo: Tuser; chatId: string }) => {
       if (user) {
-
         if (user.userId !== currentUserRef?.current?._id) {
           addOnlineUser(user);
           dispatch({
@@ -448,13 +461,17 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   const chatCreatedNotifyHandler = useCallback((data: any) => {
     // Implementation goes here
-    addOnlineUser({userId:data.sender?._id,socketId:data.sender?._id,userInfo:data.sender as any})
+    addOnlineUser({
+      userId: data.sender?._id,
+      socketId: data.sender?._id,
+      userInfo: data.sender as any,
+    });
     dispatch({ type: SET_CHATS, payload: data.chat });
   }, []);
   //after join when close the network
   const singleChatDeletedNotifyReceivedHandler = useCallback((data: any) => {
     // Implementation goes here
-     removeOnlineUser({ userId: data.senderId } as any);
+    removeOnlineUser({ userId: data.senderId } as any);
     dispatch({ type: DELETE_CHAT, payload: data });
   }, []);
   //UPDATE_CHAT_MESSAGE_AFTER_ONLINE_FRIEND
@@ -543,13 +560,11 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   //handleDeliveredGroupMessage
   const handleDeliveredGroupMessage = useCallback((data: any) => {
-   
-      dispatch({ type: UPDATE_CHAT_STATUS, payload: data });
-      dispatch({
-        type: UPDATE_LATEST_CHAT_MESSAGE,
-        payload: { ...data, status: "delivered",isCurrentUserMessage:true },
-      });
-    
+    dispatch({ type: UPDATE_CHAT_STATUS, payload: data });
+    dispatch({
+      type: UPDATE_LATEST_CHAT_MESSAGE,
+      payload: { ...data, status: "delivered", isCurrentUserMessage: true },
+    });
   }, []);
   //handleUpdate_group_info_Received
   const handleUpdate_group_info_Received = useCallback((data: any) => {
@@ -595,6 +610,8 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       data.receiverId === currentUserRef.current?._id &&
       ["online", "busy"].includes(currentUserRef?.current?.onlineStatus as string)
     ) {
+      addNotification(data);
+      soundRef.current.play();
       dispatch({ type: SET_MESSAGES, payload: { ...data.message, status: "delivered" } });
       dispatch({
         type: UPDATE_LATEST_CHAT_MESSAGE,
@@ -802,6 +819,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   }, [callInfo]);
   return (
     <>
+      <Notification />
       {callInfo?.isMyCall && <MyCallPage />}
       {callInfo?.isIncomingCall && <IncomingCallDialog />}
       {callInfo?.isRejected && <RejectedCallDialog />}

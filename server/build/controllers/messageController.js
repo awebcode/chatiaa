@@ -482,12 +482,12 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 // Send message to client
                 const emitData = message.toObject();
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-                    yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "replyMessage", chatId, Object.assign(Object.assign({}, emitData), { chat }));
+                    yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "receiveMessage", chatId, Object.assign(Object.assign({}, emitData), { chat }));
                 }
                 else {
                     index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                         .to(receiverId)
-                        .emit("replyMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
+                        .emit("receiveMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
                 }
                 return emitData;
             }));
@@ -532,12 +532,13 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         //send to client
         const emitData = message.toObject();
         if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
-            yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "replyMessage", chatId, emitData);
+            yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "receiveMessage", chatId, emitData);
         }
         else {
+            const receiverSocketId = yield (0, index_1.getSocketConnectedUser)(receiverId);
             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
-                .to(receiverId)
-                .emit("replyMessage", Object.assign(Object.assign({}, emitData), { receiverId }));
+                .to(receiverSocketId === null || receiverSocketId === void 0 ? void 0 : receiverSocketId.socketId)
+                .emit("receiveMessage", Object.assign(Object.assign({}, emitData), { receiverId })); ///added event as replyMessage
         }
         res.status(200).json({ success: true, message });
     }

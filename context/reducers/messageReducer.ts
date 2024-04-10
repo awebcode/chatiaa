@@ -583,7 +583,6 @@ export const messageReducer = (state: State, action: Action): State => {
       });
 
       let updatedReplyMessages;
-      console.log({ replyaction: action.payload });
 
       if (existingMessageIndex !== -1) {
         // If the message exists, update it

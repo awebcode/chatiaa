@@ -10,7 +10,7 @@ import { Reaction } from "../model/reactModal";
 import { v2 } from "cloudinary";
 import fs from "fs";
 import mongoose from "mongoose";
-import { io } from "../index";
+import { getSocketConnectedUser, io } from "../index";
 import { getFileType } from "./functions";
 import { MessageSeenBy } from "../model/seenByModel";
 import { emitEventToGroupUsers } from "../common/groupSocket";
@@ -586,14 +586,14 @@ export const replyMessage = async (
           const emitData = message.toObject();
 
           if (chat?.isGroupChat) {
-            await emitEventToGroupUsers(io, "replyMessage", chatId, {
+            await emitEventToGroupUsers(io, "receiveMessage", chatId, {
               ...emitData,
               chat,
             });
           } else {
             io.to(chat?._id.toString() as any)
               .to(receiverId)
-              .emit("replyMessage", { ...emitData, receiverId });
+              .emit("receiveMessage", { ...emitData, receiverId });
           }
           return emitData;
         }
@@ -644,11 +644,12 @@ export const replyMessage = async (
     const emitData = message.toObject();
 
     if (chat?.isGroupChat) {
-      await emitEventToGroupUsers(io, "replyMessage", chatId, emitData);
+      await emitEventToGroupUsers(io, "receiveMessage", chatId, emitData);
     } else {
+       const receiverSocketId = await getSocketConnectedUser(receiverId);
       io.to(chat?._id.toString() as any)
-        .to(receiverId)
-        .emit("replyMessage", { ...emitData, receiverId });
+        .to(receiverSocketId?.socketId as string)
+        .emit("receiveMessage", { ...emitData, receiverId }); ///added event as replyMessage
     }
 
     res.status(200).json({ success: true, message });

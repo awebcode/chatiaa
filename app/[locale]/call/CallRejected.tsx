@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useMessageState } from "@/context/MessageContext";
 import { HiOutlinePhoneMissedCall } from "react-icons/hi";
 
-export function RejectedCallDialog() {
+export default function RejectedCallDialog() {
   const { callInfo } = useMessageState();
    const [isOpen, setIsOpen] = useState(true);
 

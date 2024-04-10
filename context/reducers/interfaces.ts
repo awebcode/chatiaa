@@ -23,7 +23,15 @@ export interface IMessage {
   reactionsGroup: ReactionGroup[];
   totalReactions: number;
   sender: Tuser;
-  type: string;
+  type:
+    | "text"
+    | "image"
+    | "audio"
+    | "video"
+    | "application"
+    | "file"
+    | "call-notify"
+    | "notify";
   status: string;
   removedBy: Tuser;
   // who seen message and there counts
@@ -62,7 +70,7 @@ export interface ICall {
   isGroupChat: boolean;
   groupInfo: { image: string; groupName: string };
   isIncomingCall: boolean;
-  isMyCall:boolean;
+  isMyCall: boolean;
   isAccept: boolean;
   isReject: boolean;
 

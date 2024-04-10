@@ -21,19 +21,20 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HiOutlinePhoneMissedCall } from "react-icons/hi";
-export function IncomingCallDialog() {
-
+export default function IncomingCallDialog() {
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
   const { callInfo, user } = useMessageState();
   const router = useRouter();
- 
+
   const handleDeclined = () => {
     dispatch({ type: REJECT_CALL });
     dispatch({ type: CLEAR_CALL });
     socket.emit("call_rejected", { receiver: callInfo?.sender, rejectedBy: user });
     socket.emit("user-on-call-message", {
-      message: `📞 ${user?.name + ` Declined a call that was ${callInfo?.sender?.name} `}`,
+      message: `📞 ${
+        user?.name + ` Declined a call that was ${callInfo?.sender?.name} `
+      }`,
       chatId: callInfo?.chatId,
       user: user,
       type: "call-notify",
@@ -42,20 +43,18 @@ export function IncomingCallDialog() {
   };
   const handleAccepted = () => {
     dispatch({ type: ACCEPT_CALL, payload: callInfo });
-    socket.emit("call_accepted", { ...callInfo, receiver: callInfo?.sender});
+    socket.emit("call_accepted", { ...callInfo, receiver: callInfo?.sender });
 
-     socket.emit("user-on-call-message", {
-       message: `${`📲 That was a ongoing call from ${callInfo?.sender?.name} `}`,
-       chatId: callInfo?.chatId,
-       user: user,
-       type: "call-notify",
-     });
+    socket.emit("user-on-call-message", {
+      message: `${`📲 That was a ongoing call from ${callInfo?.sender?.name} `}`,
+      chatId: callInfo?.chatId,
+      user: user,
+      type: "call-notify",
+    });
     document.getElementById("incoming-call-dialog")?.click();
     dispatch({ type: CLEAR_CALL });
     router.push(`/call/${callInfo?.chatId}`);
   };
-
- 
 
   return (
     <Dialog open>

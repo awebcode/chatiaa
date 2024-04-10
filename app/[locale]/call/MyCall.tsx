@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HiOutlinePhoneMissedCall } from "react-icons/hi";
-export function MyCallPage() {
+export default function MyCallPage() {
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
   const { callInfo, user } = useMessageState();
