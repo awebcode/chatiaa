@@ -1,14 +1,12 @@
 "use client";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import React from "react";
-import { Link } from "@/navigation";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import { BsShieldCheck } from "react-icons/bs";
 import { FaSave, FaVideo } from "react-icons/fa";
 import { LuFolderSync } from "react-icons/lu";
 import { RiFileTransferFill } from "react-icons/ri";
-import { TbUsersGroup } from "react-icons/tb";
+import { TbMessageCircleQuestion, TbUsersGroup } from "react-icons/tb";
 import { AiOutlineUser, AiOutlineGroup } from "react-icons/ai";
 import { ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
 const Footer = dynamic(() => import("./Footer"));
@@ -16,6 +14,7 @@ import { motion } from "framer-motion";
 import AnimateSvg from "./AnimateSvg";
 import Lottie from "react-lottie";
 import * as ChatAnim from "./ChatLottie.json";
+import { MdOutlineAdminPanelSettings } from "react-icons/md";
 const Home = () => {
   // Define an array of card items with their respective icon, title, description, and icon color
   const cardItems = [
@@ -28,28 +27,30 @@ const Home = () => {
     },
     {
       icon: <BsShieldCheck className="w-8 h-8 text-yellow-500 mb-4" />,
-      title: "Keep private chat",
+      title: "Secure Real-Time Notifications: Keep Conversations Safe and Private",
       description:
-        "Lock Your Conversations, Unlock Your Peace of Mind. Rest assured, your conversations are secure and private.",
+        "Lock Your Conversations, Unlock Your Peace of Mind. Our real-time notification toast ensures your messages are secure and private, with instant reply functionality. Stay connected with sound alerts for seamless communication, guaranteeing your privacy and peace of mind.",
       color: "yellow",
     },
+
     {
       icon: <FaSave className="w-8 h-8 text-green-500 mb-4" />,
-      title: "Saving your time & Superfast",
+      title: "Low latency messaging",
       description:
         "Efficiency Redefined: Connect & Converse Swiftly. Efficient communication, saving you valuable time at lightning speed.",
       color: "green",
     },
     {
-      icon: <FaVideo className="w-8 h-8 text-purple-500 mb-4" />,
-      title: "Audio/Video/Voice Chat",
+      icon: <TbMessageCircleQuestion className="w-8 h-8 text-purple-500 mb-4" />,
+      title:
+        "Enhanced Multimedia Communication: Enjoy Limitless Messaging and Calling Options",
       description:
-        "Experience Seamless Connections, Hear & See Clearly. Connect with others through crystal-clear audio/video/group calls.",
+        "Immerse yourself in seamless connections with our comprehensive multimedia features. Send unlimited images, PDFs, audio, video, and voice messages effortlessly. Stay connected with crystal-clear audio, video, and group calls, ensuring you hear and see clearly during every interaction.",
       color: "purple",
     },
     {
       icon: <LuFolderSync className="w-8 h-8 text-rose-500 mb-4" />,
-      title: "Unlimited AnyType*Files Sharing",
+      title: "Unlimited Anytype realtime*file sharing",
       description:
         "Break Limits, Share Everything. Share any type of file, unlimitedly, without constraints.",
       color: "rose",
@@ -77,9 +78,17 @@ const Home = () => {
     },
     {
       icon: <RiFileTransferFill className="w-8 h-8 text-lime-500 mb-4" />,
-      title: "View all send Files in new window with lazy loading and infinite scrolling",
+      title: "View all send Files in one place with lazy loading and infinite scrolling",
       description:
         "View Sending Files in a Separate Tab/window.full application data fetching using (SSR) and infinite scrolling and code spiliting that&apos;s why it&apos;s very big application but super fast loading. Utilize features like Messenger or WhatsApp for a seamless experience.",
+      color: "lime",
+    },
+
+    {
+      icon: <MdOutlineAdminPanelSettings className="w-8 h-8 text-yellow-500 mb-4" />,
+      title: "Empower Group Dynamics: Manage Administrators and Members with Ease",
+      description:
+        "Take control of your group conversations effortlessly. With our real-time update feature, remove users as admins, view user and admin lists, and seamlessly designate new admins if all current admins leave. Stay organized and in control of your group's dynamics for smooth communication.",
       color: "lime",
     },
     {
@@ -218,7 +227,7 @@ const Card = ({ icon, title, description, color, delay }: any) => (
       <motion.p
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay:0.5 }}
+        transition={{ duration: 0.3, delay: 0.5 }}
         className="text-gray-500 text-sm"
       >
         {description}
