@@ -79,7 +79,7 @@ const Notification: React.FC = () => {
   }, [replying, showFullMessage]);
 
   return notification ? (
-    <div className="fixed top-0  w-full  flex justify-center z-50">
+    <div className="fixed top-0  w-full max-h-[600px] overflow-y-auto  flex justify-center z-50">
       <div className="relative bg-emerald-100 text-black dark:bg-gray-800 dark:text-gray-200  min-w-[350px] max-w-[400px] md:max-w-lg  py-3 px-4 rounded-md shadow-lg mt-10">
         <Button
           variant={"outline"}
