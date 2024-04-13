@@ -132,6 +132,8 @@ const Home = () => {
           } as any,
         }}
         alwaysShowTracks
+        thumbMinSize={2}
+
         className="p-0 md:container   pb-20 mx-auto flex flex-wrap items-center justify-center h-screen"
       >
         <div className="w-full md:w-1/2 p-1 md:p-4 flex flex-col items-start py-24 sm:py-0">
