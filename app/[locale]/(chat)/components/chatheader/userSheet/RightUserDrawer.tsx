@@ -51,8 +51,8 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
       <Sheet>
         <SheetClose id="closeRightUserSheetDialog" className="hidden"></SheetClose>
 
-        <SheetTrigger asChild>
-          <BsThreeDots className="h-4 w-4 md:h-6 md:w-6  cursor-pointer" />
+        <SheetTrigger asChild >
+          <BsThreeDots id="rightUserSheet" className="h-4 w-4 md:h-6 md:w-6  cursor-pointer" />
         </SheetTrigger>
         <SheetContent side="right">
           <SheetHeader>

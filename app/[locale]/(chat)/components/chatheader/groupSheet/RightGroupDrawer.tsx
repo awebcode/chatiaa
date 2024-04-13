@@ -34,7 +34,10 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
         <SheetClose id="closeRightGroupSheetDialog" className="hidden"></SheetClose>
 
         <SheetTrigger asChild>
-          <BsThreeDots className="h-4 w-4 md:h-6 md:w-6  cursor-pointer" />
+          <BsThreeDots
+            id="rightGroupSheet"
+            className="h-4 w-4 md:h-6 md:w-6  cursor-pointer"
+          />
         </SheetTrigger>
         <SheetContent side="right">
           <SheetHeader>
@@ -98,9 +101,7 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
             >
               <CiLogout className="text-emerald-500" /> Leave Chat
             </Button>
-            {selectedChat?.groupAdmin?.some(
-              (user) => user?._id === currentUser?._id
-            ) && (
+            {selectedChat?.groupAdmin?.some((user) => user?._id === currentUser?._id) && (
               <Button
                 className="w-full text-sm  border-rose-600 hover:border-rose-700 duration-300"
                 variant={"outline"}
@@ -110,7 +111,7 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
                   }
                 }}
               >
-                <MdDelete className="text-rose-600"/>  Delete Chat
+                <MdDelete className="text-rose-600" /> Delete Chat
               </Button>
             )}
           </div>

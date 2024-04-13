@@ -105,7 +105,7 @@ export default function VoiceMessage({
       <div className="flex flex-col justify-end items-end">
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
         <div
-          className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
+          className={`md:m-4 flex items-center gap-5 text-gray-500 dark:text-white px4 pr-2 py-4 text-sm rounded-md`}
         >
           <div>
             <Image

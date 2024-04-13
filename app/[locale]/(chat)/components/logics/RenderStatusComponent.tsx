@@ -14,7 +14,6 @@ export const RenderStatus = (
   const { selectedChat, user: currentUser } = useMessageState();
 
   let statusDiv;
-  console.log({unseenCount})
   switch (message?.status) {
     case "seen":
       message?.sender?._id === currentUser?._id && type === "onFriendListCard"

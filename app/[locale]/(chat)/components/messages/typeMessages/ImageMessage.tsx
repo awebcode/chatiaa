@@ -37,7 +37,9 @@ function ImageMessage({
 }) {
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   return (
-    <div className="flex items-center gap-2 max-w-sm md:max-w-2xl">
+    <div
+      className="flex items-center gap-2 max-w-sm md:max-w-2xl"
+    >
       {/* Remove/Replay/Emoji */}
       <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
       <div className="">
@@ -58,7 +60,7 @@ function ImageMessage({
               <Image
                 src={`${message.file.url}`}
                 alt={"Unknown file"}
-                className={"rounded-lg w-auto h-auto"}
+                className={"rounded-lg w-auto h-auto "}
                 height={300}
                 width={300}
                 loading="lazy"

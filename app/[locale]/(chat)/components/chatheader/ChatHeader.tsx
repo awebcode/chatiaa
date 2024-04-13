@@ -56,7 +56,17 @@ const ChatHeader = () => {
         </span>
         {selectedChat && (
           <>
-            <div className="relative  p-[2px] h-8 w-8 md:h-10 md:w-10 ring-1 md:ring-2 ring-violet-500 rounded-full">
+            <div
+              onClick={() => {
+               document
+                 .getElementById(
+                   `right${selectedChat.isGroupChat ? "Group" : "User"}Sheet`
+                 )
+                 ?.click();
+
+              }}
+              className="relative cursor-pointer  p-[2px] h-8 w-8 md:h-10 md:w-10 ring-1 md:ring-2 ring-violet-500 rounded-full"
+            >
               <Image
                 height={35}
                 width={35}

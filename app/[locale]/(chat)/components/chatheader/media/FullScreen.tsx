@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+"use client"
+import React from "react";
 import ReactPlayer from "react-player";
 import { FaExpand } from "react-icons/fa";
 import { RiDownloadCloudFill } from "react-icons/ri";
@@ -8,7 +9,16 @@ import Image from "next/image";
 
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
-
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 // Dynamically import PDFViewer component
 const PDFViewer = dynamic(() => import("../../Input/PdfViewer"), {
   loading: () => <LoaderComponent text="Fetching..." />,
@@ -25,11 +35,10 @@ const FilePreview = ({ fileUrl, fileType }: { fileUrl: string; fileType: string 
   if (fileType.startsWith("image")) {
     return (
       <Image
-        loading="lazy"
         src={fileUrl}
         alt="Image"
-        height={600}
-        width={600}
+        height={1000}
+        width={1000}
         className="max-h-screen  object-cover"
       />
     );
@@ -57,46 +66,38 @@ const FilePreview = ({ fileUrl, fileType }: { fileUrl: string; fileType: string 
 };
 
 const FullScreenPreview = ({ file }: { file: { url: string; type: string } }) => {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
   return (
-    <div>
-      <button
-        onClick={() => setIsFullscreen(true)}
-        className="fullscreen-button absolute -top-1 -left-0 p-[6px] bg-gray-800 text-white  rounded-full"
-      >
-        <FaExpand />
-      </button>
-      {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-85   flex items-center justify-center overflow-y-auto">
-          <div className="max-w-full max-h-full overflow-y-auto">
-            <div
-              className="close-button absolute top-2 right-4 p-1  text-white text-3xl cursor-pointer"
-              onClick={() => setIsFullscreen(false)}
-            >
-              &times;
-            </div>
-            <div className="flex gap-2 items-center justify-center absolute top-10 md:top-8 left-[50%] right-[50%] translate-x-[-50%] ">
-              <Button
-                size={"lg"}
-                className="cursor-pointer bg-blue-500 hover:bg-blue-700"
-                onClick={() => setIsFullscreen(!isFullscreen)}
-              >
-                Close
-              </Button>
-              <Button
-                size={"lg"}
-                className=" cursor-pointer"
-                onClick={() => handleDownload(file.url)}
-              >
-                <RiDownloadCloudFill /> Download File
-              </Button>
-            </div>
-            <FilePreview fileUrl={file.url} fileType={file.type} />
-          </div>
+    <Dialog>
+      <DialogTrigger>
+        {" "}
+        <Button id="fullScreenDialogOpenId" variant={"secondary"} size={"icon"} className="absolute left-0 -top-3 z-50 mb-2">
+          <FaExpand />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="z-50 h-full w-full  bg-opacity-85 ">
+        <div className="rounded-2xl p-2">
+          {" "}
+          <FilePreview fileUrl={file.url} fileType={file.type} />
         </div>
-      )}
-    </div>
+        <DialogFooter>
+          <Button
+            size={"lg"}
+            className="cursor-pointer bg-blue-500 hover:bg-blue-700"
+            onClick={() => {document.getElementById("fullScreenDialogCloseId")?.click();}}
+          >
+            Close
+          </Button>
+          <Button
+            size={"lg"}
+            className=" cursor-pointer"
+            onClick={() => handleDownload(file.url)}
+          >
+            <RiDownloadCloudFill /> Download File
+          </Button>
+        </DialogFooter>
+        <DialogClose id="fullScreenDialogCloseId"></DialogClose>
+      </DialogContent>
+    </Dialog>
   );
 };
 
