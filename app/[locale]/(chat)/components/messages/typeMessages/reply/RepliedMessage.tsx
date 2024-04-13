@@ -16,6 +16,7 @@ const RepliedMessage = ({
   currentUser: Tuser;
 }) => {
   const [showFullMessage, setShowFullMessage] = useState(false);
+
   return (
     <div className=" w-full">
       {message && message.isReply ? (
