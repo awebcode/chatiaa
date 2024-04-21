@@ -13,12 +13,13 @@ declare global {
 }
 const authMiddleware: any = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
+    const session2 = await unstable_getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
     const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
     const authToken =
       req.cookies.authToken ||
       (req.headers.authorization && req.headers.authorization.split(" ")[1]);
-    
+
     let decoded: any;
     // // console.log({ authToken, secret: process.env.NEXTAUTH_SECRET! });
 
@@ -35,8 +36,12 @@ const authMiddleware: any = async (req: Request, res: Response, next: NextFuncti
     if (!session?.user?.email && !decoded?.sub) {
       return next(new CustomErrorHandler("Unauthorized -Plese login and continue", 401));
     }
-console.log({session,decoded,authToken})
-    req.id = (session as any)?.user?.id ? (session as any)?.user?.id : decoded?.sub;
+    console.log({ session, decoded, authToken, token, session2 });
+    req.id =
+      (session as any)?.user?.id ||
+      token?.sub ||
+      decoded?.sub ||
+      (session2 as any)?.user?.id;
     next();
   } catch (error) {
     console.log({ authMiddleware: error });

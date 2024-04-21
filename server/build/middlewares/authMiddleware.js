@@ -13,10 +13,12 @@ const errorHandler_1 = require("./errorHandler");
 const jwt_1 = require("next-auth/jwt"); //for decoding next-auth_session_token
 const next_1 = require("next-auth/next");
 const serverAuthOptions_1 = require("../config/serverAuthOptions");
+const jwt_2 = require("next-auth/jwt");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
-        // const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
+        const token = yield (0, jwt_2.getToken)({ req, secret: process.env.NEXTAUTH_SECRET });
+        const session2 = yield (0, next_1.unstable_getServerSession)(req, res, serverAuthOptions_1.serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
         const session = yield (0, next_1.getServerSession)(req, res, serverAuthOptions_1.serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
         const authToken = req.cookies.authToken ||
             (req.headers.authorization && req.headers.authorization.split(" ")[1]);
@@ -34,8 +36,12 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         if (!((_a = session === null || session === void 0 ? void 0 : session.user) === null || _a === void 0 ? void 0 : _a.email) && !(decoded === null || decoded === void 0 ? void 0 : decoded.sub)) {
             return next(new errorHandler_1.CustomErrorHandler("Unauthorized -Plese login and continue", 401));
         }
-        console.log({ session, decoded, authToken });
-        req.id = ((_b = session === null || session === void 0 ? void 0 : session.user) === null || _b === void 0 ? void 0 : _b.id) ? (_c = session === null || session === void 0 ? void 0 : session.user) === null || _c === void 0 ? void 0 : _c.id : decoded === null || decoded === void 0 ? void 0 : decoded.sub;
+        console.log({ session, decoded, authToken, token, session2 });
+        req.id =
+            ((_b = session === null || session === void 0 ? void 0 : session.user) === null || _b === void 0 ? void 0 : _b.id) ||
+                (token === null || token === void 0 ? void 0 : token.sub) ||
+                (decoded === null || decoded === void 0 ? void 0 : decoded.sub) ||
+                ((_c = session2 === null || session2 === void 0 ? void 0 : session2.user) === null || _c === void 0 ? void 0 : _c.id);
         next();
     }
     catch (error) {
