@@ -43,12 +43,12 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}
-      <div className="fixed md:absolute top-0  w-full z-10  !overflow-hidden p-2">
+      <div className="fixed md:absolute top-0  w-full z-50  !overflow-hidden p-2">
         {" "}
         <ChatHeader />
       </div>
       {/* Message */}
-      <div className="w-full h-auto absolute bottom-10  py-2  top-[43px] md:top-[52px]    z-20">
+      <div className="w-full h-auto absolute   py-2  top-[43px] md:top-[52px]    z-20">
         {children}
       </div>
       {/* Inpute */}
