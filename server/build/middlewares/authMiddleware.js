@@ -34,7 +34,7 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         if (!((_a = session === null || session === void 0 ? void 0 : session.user) === null || _a === void 0 ? void 0 : _a.email) && !(decoded === null || decoded === void 0 ? void 0 : decoded.sub)) {
             return next(new errorHandler_1.CustomErrorHandler("Unauthorized -Plese login and continue", 401));
         }
-        console.log({ session, decoded });
+        console.log({ session, decoded, authToken });
         req.id = ((_b = session === null || session === void 0 ? void 0 : session.user) === null || _b === void 0 ? void 0 : _b.id) ? (_c = session === null || session === void 0 ? void 0 : session.user) === null || _c === void 0 ? void 0 : _c.id : decoded === null || decoded === void 0 ? void 0 : decoded.sub;
         next();
     }
