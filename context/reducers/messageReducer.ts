@@ -847,8 +847,8 @@ export const messageReducer = (state: State, action: Action): State => {
         ...state,
         chats: state.chats.map((chat) => {
           if (!chat.isGroupChat) {
-            const userIndex = chat?.users.findIndex(
-              (user) => user._id === action.payload.userInfo?.userId
+            const userIndex = chat?.users?.findIndex(
+              (user) => user?._id === action.payload.userInfo?.userId
             );
             if (userIndex !== -1) {
               const updatedUsers = [...chat.users];

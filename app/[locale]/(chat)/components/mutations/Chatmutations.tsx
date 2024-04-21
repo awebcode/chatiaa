@@ -24,6 +24,7 @@ import {
   REMOVE_USER_FROM_GROUP,
   SET_CHATS,
   SET_SELECTED_CHAT,
+  SET_TOTAL_MESSAGES_COUNT,
 } from "@/context/reducers/actions";
 import { Tuser } from "@/store/types";
 import { getSenderFull } from "../logics/logics";
@@ -44,13 +45,13 @@ export const useAccessChatMutation = (closeDialogId: string) => {
       console.log({ createdChat: chat });
       dispatch({ type: CLEAR_MESSAGES });
       const isFriend = getSenderFull(currentUser, chat.chatData?.users);
-      if(!isFriend)return
+      if (!isFriend) return;
       const chatData = {
         _id: chat?.chatData?._id,
         chatId: chat?.chatData?._id,
         latestMessage: chat?.chatData?.latestMessage,
         chatCreatedAt: chat?.chatData?.createdAt,
-          
+
         groupChatName: chat?.chatData?.chatName,
         isGroupChat: chat?.chatData?.isGroupChat,
         groupAdmin: chat?.chatData?.groupAdmin,
@@ -77,7 +78,7 @@ export const useAccessChatMutation = (closeDialogId: string) => {
       // setSelectedChat(chatData as any);
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
       localStorage.setItem("selectedChat", JSON.stringify(chatData));
-      router.replace(`?chatId=${chat?._id}`);
+      router.replace(`?chatId=${chat?.chatData?._id}`);
       if (chat?.isNewChat) {
         dispatch({ type: SET_CHATS, payload: chat.chatData });
         if (chat?.chatData?.isOnline) {
@@ -94,7 +95,7 @@ export const useAccessChatMutation = (closeDialogId: string) => {
           to: isFriend?._id,
           chat: chat.chatData,
           chatId: chat.chatData?._id,
-          sender:currentUser
+          sender: currentUser,
         });
       }
 
@@ -153,7 +154,7 @@ export const useDeleteSingleChatMutation = (chatId: string, onChat: boolean) => 
       socket.emit("singleChatDeletedNotify", {
         chatId,
         receiverId: data.receiverId,
-        senderId:currentUser?._id
+        senderId: currentUser?._id,
       });
     },
   });
@@ -271,10 +272,15 @@ export const useRemoveAdminFromGroup = (chatId: string, user: Tuser) => {
 export const useDeleteAllMessagesInAChatMutation = (chatId: string) => {
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
+  const {totalMessagesCount}=useMessageState()
   return useMutation({
     mutationFn: () => deleteAllMessagesInAChat(chatId),
     onSuccess: (data) => {
       toast.success("All messages deleted successfully!");
+       dispatch({
+         type: SET_TOTAL_MESSAGES_COUNT,
+         payload: 0,
+       });
       dispatch({
         type: DELETE_ALL_MESSAGE_IN_CHAT,
         payload: { chatId },

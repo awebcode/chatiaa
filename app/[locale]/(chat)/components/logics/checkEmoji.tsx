@@ -24,7 +24,11 @@ export const RenderMessageWithEmojis = (
 
     // Add the text before the emoji, if any
     if (index < (match as any).index) {
-      parts.push(<span key={index}>{input.substring(index, (match as any).index)}</span>);
+      parts.push(
+        <span key={index + Math.random() * 500 + Date.now()}>
+          {input.substring(index, (match as any).index)}
+        </span>
+      );
     }
 
     // Render the emoji

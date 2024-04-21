@@ -69,7 +69,7 @@ const Drawer = () => {
               style={{ height: "100%" }}
               scrollableTarget="customTarget"
             >
-              <div className="flex flex-col gap-5 my-4">
+              <div className="flex flex-col gap-2 md:gap-3 my-2">
                 {/* {users?.map((user: any) => {
           return <UserCard user={user} key={user._id} />;
         })} */}

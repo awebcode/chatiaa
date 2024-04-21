@@ -54,7 +54,7 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
         <SheetTrigger asChild >
           <BsThreeDots id="rightUserSheet" className="h-4 w-4 md:h-5 md:w-5 text-emerald-500  cursor-pointer" />
         </SheetTrigger>
-        <SheetContent side="right">
+        <SheetContent side="right" className="w-screen " >
           <SheetHeader>
             <SheetTitle>{selectedChat?.userInfo?.name}</SheetTitle>
           </SheetHeader>

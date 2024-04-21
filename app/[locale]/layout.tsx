@@ -92,7 +92,7 @@ export default async function LocaleLayout({
   } catch (error) {
     notFound();
   }
-  console.log({user})
+  
   return (
     <html lang={locale} suppressHydrationWarning>
       {/* {locale} */}

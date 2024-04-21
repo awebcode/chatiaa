@@ -70,7 +70,7 @@ export default function FilesSheet({ total }: { total: number }) {
             view total ({data?.pages[0]?.total})
           </span>
         </SheetTrigger>
-        <SheetContent side={"left"} className="min-w-screen h-screen">
+        <SheetContent side={"left"} className="w-screen">
           <SheetHeader>
             <SheetTitle>View chat medias</SheetTitle>
             <SheetDescription>

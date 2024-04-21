@@ -26,6 +26,7 @@ import { IChat } from "@/context/reducers/interfaces";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
+import { Tuser } from "@/store/types";
 
 // Dynamically import SeenBy component
 const SeenBy = dynamic(() => import("./status/SeenBy"));
@@ -69,7 +70,7 @@ const FriendsCard: React.FC<{
       socket.emit("seenMessage", seenData);
     },
   });
-  const isFriend = getSenderFull(currentUser, chat.users);
+  const isFriend:Tuser = getSenderFull(currentUser, chat.users);
 
   const handleClick = async (chatId: string) => {
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
@@ -261,7 +262,7 @@ const FriendsCard: React.FC<{
               {!chat?.isOnline && !chat?.isGroupChat && (
                 <span className="text-[8px]  font-medium   mx-1 md:inline ">
                   <span className="mr-1">active</span>
-                  {moment(getSenderFull(currentUser, chat.users)?.lastActive).fromNow()}
+                  {moment(isFriend?.lastActive?isFriend?.lastActive:isFriend?.createdAt).fromNow()}
                 </span>
               )}
             </span>

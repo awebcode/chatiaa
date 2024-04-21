@@ -116,87 +116,89 @@ export default function Messages({ chatId }: { chatId: string }) {
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-1 bg-base-200 max-h-[90vh] md:max-h-[83vh]   overflow-y-scroll  flex flex-col-reverse"
+      className="menu p-1 bg-base-200 max-h-[90vh] md:max-h-[88vh]   overflow-y-scroll  flex flex-col-reverse"
     >
-    
-        <InfiniteScroll
-          dataLength={messages ? messages?.length : 0}
-          next={fetchNextPage}
-          hasMore={!isLoading && hasNextPage}
-          loader={<LoaderComponent text="Fetching messages..." />}
-          endMessage={
-            !isLoading && (
-              <div className="text-center text-2xl text-green-400 pt-10">
-                {/* You have viewed all messages! */}
-              </div>
-            )
-          }
-          style={{
-            display: "flex",
-            flexDirection: "column-reverse",
-            overflow: "scroll",
+      <InfiniteScroll
+        dataLength={messages ? messages?.length : 0}
+        next={fetchNextPage}
+        hasMore={!isLoading && hasNextPage}
+        loader={<LoaderComponent text="Fetching messages..." />}
+        endMessage={
+          !isLoading && (
+            <div className="text-center text-2xl text-green-400 pt-10">
+              {/* You have viewed all messages! */}
+            </div>
+          )
+        }
+        style={{
+          display: "flex",
+          flexDirection: "column-reverse",
+          overflow: "scroll",
 
-            height: "100%",
-            scrollBehavior: "smooth",
-          }}
-          inverse={true}
-          scrollableTarget="MessagesscrollableTarget"
-          scrollThreshold={1}
-        >
-          {/* //mb-[66px] */}
-          <div className="flex flex-col-reverse gap-3 p-2  m-1 ">
-            <div
-              id="messageEndTarget"
-              className="pb-4 mb-4 md:pb-3 md:mb-0"
-              ref={messageEndRef}
-            ></div>
-            {/* typing indicator */}
-
-            <TypingIndicator onFriendListCard={false} />
-            {isLoading ? (
-              <div className="flex justify-center items-center mt-6">
-                <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>
-              </div>
-            ) : (
-              messages &&
-              messages?.length > 0 &&
-              messages.map((message: IMessage, index: number) => {
-                return (
-                  <MessageCard
-                    message={message}
-                    key={
-                      message?._id +
-                      message?.tempMessageId +
-                      Date.now() +
-                      Math.floor(Math.random() * 100)
-                    }
-                  />
-                );
-              })
-            )}
-          </div>
-
-          {selectedChat &&
-            !isLoading &&
-            totalMessagesCount > 0 &&
-            totalMessagesCount === messages?.length && (
-              <NoChatProfile selectedChat={selectedChat as any} />
-            )}
-          {/* when selectedChat have no chat */}
-          {selectedChat && !isLoading && !isFetching && data?.pages[0]?.total === 0 && (
-            <NoChatProfile selectedChat={selectedChat as any} />
-          )}
+          height: "100%",
+          scrollBehavior: "smooth",
+        }}
+        inverse={true}
+        scrollableTarget="MessagesscrollableTarget"
+        scrollThreshold={1}
+      >
+        {/* //mb-[66px] */}
+        <div className="flex flex-col-reverse gap-3 p-2  m-1 ">
           <div
-            className={`absolute left-1/2 bottom-8  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${
-              showScrollToBottomButton
-                ? "opacity-100 translate-y-100 scale-100"
-                : "translate-y-0 opacity-0 scale-0"
-            }`}
-            onClick={() => scrollToBottom()}
-          >
-            <FaArrowDown className="w-3 h-5 md:w-5  md:h-5 m-2 animate-bounce text-emerald-500" />
-          </div>
-        </InfiniteScroll>
+            id="messageEndTarget"
+            className="pb-4 mb-4 md:pb-3 md:mb-0"
+            ref={messageEndRef}
+          ></div>
+          {/* typing indicator */}
+
+          <TypingIndicator onFriendListCard={false} />
+          {isLoading ? (
+            <div className="flex justify-center items-center mt-6">
+              <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            messages &&
+            messages?.length > 0 &&
+            messages.map((message: IMessage, index: number) => {
+              return (
+                <MessageCard
+                  message={message}
+                  key={
+                    message?._id +
+                    message?.tempMessageId +
+                    Date.now() +
+                    Math.floor(Math.random() * 100)
+                  }
+                />
+              );
+            })
+          )}
+        </div>
+
+        {/* {selectedChat &&
+          !isLoading &&
+          totalMessagesCount > 0 &&
+          totalMessagesCount === messages?.length && ( */}
+       { selectedChat &&
+          !isLoading  &&  <NoChatProfile selectedChat={selectedChat as any} />}
+          {/* )} */}
+        {/* when selectedChat have no chat */}
+        {/* {selectedChat &&
+          !isLoading &&
+          !isFetching &&
+          data?.pages[0]?.total === 0 &&
+          totalMessagesCount===0 && <NoChatProfile selectedChat={selectedChat as any} />} */}
+        <div
+          className={`absolute left-1/2 bottom-8  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${
+            showScrollToBottomButton
+              ? "opacity-100 translate-y-100 scale-100"
+              : "translate-y-0 opacity-0 scale-0"
+          }`}
+          onClick={() => scrollToBottom()}
+        >
+          <FaArrowDown className="w-3 h-5 md:w-5  md:h-5 m-2 animate-bounce text-emerald-500" />
+        </div>
+      </InfiniteScroll>
     </div>
   );
 }

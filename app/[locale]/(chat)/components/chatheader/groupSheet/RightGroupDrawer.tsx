@@ -39,7 +39,7 @@ export default function RightGroupDrawer({ isUserOnline }: { isUserOnline: boole
             className="h-4 w-4 md:h-6 md:w-6  cursor-pointer"
           />
         </SheetTrigger>
-        <SheetContent side="right">
+        <SheetContent side="right" className="w-screen ">
           <SheetHeader>
             <SheetTitle className="text-center">
               {" "}

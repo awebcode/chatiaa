@@ -25,10 +25,10 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
     <div className="flex items-center justify-between bg-gray-100 hover:bg-gray-200 dark:bg-gray-800  dark:hover:bg-neutral-800 duration-300 rounded-md">
       <div
         onClick={handleClick}
-        className="p-3 rounded-md basis-[90%] w-full  cursor-pointer "
+        className="p-2 rounded-md basis-[90%] w-full  cursor-pointer "
       >
         <div className="flex items-center gap-2">
-          <div className="h-8 md:h-8 w-8 md:w-8 relative rounded-full  ">
+          <div className="h-8 w-8 relative rounded-full  ">
             <Image
               height={35}
               width={35}
@@ -39,9 +39,9 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
             />
           </div>
           <div className="flex flex-col text-left gap-1">
-            <h3 className="text-xs md:text-sm font-bold">{user.name}</h3>
-            <span className="text-[10px] md:text-xs">{user.email.slice(0, 30)}</span>
-            <span className="text-[10px] md:text-xs">
+            <h3 className="text-sm md:text-lg font-bold">{user.name}</h3>
+            <span className="text-xs ">{user.email}</span>
+            <span className="text-[10px] ">
               <span className="mr-1"> Joined</span>
               {moment((user as any).createdAt).fromNow()}
             </span>
@@ -52,7 +52,7 @@ const UserCard: React.FC<{ user: Tuser }> = ({ user }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size={"icon"} className="bg-transparent">
-            <BsThreeDots className="text-sm md:text-lg" />
+            <BsThreeDots className="text-sm " />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
