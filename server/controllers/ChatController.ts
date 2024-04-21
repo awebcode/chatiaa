@@ -230,7 +230,7 @@ export const fetchChats = async (
         }
       })
     );
-    console.log({reqonFetchchats:req.id})
+    console.log({ reqonFetchchats: req.id }); // Retrieve the IDs of the filtered users
     // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
     // // Retrieve the IDs of the filtered users
     res.status(200).send({
@@ -240,8 +240,7 @@ export const fetchChats = async (
           : req.query.search
           ? []
           : populatedChatsWithUnseenCount,
-      total:
-         totalDocs,
+      total: totalDocs,
       limit,
       unseenCountArray: unseenCount,
     });

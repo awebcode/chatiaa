@@ -183,7 +183,7 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 return null; // Return null or any other default value if needed
             }
         })));
-        console.log({ reqonFetchchats: req. });
+        console.log({ reqonFetchchats: req.id }); // Retrieve the IDs of the filtered users
         // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
         // // Retrieve the IDs of the filtered users
         res.status(200).send({
