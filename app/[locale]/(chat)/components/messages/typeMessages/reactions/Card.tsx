@@ -20,7 +20,7 @@ const Card = ({
     <div className="flexBetween gap-1 bg-gray-200  hover:bg-gray-300 dark:bg-gray-900 duration-300 p-1 rounded-md">
       <div className=" p-1 flex items-center w-full">
         {" "}
-        <div className="h-5 w-5  relative rounded-full ring  ring-violet-600">
+        <div className="h-5 w-5  relative rounded-full ring-1  ring-violet-600">
           <Image
             height={35}
             width={35}
@@ -30,7 +30,7 @@ const Card = ({
           />
           {onlineUsers.some((u: any) => u.id === reaction?.reactBy._id) ? (
             <span
-              className={`absolute bottom-0 right-0 rounded-full p-1 md:p-[3px] 
+              className={`absolute bottom-0 right-0 rounded-full p-1  
                                         bg-green-500
                                       `}
             ></span>
