@@ -145,7 +145,20 @@ export const authOptions: AuthOptions = {
     maxAge: 1000 * 60 * 60 * 24 * 30, //expires at 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: true,
+      },
+    },
+  },
   pages: {
     signIn: "/login",
     error: "/error",
