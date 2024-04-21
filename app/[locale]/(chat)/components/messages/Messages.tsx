@@ -116,7 +116,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-1 bg-base-200 max-h-[93vh] md:max-h-[83vh]   overflow-y-scroll  flex flex-col-reverse"
+      className="menu p-1 bg-base-200 max-h-[91vh] md:max-h-[83vh]   overflow-y-scroll  flex flex-col-reverse"
     >
     
         <InfiniteScroll

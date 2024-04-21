@@ -52,7 +52,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
         {children}
       </div>
       {/* Inpute */}
-      <div className="w-full h-auto fixed   md:absolute bottom-0 z-50 ">
+      <div className="w-full  fixed   md:absolute bottom-0 z-50 ">
         {" "}
         <Input />
       </div>
