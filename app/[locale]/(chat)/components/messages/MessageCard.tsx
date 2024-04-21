@@ -9,7 +9,7 @@ const NotifyMessage = dynamic(() => import("./typeMessages/NotifyRemoveMessage")
 });
 
 const CallNotify = dynamic(() => import("./typeMessages/CallNotify"), {
-  loading: () => <LoaderComponent />,
+  loading: () => <MessageLoader />,
 });
 const TextMessage = dynamic(() => import("./typeMessages/TextMessage"), {
   loading: () => <MessageLoader />,

@@ -15,7 +15,6 @@ const OnlineFriends = dynamic(() => import("./mychats/online/OnlieFriends"), {
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useMessageState } from "@/context/MessageContext";
 import dynamic from "next/dynamic";
-import LoaderComponent from "@/components/Loader";
 const LeftSideClientWrapper = ({
   children,
   chatId,
@@ -33,7 +32,7 @@ const LeftSideClientWrapper = ({
   }, [chatId]);
 
   return (
-    <div className=" flex flex-col">
+    <div className=" flex flex-col md:border-r border-emerald-500/30">
       <div className="m-4">
         <SearchDrawer />
         <CreateGroupModal />

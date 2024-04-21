@@ -153,7 +153,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         isIncomingMessage: true,
       });
       //  update latest chat for both side
-      console.log({ socketMessage: data,recIdCurrId:data.receiverId === currentUserRef.current?._id });
+      console.log({
+        socketMessage: data,
+        recIdCurrId: data.receiverId === currentUserRef.current?._id,
+      });
 
       if (selectedChatRef.current?.chatId === data.chat?._id) {
         useIncomingMessageStore.setState({
@@ -312,9 +315,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
             //   )
             // )
             //play sound
-            addNotification(
-              data
-            );
+            addNotification(data);
             soundRef.current?.play();
             showNotification(data.sender.name, data.sender.image, data.content);
             useIncomingMessageStore.setState({
@@ -612,7 +613,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     ) {
       addNotification(data);
       soundRef.current.play();
-      dispatch({ type: SET_MESSAGES, payload: { ...data.message, status: "delivered" } });
+      dispatch({
+        type: SET_MESSAGES,
+        payload: { ...data.message, status: "delivered", addMessageType: "notify" },
+      });
       dispatch({
         type: UPDATE_LATEST_CHAT_MESSAGE,
         payload: { ...data.message, status: "delivered" },
@@ -630,11 +634,22 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       updateMessageStatus(updateStatusData);
     }
 
-    if (selectedChatRef.current?.chatId === data.chatId) {
+    if (
+      selectedChatRef.current?.chatId === data.chatId &&
+      currentUserRef.current?._id !== data?.message?.sender?._id
+    ) {
       useIncomingMessageStore.setState({
         isIncomingMessage: true,
       });
-      dispatch({ type: SET_MESSAGES, payload: { ...data.message, status: "seen" } });
+
+      dispatch({
+        type: SET_MESSAGES,
+        payload: {
+          ...data.message,
+          status: "seen",
+          addMessageType: "notify",
+        },
+      });
       dispatch({
         type: UPDATE_LATEST_CHAT_MESSAGE,
         payload: { ...data.message, status: "seen" },
@@ -670,6 +685,18 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         };
         updateMessageStatus(updateStatusData);
       }
+    } else {
+      dispatch({
+        type: SET_MESSAGES,
+        payload: {
+          ...data.message,
+          addMessageType: "notify",
+        },
+      });
+      dispatch({
+        type: UPDATE_LATEST_CHAT_MESSAGE,
+        payload: { ...data.message },
+      });
     }
   }, []);
 

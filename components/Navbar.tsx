@@ -10,20 +10,25 @@ import {
 import { Link, usePathname, useRouter } from "@/navigation";
 import { AvatarIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
 import { CiLogout } from "react-icons/ci";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { FiUsers } from "react-icons/fi";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { fetchClientUser } from "@/functions/authActions";
+import { useMessageState } from "@/context/MessageContext";
 const ThemeButton = dynamic(() => import("./ThemeButton"));
 const LanguageChanger = dynamic(() => import("./LanguageChanger"));
 const Navbar = () => {
   const queryClient = useQueryClient();
   const t = useTranslations();
-  const { data: session } = useSession();
+  const {user}=useMessageState()
+  // const { data:  } = use();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams=useSearchParams()
 
   const logoutHandler = async () => {
     await signOut();
@@ -31,12 +36,13 @@ const Navbar = () => {
     localStorage.removeItem("currentUser");
     router.push("/");
   };
-  const isHidden = pathname.includes("/chat/");
+  // const isHidden = pathname.includes("/chat?chatId=");
+  const isHidden=searchParams.get("chatId")
   return (
     <nav
       className={`${
-        isHidden ? "hidden" : ""
-      } sticky flex items-center justify-between p-3 md:p-4 px-4 md:px-10  shadow-sm`}
+        isHidden ? "hidden md:flex" : ""
+      } sticky flex items-center justify-between p-1  px-4 md:px-10  shadow-sm`}
     >
       {/* Left Side - Logo */}
       <div
@@ -62,7 +68,7 @@ const Navbar = () => {
           <ThemeButton />
           <LanguageChanger />
         </div>
-        {session && session?.user ? (
+        { user && user ? (
           // If user is authenticated, display profile image
           <DropdownMenu>
             <DropdownMenuTrigger className="border-none outline-none">
@@ -71,7 +77,7 @@ const Navbar = () => {
                   <Image
                     height={32}
                     width={32}
-                    src={session?.user?.image || "/logo.svg"}
+                    src={user?.image || "/logo.svg"}
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover"
                   />
@@ -81,7 +87,7 @@ const Navbar = () => {
                 `}
                   ></span>
                 </div>
-                <span className="text-gray-400 text-xs">{session?.user?.name}</span>
+                <span className="text-gray-400 text-xs">{user?.name}</span>
               </div>
             </DropdownMenuTrigger>
 
@@ -103,7 +109,7 @@ const Navbar = () => {
 
               <DropdownMenuItem
                 className={`${
-                  (session?.user as any)?.role === "admin" ? "block" : "hidden"
+                  (user as any)?.role === "admin" ? "block" : "hidden"
                 }`}
               >
                 <Link href={"/users"} className="flex gap-2">

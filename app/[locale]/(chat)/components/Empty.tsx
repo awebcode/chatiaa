@@ -22,7 +22,7 @@ const EmptyChat = () => {
   };
 
   return (
-    <div className="h-[88vh] w-full rounded flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-800">
+    <div className="h-screen md:h-[88vh] w-full rounded flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-800">
       {LottieComponent && <LottieComponent options={defaultOptions} />}
     </div>
   );

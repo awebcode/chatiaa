@@ -2,12 +2,15 @@ import { Emoji, EmojiStyle } from "emoji-picker-react";
 import emojiRegex from "emoji-regex";
 import React, { useRef, useState } from "react";
 
-export const RenderMessageWithEmojis = (input: string, isSmallDevice: boolean) => {
+export const RenderMessageWithEmojis = (
+  input: string,
+  isSmallDevice: boolean,
+  handleInput?: (e: string) => void
+) => {
   const regex = emojiRegex();
 
   const handleCopyCapture = () => {
     // Allow the default copy behavior to proceed
-    console.log("copied");
 
     navigator.clipboard.writeText(input);
   };
@@ -26,12 +29,12 @@ export const RenderMessageWithEmojis = (input: string, isSmallDevice: boolean) =
 
     // Render the emoji
     parts.push(
-      <div className="inline-block mt-2">
+      <div className="inline-block">
         <span>
           <Emoji
-            size={isSmallDevice ? 12 : 13}
+            size={isSmallDevice ? 12 : 14}
             lazyLoad
-            emojiStyle={EmojiStyle.FACEBOOK}
+            emojiStyle={EmojiStyle.APPLE}
             unified={getUnifiedCodePoint(emoji)}
           />
         </span>
@@ -45,8 +48,11 @@ export const RenderMessageWithEmojis = (input: string, isSmallDevice: boolean) =
   if (index < input.length) {
     parts.push(<span key={index}>{input.substring(index)}</span>);
   }
-
-  return <span onCopyCapture={handleCopyCapture}>{parts}</span>;
+  return (
+    <span className="" onCopyCapture={handleCopyCapture}>
+      {typeof parts === "object" ? input : parts}
+    </span>
+  );
 };
 
 // Example function to get the unified code point of an emoji

@@ -150,3 +150,19 @@
 .typingIndicatorBubbleDot:nth-of-type(3) {
   animation-delay: 0.3s;
 }
+/* Content editable div place holder */
+[contenteditable]:empty:before {
+    content: attr(placeholder);
+    font-size: 12px;
+    color: #aaa;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+    direction: ltr;
+}
+
+.quill{
+  border: none !important;
+   outline: none !important;
+}

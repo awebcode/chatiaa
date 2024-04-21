@@ -69,15 +69,16 @@ const FriendsCard: React.FC<{
       socket.emit("seenMessage", seenData);
     },
   });
+  const isFriend = getSenderFull(currentUser, chat.users);
 
   const handleClick = async (chatId: string) => {
-    queryClient.invalidateQueries({ queryKey: ["chats"] });
-    queryClient.invalidateQueries({ queryKey: ["messages"] });
+    // queryClient.invalidateQueries({ queryKey: ["chats"] });
+    // queryClient.invalidateQueries({ queryKey: ["messages"] });
+    router.replace(`/chat?chatId=${chat?._id}`);
     if (selectedChat?.chatId === chatId) return;
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     //select chat
-    const isFriend = getSenderFull(currentUser, chat.users);
     const chatData = {
       _id: chat?._id,
       chatId: chat?._id,
@@ -111,8 +112,9 @@ const FriendsCard: React.FC<{
     // router.push(`/chat?chatId=${chat?._id}`);
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
-    // router.push(`?chatId=${chat?._id}`);
-    router.push(`/chat/${chat?._id}`);
+    // router.replace(`/chat?chatId=${chat?._id}`);
+    // router.push(`/chat/${chat?._id}`);
+    // router.replace(`/chat?chatId=${chat?._id}`);
     // if (chat.isGroupChat) {
     //   socket.emit("setup", { id: chat?._id } as any);
     // }
@@ -168,11 +170,11 @@ const FriendsCard: React.FC<{
       updateStatusMutation.mutateAsync(chatId);
     }
   };
-
-  // console.log({chat})
-
+// console.log({chat})
+  // console.log({chat,isFriend})
+  if (!chat) return;
   return (
-    <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-white  cursor-pointer   dark:hover:bg-gray-700 duration-300">
+    <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-gray-200  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
         <div
           // href={`/chat/${chat?._id}`}
@@ -186,14 +188,10 @@ const FriendsCard: React.FC<{
               height={35}
               width={35}
               className="rounded-full  h-full w-full"
-              alt={
-                !chat.isGroupChat
-                  ? getSenderFull(currentUser, chat.users)?.image
-                  : chat.chatName
-              }
+              alt={!chat.isGroupChat ? "image" : chat.chatName}
               src={
                 !chat.isGroupChat
-                  ? getSenderFull(currentUser, chat.users)?.image
+                  ? isFriend?.image || "/vercel.svg"
                   : (chat as any)?.image?.url || "/vercel.svg"
               }
               // loading="lazy"
@@ -208,9 +206,7 @@ const FriendsCard: React.FC<{
 
           <div className="flex flex-col justify-center items-start">
             <h3 className="text-xs md:text-sm font-bold">
-              {!chat.isGroupChat && chat.users
-                ? getSender(currentUser, chat.users)
-                : chat.chatName}
+              {!chat.isGroupChat && chat.users ? isFriend?.name : chat.chatName}
             </h3>
             <span
               className={`text-xs md:text-xs ${
@@ -238,15 +234,15 @@ const FriendsCard: React.FC<{
                           {index === 0 ? (
                             <>
                               {/* Show the name of the first typing user */}
-                              {typeuser.userInfo.name}
+
                               {/* If there are more than one typing users, show the count */}
                               {array.length > 1 ? (
-                                <span>{` and ${
+                                <span>{`${typeuser.userInfo.name} and ${
                                   array.length - 1
                                 } more are typing...`}</span>
                               ) : (
                                 // If there's only one typing user, show "is typing..."
-                                <span> is typing...</span>
+                                <span> Typing...</span>
                               )}
                             </>
                           ) : null}
@@ -303,7 +299,7 @@ const FriendsCard: React.FC<{
           <Popover>
             <div className="relative">
               <PopoverTrigger className="border-none outline-none">
-                <BsThreeDots className="h-6 w-6 " />
+                <BsThreeDots className="h-4 w-4 md:h-5 md:w-5 text-emerald-500 " />
               </PopoverTrigger>
               <Modal chatBlockedBy={chat.chatBlockedBy} chat={chat} />
             </div>

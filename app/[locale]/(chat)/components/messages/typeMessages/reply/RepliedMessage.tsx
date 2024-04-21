@@ -7,6 +7,8 @@ import { AiOutlineAudio } from "react-icons/ai";
 import { CiImageOn } from "react-icons/ci";
 import { FaFile, FaRegFilePdf } from "react-icons/fa";
 import { MdAudioFile, MdOutlineCallEnd, MdOutlineOndemandVideo } from "react-icons/md";
+import { RenderMessageWithEmojis } from "../../../logics/checkEmoji";
+import { useMediaQuery } from "@uidotdev/usehooks";
 
 const RepliedMessage = ({
   message,
@@ -16,7 +18,7 @@ const RepliedMessage = ({
   currentUser: Tuser;
 }) => {
   const [showFullMessage, setShowFullMessage] = useState(false);
-
+  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   return (
     <div className=" w-full">
       {message && message.isReply ? (
@@ -40,8 +42,14 @@ const RepliedMessage = ({
                 }
               >
                 {message.isReply.messageId.content?.length < 65
-                  ? message.isReply.messageId?.content
-                  : message.isReply.messageId?.content.slice(0, 65) + "..."}
+                  ? RenderMessageWithEmojis(
+                      message.isReply.messageId?.content,
+                      isSmallDevice
+                    )
+                  : RenderMessageWithEmojis(
+                      message.isReply.messageId?.content?.slice(0,65),
+                      isSmallDevice
+                    ) + "..."}
               </span>
             ) : message.isReply.messageId?.type === "image" ? (
               message.isReply.messageId?.status === "removed" &&
@@ -120,7 +128,7 @@ const RepliedMessage = ({
           >
             {message.status === "removed" && message.removedBy?._id === currentUser?._id
               ? "Removed"
-              : message.content}
+              : RenderMessageWithEmojis(message?.content, isSmallDevice)}
           </span>
         </>
       ) : (
@@ -130,7 +138,7 @@ const RepliedMessage = ({
             "Removed"
           ) : showFullMessage || message?.content?.length <= 300 ? (
             <>
-              {message?.content}
+              {RenderMessageWithEmojis(message?.content, isSmallDevice)}{" "}
               {message?.content.length > 300 && (
                 <span
                   className="ml-1 text-xs text-violet-400 cursor-pointer"
@@ -142,7 +150,7 @@ const RepliedMessage = ({
             </>
           ) : (
             <>
-              {message?.content.slice(0, 300)}{" "}
+              {RenderMessageWithEmojis(message?.content.slice(0, 300), isSmallDevice)}{" "}
               <span
                 className="ml-1 text-xs text-blue-400 cursor-pointer"
                 onClick={() => setShowFullMessage(true)}

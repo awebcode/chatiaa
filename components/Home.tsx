@@ -124,6 +124,7 @@ const Home = () => {
    
   return (
     <div className="overflow-y-scroll  max-h-[100vh] ">
+      
       <Scrollbar
         ref={scrollbar as any}
         plugins={{

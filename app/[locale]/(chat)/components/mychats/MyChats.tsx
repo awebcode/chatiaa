@@ -81,6 +81,7 @@ const MyChats = () => {
 
     container?.scrollTo({ top: 0, behavior: "smooth" });
   };
+  // console.log({chats})
 
   return (
     <>
@@ -124,7 +125,7 @@ const MyChats = () => {
                   <SkeletonContainer />
                 ) : chats && chats.length > 0 ? (
                   chats.map((chat) => (
-                    <FriendsCard chat={chat} key={chat._id + Date.now().toString()} />
+                    <FriendsCard chat={chat} key={chat._id + Date.now().toString()+Math.random()*100} />
                   ))
                 ) : (
                   <h1 className="text-sm md:text-xl m-4 text-center font-medium">

@@ -293,6 +293,8 @@ export const updateChatMessageController = async (
   next: NextFunction
 ) => {
   try {
+    console.log({ updateMessage:req.body });
+
     const { chatId, status } = req.body;
     if (!status || !chatId)
       return next(new CustomErrorHandler("Chat Id or status cannot be empty!", 400));
@@ -390,6 +392,7 @@ export const updateChatMessageAsDeliveredController = async (
       if (!chat.latestMessage) {
         return; // Skip chats without a latest message
       }
+    
       // Update the latest message's status to "delivered"
       if (
         chat.latestMessage?.status === "unseen" &&

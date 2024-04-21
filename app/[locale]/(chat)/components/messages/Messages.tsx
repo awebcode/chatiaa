@@ -14,19 +14,16 @@ import TypingIndicator from "../TypingIndicator";
 import { IMessage } from "@/context/reducers/interfaces";
 import { allMessages } from "@/functions/messageActions";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/navigation";
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
 import MessageCard from "./MessageCard";
 import { Scrollbar } from "smooth-scrollbar-react";
 import type { Scrollbar as BaseScrollbar } from "smooth-scrollbar/scrollbar";
 export default function Messages({ chatId }: { chatId: string }) {
-   const scrollbar = useRef<BaseScrollbar | null>(null);
+  const scrollbar = useRef<BaseScrollbar | null>(null);
   const { selectedChat } = useMessageState();
-  const { messages, totalMessagesCount, isSelectedChat } = useMessageState();
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const { messages, totalMessagesCount } = useMessageState();
+ 
 
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -115,28 +112,13 @@ export default function Messages({ chatId }: { chatId: string }) {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-
-  //  const roomId = searchParams.get("chatId");
-  //  useEffect(() => {
-  //    const chatData = localStorage.getItem("selectedChat");
-  //    if (!roomId || !chatData) {
-  //      router.push("/chat");
-  //    }
-  //  }, [roomId]);
-
+  
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-1 bg-base-200 max-h-[80vh]  overflow-y-scroll  flex flex-col-reverse"
+      className="menu p-1 bg-base-200 max-h-[96vh] md:max-h-[83vh]   overflow-y-scroll  flex flex-col-reverse"
     >
-      <Scrollbar
-        ref={scrollbar as any}
-        plugins={{
-          overscroll: {
-            effect: "bounce",
-          } as any,
-        }}
-      >
+    
         <InfiniteScroll
           dataLength={messages ? messages?.length : 0}
           next={fetchNextPage}
@@ -212,10 +194,9 @@ export default function Messages({ chatId }: { chatId: string }) {
             }`}
             onClick={() => scrollToBottom()}
           >
-            <FaArrowDown className="w-3 h-5 md:w-5  md:h-5 m-2 animate-bounce text-violet-500" />
+            <FaArrowDown className="w-3 h-5 md:w-5  md:h-5 m-2 animate-bounce text-emerald-500" />
           </div>
         </InfiniteScroll>
-      </Scrollbar>
     </div>
   );
 }

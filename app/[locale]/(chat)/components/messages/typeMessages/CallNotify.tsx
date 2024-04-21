@@ -5,22 +5,22 @@ import dynamic from "next/dynamic";
 import Time from "./Time";
 import LoaderComponent from "@/components/Loader";
 const SeenBy = dynamic(() => import("./seenby/SeenBy"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 // Import RepliedMessage dynamically
 const RepliedMessage = dynamic(() => import("./reply/RepliedMessage"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 const RREsystem = dynamic(() => import("../RRE/RREsystem"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 const Status = dynamic(() => import("./Status"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 const CallNotify = ({
   message,

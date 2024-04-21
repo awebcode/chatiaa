@@ -20,11 +20,10 @@ import { v4 } from "uuid";
 import { updateSenderMessagesUI } from "@/config/functions";
 import { FaReply } from "react-icons/fa";
 import { Emoji, EmojiStyle } from "emoji-picker-react";
-import LoaderComponent from "@/components/Loader";
 
 const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"), { ssr: false });
-const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"),{ssr:false});
-const EmojiComponent = dynamic(() => import("./EmojiComponent"),{ssr:false});
+const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"), { ssr: false });
+const EmojiComponent = dynamic(() => import("./EmojiComponent"), { ssr: false });
 type Temoji = {
   emoji: string;
   unified: string;
@@ -139,9 +138,9 @@ const Input = () => {
       "text",
       dispatch,
       null,
-      {...isEdit,content:message} as any
+      { ...isEdit, content: message } as any
     );
-    console.log({isEdit,isReply})
+    console.log({ isEdit, isReply });
     const formData = new FormData();
     formData.append("tempMessageId", tempMessageId as string);
     formData.append("messageId", isEdit?._id as any);
@@ -161,7 +160,7 @@ const Input = () => {
     if (!selectedChat?.chatId && !isReply) {
       return;
     }
-    const tempMessageId = v4()
+    const tempMessageId = v4();
     const dispatchData = {
       senderId: currentUser?._id,
       receiverId: selectedChat?.userInfo._id,
@@ -172,7 +171,7 @@ const Input = () => {
       isGroupChat: selectedChat?.isGroupChat,
       groupChatId: selectedChat?.isGroupChat ? selectedChat.chatId : null,
       sender: currentUser,
-      isReply: { ...isReply, repliedBy: currentUser, messageId:isReply },
+      isReply: { ...isReply, repliedBy: currentUser, messageId: isReply },
       // chat:selectedChat,
       tempMessageId, ///for update sender ui instantly
     };
@@ -231,14 +230,19 @@ const Input = () => {
     return <ChatBlockStatus chatBlockedBy={selectedChat?.chatBlockedBy} />;
   }
   return (
-    <div className="w-full  bg-gray-100 rounded dark:bg-gray-800 z-20">
+    <div className="w-full  bg-gray-100 rounded dark:bg-gray-800 z-50">
       {/* edit replay preview */}
       <EdRePreview setMessage={setMessage} />
-      <div className="flex items-center rounded-lg p-2">
+      <div className="flex items-center rounded-lg px-3">
         <div className="p-1" ref={clickOutsideEmojiRef}>
           <div className="cursor-pointer" onClick={() => setOpenEmoji(!openEmoji)}>
             {" "}
-            <Emoji size={20} lazyLoad emojiStyle={EmojiStyle.APPLE} unified={"1f642"} />{" "}
+            <Emoji
+              size={20}
+              lazyLoad
+              emojiStyle={EmojiStyle.APPLE}
+              unified={"1f642"}
+            />{" "}
           </div>
 
           {/* Emoji icon */}
@@ -280,11 +284,11 @@ const Input = () => {
             )}
           </div>
         ) : (
-          <div className="animate-pulse p-2 md:p-3 bg-blue-600 text-white rounded-full">
+          <div className="animate-pulse p-1 md:p-2 bg-emerald-500 text-white rounded-full">
             {/* Right side audio recorder icon */}
             <CiMicrophoneOn
               onClick={() => setAudioRecorder(true)}
-              className=" text-lg md:text-xl cursor-pointer h-full w-full"
+              className=" text-sm md:text-lg cursor-pointer h-full w-full"
             />
           </div>
         )}

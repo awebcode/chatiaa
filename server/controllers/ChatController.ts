@@ -230,8 +230,8 @@ export const fetchChats = async (
         }
       })
     );
+    // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
     // // Retrieve the IDs of the filtered users
-
     res.status(200).send({
       chats:
         filteredChats.length > 0
@@ -240,11 +240,7 @@ export const fetchChats = async (
           ? []
           : populatedChatsWithUnseenCount,
       total:
-        filteredChats.length > 0
-          ? filteredChats.length
-          : req.query.search
-          ? 0
-          : totalDocs,
+         totalDocs,
       limit,
       unseenCountArray: unseenCount,
     });

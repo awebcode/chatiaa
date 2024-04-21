@@ -102,8 +102,8 @@ export default async function LocaleLayout({
               {" "}
               <NextThemeProvider>
                 <NextIntlClientProvider locale={locale} messages={languages}>
-                  <Navbar />
                   <MessageContextProvider>
+                    <Navbar />
                     {(user as any)._id && <SocketEvents currentUser={user as any} />}
                     {children} {/* <IntlPolyfills /> */}
                   </MessageContextProvider>

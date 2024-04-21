@@ -15,10 +15,10 @@ import { handleSendCall } from "@/config/handleSendCall";
 import LoaderComponent from "@/components/Loader";
 import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"), {
-  loading: () => <LoaderComponent text="Fetching..." />,
+  // loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 const ChatHeader = () => {
@@ -32,44 +32,43 @@ const ChatHeader = () => {
 
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
-    queryClient.invalidateQueries({ queryKey: ["chats"] });
+    // queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
-    router.push("/chat");
+    router.replace("/chat");
   };
-  useEffect(() => {
-    const localStorageChat=localStorage.getItem("selectedChat")
-    if (!selectedChat||!localStorageChat) return  router.push("/chat");
-  }, [selectedChat, router, dispatch]);
+  // useEffect(() => {
+  //   const localStorageChat=localStorage.getItem("selectedChat")
+  //   if (!selectedChat||!localStorageChat) return  router.replace("/chat");
+  // }, [selectedChat, router, dispatch]);
   //  if (!selectedChat) return router.replace("/chat");
   return (
-    <div className="p-4 bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
-      <div className="flex items-center justify-center gap-2">
+    <div className="p-[6px]  bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
+      <div className="flex items-center justify-center gap-1">
         <span
           className=" cursor-pointer  md:p-[6px]  rounded-full"
           onClick={() => {
             clearselectedChat();
           }}
         >
-          <FaArrowLeft className="h-3 md:h-4 w-3 md:w-4" />
+          <FaArrowLeft className="h-3 md:h-4 w-3 md:w-4 text-emerald-500" />
         </span>
         {selectedChat && (
           <>
             <div
               onClick={() => {
-               document
-                 .getElementById(
-                   `right${selectedChat.isGroupChat ? "Group" : "User"}Sheet`
-                 )
-                 ?.click();
-
+                document
+                  .getElementById(
+                    `right${selectedChat.isGroupChat ? "Group" : "User"}Sheet`
+                  )
+                  ?.click();
               }}
-              className="relative cursor-pointer  p-[2px] h-8 w-8 md:h-10 md:w-10 ring-1 md:ring-2 ring-violet-500 rounded-full"
+              className="relative cursor-pointer  p-[2px] h-7 w-7 md:h-8 md:w-8 ring-1 md:ring-1 ring-violet-500 rounded-full"
             >
               <Image
-                height={35}
-                width={35}
+                height={30}
+                width={30}
                 className="rounded-full object-fill h-full w-full"
                 alt={
                   selectedChat.isGroupChat
@@ -79,18 +78,18 @@ const ChatHeader = () => {
                 src={
                   selectedChat.isGroupChat
                     ? selectedChat?.groupInfo?.image?.url
-                    : (selectedChat?.userInfo?.image as any)
+                    : selectedChat?.userInfo?.image
                 }
                 loading="lazy"
               />
 
               <span
-                className={` absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-1 md:p-[6px] ${
+                className={` absolute bottom-0 -right-1 rounded-full ring-1 ring-gray-900 p-1 md:p-[5px] ${
                   selectedChat?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
                 }`}
               ></span>
             </div>
-            <div className="ml-1">
+            <div className="ml-2 flex flex-col dark:text-gray-200">
               <h3 className="text-xs md:text-sm font-bold ">
                 {selectedChat.isGroupChat
                   ? selectedChat?.chatName
@@ -111,15 +110,15 @@ const ChatHeader = () => {
                           {index === 0 ? (
                             <span className="text-[10px] animate-pulse">
                               {/* Show the name of the first typing user */}
-                              {typeuser.userInfo?.name}
+
                               {/* If there are more than one typing users, show the count */}
                               {array.length > 1 ? (
-                                <span>{` and ${
+                                <span>{`${typeuser.userInfo?.name} and ${
                                   array.length - 1
                                 } more are typing...`}</span>
                               ) : (
                                 // If there's only one typing user, show "is typing..."
-                                <span> is typing...</span>
+                                <span>Typing...</span>
                               )}
                             </span>
                           ) : null}
@@ -133,18 +132,16 @@ const ChatHeader = () => {
                     selectedChat?.isOnline ? (
                       <span className="text-green-500">Online</span>
                     ) : (
-                      <span className="text-rose-500">Friends are offline</span>
+                      <span className="text-rose-500">Members are offline</span>
                     )
                   ) : selectedChat?.isOnline ? (
                     <span className="text-green-500">Online</span>
-                  ) : (!selectedChat?.isOnline && selectedChat?.userInfo?.lastActive) ||
-                    selectedChat?.userInfo?.createdAt ? (
+                  ) : !selectedChat?.isOnline ? (
                     <span className="text-[9px]">
                       <span className="mr-1">Active</span>
-                      {moment(
-                        (selectedChat?.userInfo?.lastActive as any) ||
-                          selectedChat?.userInfo?.createdAt
-                      ).fromNow()}
+                      {selectedChat?.userInfo?.lastActive
+                        ? moment(selectedChat?.userInfo?.lastActive).fromNow()
+                        : moment(selectedChat?.userInfo?.createdAt).fromNow()}
                     </span>
                   ) : (
                     <span className="text-rose-500">Offline</span>
@@ -170,13 +167,13 @@ const ChatHeader = () => {
               onClick={() => {
                 handleSendCall("audio", currentUser, selectedChat, socket, dispatch);
               }}
-              className="h-4 w-4 md:h-6 md:w-6  cursor-pointer"
+              className="h-4 w-4 md:h-5 md:w-5 text-emerald-500  cursor-pointer"
             />
             <MdVideoCall
               onClick={() => {
                 handleSendCall("video", currentUser, selectedChat, socket, dispatch);
               }}
-              className="h-4 w-4 md:h-6 md:w-6  cursor-pointer"
+              className="h-4 w-4 md:h-5 md:w-5 text-emerald-500  cursor-pointer"
             />
           </span>
         )}

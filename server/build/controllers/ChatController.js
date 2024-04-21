@@ -183,6 +183,7 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 return null; // Return null or any other default value if needed
             }
         })));
+        // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
         // // Retrieve the IDs of the filtered users
         res.status(200).send({
             chats: filteredChats.length > 0
@@ -190,11 +191,7 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 : req.query.search
                     ? []
                     : populatedChatsWithUnseenCount,
-            total: filteredChats.length > 0
-                ? filteredChats.length
-                : req.query.search
-                    ? 0
-                    : totalDocs,
+            total: totalDocs,
             limit,
             unseenCountArray: unseenCount,
         });

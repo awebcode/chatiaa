@@ -10,33 +10,49 @@ const ChatHeader = dynamic(() => import("./chatheader/ChatHeader") as any, {
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { useMessageState } from "@/context/MessageContext";
 // import ChatHeader from "./chatheader/ChatHeader";
-// import Input from "./Input/Input";
-const Input = dynamic(() => import("./Input/Input"), {
-  // loading: () => <LoaderComponent
-  // text="Fetching..."/>,
-});
+import Input from "./Input/Input";
+// const Input = dynamic(() => import("./Input/Input"), {
+//   // loading: () => <LoaderComponent
+//   // text="Fetching..."/>,
+// });
 import LoaderComponent from "@/components/Loader";
+import EmptyChat from "./Empty";
+import { useRouter } from "@/navigation";
+import { useSearchParams } from "next/navigation";
 const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const { selectedChat } = useMessageState();
-
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { socket } = useSocketContext();
   useEffect(() => {
     socket.emit("join", { chatId: selectedChat?.chatId });
   }, [selectedChat?.chatId, socket]); //selectedChat
-
+  //it only when use router.relace('/chat?chatId') on friends card
+  const roomId = searchParams.get("chatId");
+  useEffect(() => {
+    const chatData = localStorage.getItem("selectedChat");
+    if (!roomId || !chatData) {
+      router.replace("/chat");
+    }
+  }, [roomId, router]);
+   useEffect(() => {
+    if (!selectedChat||!roomId) return router.replace("/chat");
+   }, [roomId, router,selectedChat]);
+  //<EmptyChat />;
+  if (!selectedChat) return <EmptyChat />;
   return (
-    <div className="relative border-l border-l-gray-200 dark:border-l-gray-700 top-0 w-full h-screen ">
+    <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}
-      <div className="absolute top-0 h-auto w-full z-10  !overflow-hidden p-2">
+      <div className="absolute top-0  w-full z-10  !overflow-hidden p-2">
         {" "}
         <ChatHeader />
       </div>
       {/* Message */}
-      <div className="w-full   fixed  md:absolute  py-2  top-24 md:top-28   z-0">
+      <div className="w-full   fixed  md:absolute  py-2  top-[43px] md:top-[52px]    z-20">
         {children}
       </div>
       {/* Inpute */}
-      <div className="w-full fixed h-auto md:absolute bottom-0 z-10">
+      <div className="w-full fixed   md:absolute bottom-0 z-50 ">
         {" "}
         <Input />
       </div>

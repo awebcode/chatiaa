@@ -97,7 +97,10 @@ export const getProfile = async (userId: string) => {
 //fetchClientUser
 
 export const fetchClientUser = async () => {
-  const { data } = await axiosClient.get(`/getUser`);
+  const { data } = await axiosClient.get(`/getUser`, {
+    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
+  });
 
   return data;
 };

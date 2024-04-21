@@ -1,5 +1,5 @@
 import React from "react";
-// import LeftSideClientWrapper from "../components/LeftSide";
+import LeftSideClientWrapper from "../components/LeftSide";
 // import EmptyChat from "../components/Empty";
 // import MainClientWrapper from "../components/Main";
 // import PrefetchMyChats from "../components/mychats/PrefetchChats";
@@ -8,27 +8,34 @@ import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
-
-const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
-  loading: () => <ChatSkeleton />,
+import MyChats from "../components/mychats/MyChats";
+import MainClientWrapper from "../components/Main";
+// import PrefetchMessages from "../components/messages/PrefetchMessages";
+// import Messages from "../components/messages/Messages";
+const Messages = dynamic(() => import("../components/messages/Messages"), {
+  ssr: false,
+  loading: () => <LoaderComponent text="Fetching messages..." />,
 });
-
-
-const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats"), {
-  loading: () => <ChatSkeleton />,
-});
-
-// const MainClientWrapper = dynamic(() => import("../components/Main"), {
-//   loading: () => <LoaderComponent 
-  // text="Fetching..."/>,
+// const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
+//   loading: () => <ChatSkeleton />,
 // });
-// const PrefetchMessages = dynamic(
-//   () => import("../components/messages/PrefetchMessages"),
-//   {
-//     loading: () => <LoaderComponent 
-  // text="Fetching..."/>,
-//   }
-// );
+
+const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats") ,
+  {
+    ssr:false,
+    loading: () => <LoaderComponent text="Fetching Chats..." />,
+  });
+
+// const MainClientWrapper = dynamic(() => import("../components/Main") , {
+//   loading: () => <LoaderComponent
+//   text="Fetching..."/>,
+// });
+const PrefetchMessages = dynamic(
+  () => import("../components/messages/PrefetchMessages"),
+  {
+    loading: () => <LoaderComponent text="Fetching Messages..." />,
+  }
+);
 // Now you can use these components as usual, but they will be loaded lazily.
 
 const page = async ({
@@ -41,24 +48,31 @@ const page = async ({
       <div className="flexBetween gap-2 overflow-hidden">
         {/* Left side */}
         <div
-          className={`h-[91vh] md:h-[88vh] basis-[100%]  w-full md:basis-3/6 border `}
+          className={`h-[93vh] md:h-[92vh] basis-[100%]  w-full md:basis-3/6 border  ${
+            searchParams?.chatId ? "hidden md:block" : "block"
+          }`}
         >
-          <LeftSideClientWrapper>
-            <PrefetchMyChats />
+          <LeftSideClientWrapper chatId={searchParams?.chatId as string}>
+            {/* <PrefetchMyChats /> */}
+            <MyChats />
           </LeftSideClientWrapper>
         </div>
         {/* Rightside */}
         <div
-          className={`h-screen hidden md:block md:h-[88vh] border w-full `}
+          className={`relative h-screen  ${
+            searchParams?.chatId ? "block" : "hidden"
+          } md:block h-[93vh] md:h-[92vh] border w-full `}
         >
-          {/* {searchParams?.chatId ? (
+          {searchParams?.chatId ? (
             <MainClientWrapper>
               <PrefetchMessages chatId={searchParams?.chatId as string} />
+              {/* <Messages chatId={searchParams?.chatId as string} /> */}
             </MainClientWrapper>
           ) : (
+            // <Messages chatId={searchParams?.chatId as string} />
             <EmptyChat />
-          )} */}
-          <EmptyChat />
+          )}
+          {/* <EmptyChat /> */}
         </div>
       </div>
     </>

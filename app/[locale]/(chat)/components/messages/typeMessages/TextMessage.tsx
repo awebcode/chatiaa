@@ -6,7 +6,7 @@ import { ChatSkeleton } from "../../mychats/ChatSkeleton";
 import Time from "./Time";
 import SeenBy from "./seenby/SeenBy";
 const DisplayReaction = dynamic(() => import("./reactions/DisplayReaction"), {
-  loading: () => <ChatSkeleton />,
+  // loading: () => <ChatSkeleton />,
   ssr: false,
 });
 

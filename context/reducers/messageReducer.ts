@@ -48,6 +48,7 @@ export const MessageDispatchContext = createContext<Dispatch<Action> | undefined
 
 export const messageReducer = (state: State, action: Action): State => {
   switch (action.type) {
+     
     case SET_USER:
       return { ...state, user: action.payload };
 
@@ -64,7 +65,7 @@ export const messageReducer = (state: State, action: Action): State => {
             ["unseen"].includes(chat.latestMessage.status as string)
           ) {
             // Update the status to "delivered"
-            const updatedLatestMessage = { ...chat.latestMessage, status: "delivered" };
+            const updatedLatestMessage = { ...chat.latestMessage }; //, status: "delivered"
             // Return the updated chat object
             return { ...chat, latestMessage: updatedLatestMessage };
           } else {
@@ -501,14 +502,15 @@ export const messageReducer = (state: State, action: Action): State => {
           return m._id === action.payload._id;
         });
         //  console.log({payload:action.payload})
-        if (existingMessageIndex !== -1) {
+        if (existingMessageIndex !== -1 && action.payload.addMessageType!=="notify") {
           // Update the existing message
           updatedMessages = [...state.messages];
-          const { isEdit, file, content, createdAt } = action.payload;
           if (
             ["editMessage", "editSocketMessage"].includes(action.payload.addMessageType)
           ) {
             //add editmessage
+            const { isEdit, file, content, createdAt } = action.payload;
+
             updatedMessages[existingMessageIndex] = {
               ...updatedMessages[existingMessageIndex],
               isEdit,
@@ -520,6 +522,7 @@ export const messageReducer = (state: State, action: Action): State => {
               createdAt,
             };
           } else {
+
             updatedMessages[existingMessageIndex] = action.payload;
           }
         } else {
