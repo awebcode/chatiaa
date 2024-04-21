@@ -50,7 +50,7 @@ export const RenderMessageWithEmojis = (
   }
   return (
     <span className="" onCopyCapture={handleCopyCapture}>
-      {typeof parts === "object" ? input : parts}
+      {parts}
     </span>
   );
 };

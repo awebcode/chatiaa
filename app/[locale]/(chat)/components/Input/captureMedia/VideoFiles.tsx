@@ -215,7 +215,7 @@ const VideoFiles = ({
                 >
                   {/* URL.createObjectURL(file) */}
                   <video
-                    className="h-[150px] w-[150px]"
+                    className="h-60 w-60 md:h-[150px] md:w-[150px]"
                     autoPlay
                     controls
                     onTimeUpdate={handleVideoPlaybackTimeUpdate}

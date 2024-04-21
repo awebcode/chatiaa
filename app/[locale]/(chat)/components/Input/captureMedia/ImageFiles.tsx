@@ -205,7 +205,7 @@ const ImageFiles = ({
           screenshotFormat="image/jpeg"
           className="w-full h-auto object-cover"
         />
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {" "}
           <Button
             disabled={(isEdit as any) && capturedImage.length > 0}
@@ -239,7 +239,7 @@ const ImageFiles = ({
             ) : isEdit ? (
               "Sent edit image"
             ) : (
-              "Sent images"
+              "Sent"
             )}
           </Button>
         </div>
@@ -262,11 +262,11 @@ const ImageFiles = ({
                   {/* URL.createObjectURL(file) */}
                   <div>
                     <Image
-                      height={150}
-                      width={180}
+                      height={60}
+                      width={60}
                       src={URL.createObjectURL(file)}
                       alt="image"
-                      className="h-full w-full object-cover rounded"
+                      className="h-full w-full object-cover rounded-md"
                     />
                   </div>
                   <button
@@ -279,7 +279,7 @@ const ImageFiles = ({
                     className="absolute right-1 bottom-0  bg-gray-100 rounded  focus:outline-none"
                     onClick={() => handleDownloadImage(file)}
                   >
-                    <FaDownload className="text-blue-400 text-xl " />
+                    <FaDownload className="text-blue-400 text-sm md:text-lg " />
                   </button>
                 </CarouselItem>
               ))}
