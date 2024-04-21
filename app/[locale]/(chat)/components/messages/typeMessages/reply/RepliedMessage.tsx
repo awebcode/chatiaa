@@ -25,7 +25,7 @@ const RepliedMessage = ({
         <>
           <div className="p-1  border-l-2 border-violet-600 rounded shadow-md cursor-pointer">
             {" "}
-            <span className="text-blue-400 block text-sm">
+            <span className="text-blue-400 block text-xs md:text-sm">
               {" "}
               {message.isReply.repliedBy?._id === currentUser?._id
                 ? "You"
@@ -124,7 +124,7 @@ const RepliedMessage = ({
             )}
           </div>
           <span
-            className={"break-all text-sm font-thin text-gray-700 dark:text-gray-200"}
+            className={"break-all text-xs md:text-sm font-thin text-gray-700 dark:text-gray-200"}
           >
             {message.status === "removed" && message.removedBy?._id === currentUser?._id
               ? "Removed"
@@ -132,7 +132,7 @@ const RepliedMessage = ({
           </span>
         </>
       ) : (
-        <span className={"break-all text-sm  text-gray-600 dark:text-gray-200"}>
+        <span className={"break-all text-xs md:text-sm text-gray-600 dark:text-gray-200"}>
           {message?.status === "removed" &&
           message.removedBy?._id === currentUser?._id ? (
             "Removed"
