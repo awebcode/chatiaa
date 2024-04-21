@@ -35,7 +35,7 @@ const authMiddleware: any = async (req: Request, res: Response, next: NextFuncti
     if (!session?.user?.email && !decoded?.sub) {
       return next(new CustomErrorHandler("Unauthorized -Plese login and continue", 401));
     }
-
+console.log({session,decoded})
     req.id = (session as any)?.user?.id ? (session as any)?.user?.id : decoded?.sub;
     next();
   } catch (error) {
