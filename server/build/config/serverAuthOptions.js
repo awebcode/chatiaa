@@ -41,4 +41,12 @@ exports.serverAuthOptions = {
             });
         },
     },
+    debug: false,
+    session: {
+        strategy: "jwt",
+    },
+    jwt: {
+        maxAge: 1000 * 60 * 60 * 24 * 30, //expires at 30 days
+    },
+    secret: process.env.NEXTAUTH_SECRET,
 };

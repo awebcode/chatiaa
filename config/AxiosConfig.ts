@@ -7,10 +7,9 @@ export const axiosClient = axios.create({
   
 });
 axiosClient.interceptors.request.use(async(config) => {
-  const authToken =await getSession()
-  if (authToken) {
-    config.headers.Authorization = `Bearer ${(authToken as any)?.accessToken}`;
-  }
+  // const authToken = await getSession();
+  // if (authToken) {
+  //   config.headers.Authorization = `Bearer ${(authToken as any)?.accessToken}`;
+  // }
   return config;
 });
-

@@ -32,7 +32,6 @@ const Navbar = () => {
 
   const logoutHandler = async () => {
     await signOut();
-    queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
     localStorage.removeItem("currentUser");
     router.push("/");
   };
