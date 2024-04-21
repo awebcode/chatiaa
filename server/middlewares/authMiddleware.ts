@@ -18,6 +18,7 @@ const authMiddleware: any = async (
     const authToken =
       req.cookies.authToken ||
       (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+    console.log({getToken:token, cookToken: req.cookies, headersToken: req.headers.authorization });
     let decoded: any;
     // console.log({ authToken, secret: process.env.NEXTAUTH_SECRET! });
 
