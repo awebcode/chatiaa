@@ -230,6 +230,7 @@ export const fetchChats = async (
         }
       })
     );
+    console.log({reqonFetchchats:req.id})
     // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
     // // Retrieve the IDs of the filtered users
     res.status(200).send({
