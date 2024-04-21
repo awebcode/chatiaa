@@ -19,9 +19,8 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         const authToken = req.cookies.authToken ||
             req.cookies[process.env.NODE_ENV === "production"
                 ? "__Secure-next-auth.session-token"
-                : "next-auth.session-token"];
-        // ||
-        // (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+                : "next-auth.session-token"] ||
+            (req.headers.authorization && req.headers.authorization.split(" ")[1]);
         console.log({
             getToken: token,
             cookToken: req.cookies,

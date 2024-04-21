@@ -21,9 +21,8 @@ const authMiddleware: any = async (
         process.env.NODE_ENV === "production"
           ? "__Secure-next-auth.session-token"
           : "next-auth.session-token"
-      ]
-      // ||
-      // (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+      ] ||
+      (req.headers.authorization && req.headers.authorization.split(" ")[1]);
     console.log({
       getToken: token,
       cookToken: req.cookies,
