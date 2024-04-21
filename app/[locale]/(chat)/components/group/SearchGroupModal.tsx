@@ -90,7 +90,7 @@ export default function SearchGroupModal() {
 
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
       localStorage.setItem("selectedChat", JSON.stringify(chatData));
-      router.replace(`?${chat?._id}`);
+      router.replace(`?chatId=${chat?._id}`);
       dispatch({ type: SET_CHATS, payload: chatData });
       document.getElementById("closeCreateGroupDialog")?.click();
     },
