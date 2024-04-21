@@ -24,7 +24,7 @@ const GroupCard = dynamic(() => import("./Card"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
 export default function SearchGroupModal() {
-  const router=useRouter()
+  const router = useRouter();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
   const { user: currentUser } = useMessageState();
@@ -90,7 +90,7 @@ export default function SearchGroupModal() {
 
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
       localStorage.setItem("selectedChat", JSON.stringify(chatData));
-       router.push(`/chat/${chat?._id}`);
+      router.replace(`?${chat?._id}`);
       dispatch({ type: SET_CHATS, payload: chatData });
       document.getElementById("closeCreateGroupDialog")?.click();
     },
@@ -136,7 +136,7 @@ export default function SearchGroupModal() {
               onClick={() => createGroupHandler()}
             >
               {groupMutaion.isPending ? (
-               <LoaderComponent text="Creating..."/>
+                <LoaderComponent text="Creating..." />
               ) : (
                 "+Create"
               )}

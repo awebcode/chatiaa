@@ -77,7 +77,7 @@ export const useAccessChatMutation = (closeDialogId: string) => {
       // setSelectedChat(chatData as any);
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
       localStorage.setItem("selectedChat", JSON.stringify(chatData));
-      router.push(`/chat/${chat.chatData?._id}`);
+      router.replace(`?${chat.chatData?._id}`);
       if (chat?.isNewChat) {
         dispatch({ type: SET_CHATS, payload: chat.chatData });
         if (chat?.chatData?.isOnline) {
