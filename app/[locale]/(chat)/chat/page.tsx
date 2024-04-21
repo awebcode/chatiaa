@@ -61,7 +61,7 @@ const page = async ({
         <div
           className={`relative h-screen  ${
             searchParams?.chatId ? "block" : "hidden"
-          } md:block h-[93vh] md:h-[92vh] border w-full `}
+          } md:block  md:h-[92vh] border w-full `}
         >
           {searchParams?.chatId ? (
             <MainClientWrapper>
