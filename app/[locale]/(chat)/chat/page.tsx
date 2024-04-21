@@ -10,6 +10,8 @@ import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
 import MyChats from "../components/mychats/MyChats";
 import MainClientWrapper from "../components/Main";
+import { fetchUser } from "@/functions/serverActions";
+import { redirect } from "@/navigation";
 // import PrefetchMessages from "../components/messages/PrefetchMessages";
 // import Messages from "../components/messages/Messages";
 const Messages = dynamic(() => import("../components/messages/Messages"), {
@@ -20,11 +22,10 @@ const Messages = dynamic(() => import("../components/messages/Messages"), {
 //   loading: () => <ChatSkeleton />,
 // });
 
-const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats") ,
-  {
-    ssr:false,
-    loading: () => <LoaderComponent text="Fetching Chats..." />,
-  });
+const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats"), {
+  ssr: false,
+  loading: () => <LoaderComponent text="Fetching Chats..." />,
+});
 
 // const MainClientWrapper = dynamic(() => import("../components/Main") , {
 //   loading: () => <LoaderComponent
@@ -43,6 +44,8 @@ const page = async ({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
+  const user = await fetchUser();
+  if (!user?.email) return redirect("/");
   return (
     <>
       <div className="flexBetween gap-2 overflow-hidden">
