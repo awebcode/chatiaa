@@ -17,8 +17,24 @@ const authMiddleware: any = async (
     // const session = await getServerSession(req, res, serverAuthOptions); //i can access more data using it like name,email,role,etc what i will provide on serverAuthOptions>session callback
     const authToken =
       req.cookies.authToken ||
-      (req.headers.authorization && req.headers.authorization.split(" ")[1]);
-    console.log({getToken:token, cookToken: req.cookies, headersToken: req.headers.authorization });
+      req.cookies[
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token"
+      ]
+      // ||
+      // (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+    console.log({
+      getToken: token,
+      cookToken: req.cookies,
+      headersToken: req.headers.authorization,
+      reQcooSqareBracket:
+        req.cookies[
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.session-token"
+            : "next-auth.session-token"
+        ],
+    });
     let decoded: any;
     // console.log({ authToken, secret: process.env.NEXTAUTH_SECRET! });
 
