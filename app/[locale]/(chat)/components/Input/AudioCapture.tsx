@@ -9,8 +9,10 @@ import { editMessage, replyMessage, sentMessage } from "@/functions/messageActio
 import { updateSenderMessagesUI } from "@/config/functions";
 import useEditReplyStore from "@/store/useEditReply";
 import { IMessage } from "@/context/reducers/interfaces";
+import { useMediaQuery } from "@uidotdev/usehooks";
 
 function CaptureAudio({ hide }: any) {
+  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   const { selectedChat, user: currentUser } = useMessageState();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
@@ -34,7 +36,7 @@ function CaptureAudio({ hide }: any) {
       progressColor: "#4a9eff",
       cursorColor: "#7ae3c3",
       barWidth: 2,
-      height: 30,
+      height: isSmallDevice ? 16 : 24,
     });
 
     setWaveform(waveSurfer);
@@ -201,30 +203,30 @@ function CaptureAudio({ hide }: any) {
             type: "audio/mp3",
           });
           //  setRecordedAudio(audioFile);
-         const handleMessageAction = async (
-           formData: FormData,
-           endpoint: (formData: FormData) => Promise<IMessage & { message: string }>
-         ): Promise<void> => {
-           setloading(true);
-           const tempMessageId = await updateSenderMessagesUI(
-             currentUser,
-             selectedChat,
-             audioFile,
-             "audio",
-             dispatch,
-             isReply,
-             isEdit
-           );
-           formData.append("tempMessageId", tempMessageId as string);
-           hide(false);
-           cancelEdit();
-           cancelReply()
-           const res = await endpoint(formData);
-           if (res.message) {
-             setloading(false);
-             hide(false);
-           }
-         };
+          const handleMessageAction = async (
+            formData: FormData,
+            endpoint: (formData: FormData) => Promise<IMessage & { message: string }>
+          ): Promise<void> => {
+            setloading(true);
+            const tempMessageId = await updateSenderMessagesUI(
+              currentUser,
+              selectedChat,
+              audioFile,
+              "audio",
+              dispatch,
+              isReply,
+              isEdit
+            );
+            formData.append("tempMessageId", tempMessageId as string);
+            hide(false);
+            cancelEdit();
+            cancelReply();
+            const res = await endpoint(formData);
+            if (res.message) {
+              setloading(false);
+              hide(false);
+            }
+          };
 
           if (!isEdit && !isReply) {
             const formData = new FormData();
@@ -251,8 +253,6 @@ function CaptureAudio({ hide }: any) {
             formData.append("receiverId", selectedChat?.userInfo?._id as any);
             await handleMessageAction(formData, editMessage);
           }
-
-        
         });
       } catch (e) {
         setloading(false);
@@ -271,7 +271,7 @@ function CaptureAudio({ hide }: any) {
           onClick={() => hide(false)}
         />
       </div>
-      <div className="mx-4 py-2 px-4 text-white text-lg flex gap-3 justify-center items-center bg-search-input-container-background rounded-full drop-shadow-lg">
+      <div className="mx-4 py-1 px-2  md:py-2 md:px-4 text-white text-lg flex gap-3 justify-center items-center bg-search-input-container-background rounded-full drop-shadow-lg">
         {isRecording ? (
           <div className="text-gray-400 text-[10px] md:text-sm animate-pulse text-center">
             Recording... {formatTime(recordingDuration)}
