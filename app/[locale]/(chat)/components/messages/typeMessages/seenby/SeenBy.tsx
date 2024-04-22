@@ -10,7 +10,7 @@ const TooltipContentComponent = dynamic(() => import("../TooltipWrapper"));
 const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuser }) => {
   const { selectedChat } = useMessageState();
   return (
-    <div className="absolute -bottom-10">
+    <div className="h-full absolute -bottom-8">
       <div className="flex m-1 gap-1">
         {message?.seenBy &&
           message?.seenBy?.map((user: any) => {

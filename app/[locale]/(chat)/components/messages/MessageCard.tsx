@@ -34,10 +34,10 @@ const MessageCard = ({ message }: { message: IMessage }) => {
   return (
     <>
       <div
-        className={`flex ${isCurrentUserMessage ? "justify-end " : "justify-start"}`} //mb-4 py-10
+        className={` flex ${isCurrentUserMessage ? "justify-end " : "justify-start ml-2"}`} //mb-4 py-10
       >
         <div
-          className={`flex items-center ${
+          className={` flex items-center ${
             isCurrentUserMessage ? "flex-row-reverse" : "flex-row"
           } space-x-2`}
         >

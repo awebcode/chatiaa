@@ -66,7 +66,7 @@ const DisplayReaction = ({
   return (
     <div
       ref={clickOutsideEmojiModal}
-      className={`absolute -bottom-[24px]  ${
+      className={`absolute -bottom-[15px]  ${
         isCurrentUserMessage ? "right-0" : "left-4"
       }`}
     >

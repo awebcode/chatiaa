@@ -138,10 +138,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     fetchOnlineUsers();
   }, []);
   //update friend chat and messages staus when i'm online
+
   useEffect(() => {
     updateAllMessageStatusAsDelivered(currentUser?._id as any);
-  }, []);
-  useEffect(() => {
+
     socket.emit("deliveredAllMessageAfterReconnect", {
       userId: currentUser?._id,
     });

@@ -34,7 +34,7 @@ const TextMessage = ({
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   return (
     <div
-      className={`flex items-center gap-0 max-w-sm md:max-w-2xl  ${
+      className={`flex items-center  gap-0 max-w-sm md:max-w-2xl  ${
         isCurrentUserMessage ? "" : "flex-row-reverse"
       }`}
     >
@@ -45,14 +45,14 @@ const TextMessage = ({
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
 
         <div
-          className={`relative m-4 p-1  rounded  ${
+          className={`relative m-4 p-[2px]  rounded  ${
             message?.sender?._id === currentChatUser?.userInfo?._id
               ? "bg-gray-200 text-gray-900 dark:text-gray-200 dark:bg-incoming-background rounded-bl-3xl"
               : "dark:bg-outgoing-background rounded-br-3xl bg-gray-300"
           }`}
         >
           <div className={""}>
-            <div className="relative p-1">
+            <div className="relative p-[2px] ">
               {/* Reply */}
               <RepliedMessage message={message} currentUser={currentUser as any} />
               {/* REACTIONS */}

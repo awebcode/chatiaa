@@ -19,15 +19,15 @@ const SeenByGroup = ({ chat, currentUser }: { chat: IChat; currentUser: Tuser })
       <div className="flex  gap-1">
         {/* unseen */}
         {chat?.latestMessage?.status === "unseen" && (
-          <div className="h-5 w-5 relative m-1">
-            <IoIosCheckmarkCircleOutline className="h-5 w-5 text-gray-400  rounded-full relative" />
+          <div className="h-4 w-4 relative m-1">
+            <IoIosCheckmarkCircleOutline className="h-4 w-4 text-gray-400  rounded-full relative" />
           </div>
         )}
         {/* Delivered */}
         {chat?.latestMessage?.status === "delivered" &&
         chat?.latestMessage?.sender?._id === currentUser?._id ? (
-          <div className="h-5 w-5 relative m-1">
-            <IoIosCheckmarkCircle className="h-5 w-5 relative text-gray-400" />
+          <div className="h-4 w-4 relative m-1">
+            <IoIosCheckmarkCircle className="h-4 w-4 relative text-gray-400" />
           </div>
         ) : (
           (chat?.latestMessage?.status === "delivered" || !chat?.latestMessage?.isSeen) &&

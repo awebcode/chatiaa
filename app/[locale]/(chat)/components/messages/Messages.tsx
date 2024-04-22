@@ -139,10 +139,11 @@ export default function Messages({ chatId }: { chatId: string }) {
         }}
         inverse={true}
         scrollableTarget="MessagesscrollableTarget"
-        scrollThreshold={0.2}
+        scrollThreshold={0.4}
       >
         {/* //mb-[66px] */}
-        <div className="flex flex-col-reverse gap-3 p-2  m-1 ">
+        <div className="messageRender flex flex-col-reverse m-1 p-1 gap-[7px] mr-[10px]  h-full">
+          {/* //gap-3 p-2  m-1 */}
           <div
             id="messageEndTarget"
             className="pb-4 mb-4 md:pb-3 md:mb-0"
@@ -189,14 +190,14 @@ export default function Messages({ chatId }: { chatId: string }) {
             <NoChatProfile selectedChat={selectedChat as any} />
           )}
         <div
-          className={`absolute left-1/2 bottom-8  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${
+          className={`absolute left-1/2 bottom-20 bg-gray-600 bg-opacity-75 animate-pulse   z-50 p-1 rounded-sm cursor-pointer transition-all duration-300 ${
             showScrollToBottomButton
               ? "opacity-100 translate-y-100 scale-100"
               : "translate-y-0 opacity-0 scale-0"
           }`}
           onClick={() => scrollToBottom()}
         >
-          <FaArrowDown className="w-3 h-5 md:w-5  md:h-5 m-2 animate-bounce text-emerald-500" />
+          <FaArrowDown className="w-3 h-3 md:w-4  md:h-4 m-2 animate-bounce text-emerald-500" />
         </div>
       </InfiniteScroll>
     </div>

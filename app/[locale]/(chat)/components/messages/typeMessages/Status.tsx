@@ -28,7 +28,7 @@ const Status = ({
         // Assuming RenderStatus is a function
         RenderStatus(selectedChat as any, message, "onMessage", 0, false)
       ) : (
-        <div className="h-6 w-6 relative">
+        <div className="h-4 w-4 md:h-5 md:w-5 relative cursor-pointer">
           {/* Assuming Image is a component */}
           <TooltipProvider>
             <Tooltip>
@@ -45,7 +45,7 @@ const Status = ({
             </Tooltip>
           </TooltipProvider>
           <span
-            className={`absolute bottom-0 right-0 rounded-full p-[4px] ${
+            className={`absolute bottom-0 right-0 rounded-full p-[3px] ${
               selectedChat?.isOnline ? "animate-pulse bg-green-500" : "bg-rose-500"
             }`}
           ></span>
