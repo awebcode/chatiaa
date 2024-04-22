@@ -32,10 +32,10 @@ const RREsystem = ({
           <BsReply
             onClick={() => onReply(message)}
             className={`${
-              isReply&&isReply?._id === message?._id
-                ? "text-violet-500 text-lg md:text-xl rotate-180"
+              isReply && isReply?._id === message?._id
+                ? "text-violet-500 text-[11px] md:text-[15px] rotate-180"
                 : "text-blue-500"
-            }  text-sm md:text-lg cursor-pointer transition-all duration-500 ${
+            }  text-[11px] md:text-[15px] cursor-pointer transition-all duration-500 ${
               isCurrentUserMessage ? "" : "rotate-180"
             }`}
           />
@@ -45,10 +45,10 @@ const RREsystem = ({
           <DropdownMenuTrigger className="border-none outline-none">
             <HiOutlineEmojiHappy
               className={`${
-               isEdit&& isEdit?._id === message?._id
-                  ? "text-violet-500 text-lg md:text-xl"
+                isEdit && isEdit?._id === message?._id
+                  ? "text-violet-500 text-[11px] md:text-[15px]"
                   : "text-blue-500"
-              }  text-sm md:text-lg cursor-pointer transition-all duration-500`}
+              }  text-[11px] md:text-[15px] cursor-pointer transition-all duration-500`}
             />
           </DropdownMenuTrigger>
           <ReactModal
@@ -64,7 +64,7 @@ const RREsystem = ({
               {" "}
               <HiDotsVertical
                 className={`text-blue-500
-                  text-sm md:text-lg cursor-pointer transition-all duration-500`}
+                  text-[11px] md:text-[15px] cursor-pointer transition-all duration-500`}
               />
             </DropdownMenuTrigger>
             <EditUnModal message={message} />

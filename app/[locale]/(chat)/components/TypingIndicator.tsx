@@ -29,7 +29,7 @@ const TypingIndicator = ({ onFriendListCard }: { onFriendListCard: boolean }) =>
         >
           {typingUser.userInfo && (
             <div
-              className={`ml-1 relative h-7 w-7   ring-3 ring-blue-700 rounded-full ${
+              className={`ml-1 relative h-4 w-4 md:h-5 md:w-5  ring-3 ring-blue-700 rounded-full ${
                 onFriendListCard ? "hidden" : "inline"
               }`}
             >

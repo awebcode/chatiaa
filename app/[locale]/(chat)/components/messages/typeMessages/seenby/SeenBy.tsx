@@ -18,9 +18,9 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
               <TooltipProvider key={user?.userId?._id}>
                 <Tooltip>
                   <TooltipTrigger>
-                    <div className="h-3 w-3 rounded-full cursor-pointer ">
+                    <div className=" h-3 w-3 md:h-4 md:w-4 rounded-full cursor-pointer ">
                       <Image
-                        src={user?.userId?.image||user?.image}
+                        src={user?.userId?.image || user?.image}
                         height={20}
                         width={20}
                         alt="image"
@@ -31,7 +31,7 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
                   </TooltipTrigger>
                   <TooltipContentComponent
                     chat={selectedChat as any}
-                    user={user?.userId||user }
+                    user={user?.userId || user}
                   />
                 </Tooltip>
               </TooltipProvider>
