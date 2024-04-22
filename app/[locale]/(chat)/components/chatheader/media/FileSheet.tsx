@@ -78,7 +78,7 @@ export default function FilesSheet({ total }: { total: number }) {
             </SheetDescription>
           </SheetHeader>
           <div>
-            <Carousel className="w-full max-w-[180px] md:max-w-sm p-2 md:p-4 ml-4 md:ml-10">
+            <Carousel className="w-ful m-auto  max-w-[250px] md:max-w-sm p-2 md:p-4 ml-4 md:ml-10">
               <CarouselContent className="">
                 {filterItems.map((v, index) => (
                   <CarouselItem
@@ -87,7 +87,7 @@ export default function FilesSheet({ total }: { total: number }) {
                     className="md:basis-1/2 lg:basis-1/3 m-1"
                   >
                     <Button
-                      size={"lg"}
+                      size={"sm"}
                       className={`${
                         filter === v.name ? "bg-blue-600 hover:bg-blue-700 mx-4" : ""
                       }`}

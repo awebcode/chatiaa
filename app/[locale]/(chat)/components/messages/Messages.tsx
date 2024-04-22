@@ -23,7 +23,6 @@ export default function Messages({ chatId }: { chatId: string }) {
   const scrollbar = useRef<BaseScrollbar | null>(null);
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
- 
 
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -112,11 +111,11 @@ export default function Messages({ chatId }: { chatId: string }) {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-  
+  if (messages?.length < 1) return <LoaderComponent text="Loading..." />;
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-1 bg-base-200 max-h-[94vh] md:max-h-[86vh]   overflow-y-scroll  flex flex-col-reverse"
+      className="menu p-1 bg-base-200 max-h-[92vh] md:max-h-[86vh]   overflow-y-scroll  flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
@@ -178,15 +177,17 @@ export default function Messages({ chatId }: { chatId: string }) {
         {selectedChat &&
           !isLoading &&
           totalMessagesCount > 0 &&
-          totalMessagesCount === messages?.length &&
-          <NoChatProfile selectedChat={selectedChat as any} />
-        }
+          totalMessagesCount === messages?.length && (
+            <NoChatProfile selectedChat={selectedChat as any} />
+          )}
         {/* when selectedChat have no chat */}
         {selectedChat &&
           !isLoading &&
           !isFetching &&
           data?.pages[0]?.total === 0 &&
-          totalMessagesCount===0 && <NoChatProfile selectedChat={selectedChat as any} />}
+          totalMessagesCount === 0 && (
+            <NoChatProfile selectedChat={selectedChat as any} />
+          )}
         <div
           className={`absolute left-1/2 bottom-8  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${
             showScrollToBottomButton
