@@ -116,7 +116,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-1 bg-base-200 max-h-[90vh] md:max-h-[88vh]   overflow-y-scroll  flex flex-col-reverse"
+      className="menu p-1 bg-base-200 max-h-[94vh] md:max-h-[86vh]   overflow-y-scroll  flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
@@ -140,7 +140,7 @@ export default function Messages({ chatId }: { chatId: string }) {
         }}
         inverse={true}
         scrollableTarget="MessagesscrollableTarget"
-        scrollThreshold={1}
+        scrollThreshold={0.2}
       >
         {/* //mb-[66px] */}
         <div className="flex flex-col-reverse gap-3 p-2  m-1 ">
@@ -175,19 +175,18 @@ export default function Messages({ chatId }: { chatId: string }) {
           )}
         </div>
 
-        {/* {selectedChat &&
+        {selectedChat &&
           !isLoading &&
           totalMessagesCount > 0 &&
-          totalMessagesCount === messages?.length && ( */}
-       { selectedChat &&
-          !isLoading  &&  <NoChatProfile selectedChat={selectedChat as any} />}
-          {/* )} */}
+          totalMessagesCount === messages?.length &&
+          <NoChatProfile selectedChat={selectedChat as any} />
+        }
         {/* when selectedChat have no chat */}
-        {/* {selectedChat &&
+        {selectedChat &&
           !isLoading &&
           !isFetching &&
           data?.pages[0]?.total === 0 &&
-          totalMessagesCount===0 && <NoChatProfile selectedChat={selectedChat as any} />} */}
+          totalMessagesCount===0 && <NoChatProfile selectedChat={selectedChat as any} />}
         <div
           className={`absolute left-1/2 bottom-8  z-50 p-2 rounded cursor-pointer transition-all duration-300 ${
             showScrollToBottomButton

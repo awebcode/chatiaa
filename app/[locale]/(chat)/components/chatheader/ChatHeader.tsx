@@ -38,10 +38,10 @@ const ChatHeader = () => {
     localStorage.removeItem("selectedChat");
     router.replace("/chat");
   };
-  // useEffect(() => {
-  //   const localStorageChat=localStorage.getItem("selectedChat")
-  //   if (!selectedChat||!localStorageChat) return  router.replace("/chat");
-  // }, [selectedChat, router, dispatch]);
+  useEffect(() => {
+    const localStorageChat=localStorage.getItem("selectedChat")
+    if (!selectedChat||!localStorageChat) return  router.replace("/chat");
+  }, [selectedChat, router, dispatch]);
   //  if (!selectedChat) return router.replace("/chat");
   return (
     <div className="p-[6px]  bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">

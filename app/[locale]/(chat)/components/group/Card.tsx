@@ -28,6 +28,13 @@ const GroupCard: React.FC<{ user: Tuser }> = ({ user }) => {
             src={user.image}
             loading="lazy"
           />
+          <span
+            className={`absolute bottom-0 right-0 rounded-full ring-1 ring-gray-900 p-1 md:p-[5px] ${
+              user?.onlineStatus === "online"
+                ? "animate-pulse bg-green-500"
+                : "bg-rose-500"
+            }`}
+          ></span>
         </div>
         <div>
           <h3 className="text-xs md:text-sm font-bold">{user.name}</h3>

@@ -9,10 +9,10 @@ import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
 import MyChats from "../components/mychats/MyChats";
-import MainClientWrapper from "../components/Main";
+// import MainClientWrapper from "../components/Main";
 import { fetchUser } from "@/functions/serverActions";
 import { redirect } from "@/navigation";
-// import PrefetchMessages from "../components/messages/PrefetchMessages";
+import PrefetchMessages from "../components/messages/PrefetchMessages";
 // import Messages from "../components/messages/Messages";
 const Messages = dynamic(() => import("../components/messages/Messages"), {
   ssr: false,
@@ -27,16 +27,16 @@ const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChat
   loading: () => <LoaderComponent text="Fetching Chats..." />,
 });
 
-// const MainClientWrapper = dynamic(() => import("../components/Main") , {
-//   loading: () => <LoaderComponent
-//   text="Fetching..."/>,
-// });
-const PrefetchMessages = dynamic(
-  () => import("../components/messages/PrefetchMessages"),
-  {
-    loading: () => <LoaderComponent text="Fetching Messages..." />,
-  }
-);
+const MainClientWrapper = dynamic(() => import("../components/Main")  , {
+  loading: () => <LoaderComponent
+  text="Fetching Messages..."/>,
+});
+// const PrefetchMessages = dynamic(
+//   () => import("../components/messages/PrefetchMessages"),
+//   {
+//     loading: () => <LoaderComponent text="Fetching Messages..." />,
+//   }
+// );
 // Now you can use these components as usual, but they will be loaded lazily.
 
 const page = async ({

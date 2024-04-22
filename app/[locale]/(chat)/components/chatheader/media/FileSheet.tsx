@@ -78,7 +78,7 @@ export default function FilesSheet({ total }: { total: number }) {
             </SheetDescription>
           </SheetHeader>
           <div>
-            <Carousel className="w-full max-w-sm p-4 ml-10">
+            <Carousel className="w-full max-w-[180px] md:max-w-sm p-2 md:p-4 ml-4 md:ml-10">
               <CarouselContent className="">
                 {filterItems.map((v, index) => (
                   <CarouselItem

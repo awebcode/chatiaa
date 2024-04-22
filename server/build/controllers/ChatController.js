@@ -150,7 +150,7 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         let filteredChats = [];
         if (req.query.search && keyword) {
             filteredChats = populatedChats.filter((chat) => chat.users.some((user) => user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
-                user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))) || chat.chatName.match(new RegExp(keyword.$or[0].name.$regex, "i")) // Add chatName filtering condition
+                user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))) || chat.chatName.match(new RegExp(req.query.search, "i")) // Add chatName filtering condition
             );
         }
         const filteredChatsWithUnseenCountPromises = filteredChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
