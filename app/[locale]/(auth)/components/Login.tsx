@@ -3,17 +3,10 @@ import { signIn, useSession } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useState } from "react";
 import Image from "next/image";
-<<<<<<< HEAD
+
 import { BiLoaderCircle } from "react-icons/bi";
 
 const Login = () => {
-=======
-import { useQueryClient } from "@tanstack/react-query";
-import { BiLoaderCircle } from "react-icons/bi";
-
-const Login = () => {
-  const queryClient=useQueryClient()
->>>>>>> 11b225f8d9b8799211e80c68357f4f434564da62
   const { data: session } = useSession();
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
