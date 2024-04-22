@@ -29,6 +29,10 @@ yarn-error.log*
 .env*.local
 
 # vercel
+<<<<<<< HEAD
 .vercel
+=======
+
+>>>>>>> 11b225f8d9b8799211e80c68357f4f434564da62
 # typescript
 *.tsbuildinfo

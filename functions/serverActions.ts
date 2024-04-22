@@ -41,7 +41,7 @@ export const allMessagesServerAction = async ({
   queryKey: any;
 }) => {
   const { data } = await axios.get(
-    `${BaseUrl}/allMessages/${queryKey[1]}?skip=${pageParam}&limit=${20}`,
+    `${BaseUrl}/allMessages/${queryKey[1]}?skip=${pageParam}&limit=${8}`,
     {
       headers: {
         "Content-Type": "application/json",
