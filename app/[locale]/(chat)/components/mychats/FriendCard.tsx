@@ -75,7 +75,6 @@ const FriendsCard: React.FC<{
   const handleClick = async (chatId: string) => {
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
     // queryClient.invalidateQueries({ queryKey: ["messages"] });
-    router.replace(`/chat?chatId=${chat?._id}`);
     if (selectedChat?.chatId === chatId) return;
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
@@ -113,6 +112,8 @@ const FriendsCard: React.FC<{
     // router.push(`/chat?chatId=${chat?._id}`);
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
+    router.replace(`?chatId=${chat?._id}`);
+
     // router.replace(`/chat?chatId=${chat?._id}`);
     // router.push(`/chat/${chat?._id}`);
     // router.replace(`/chat?chatId=${chat?._id}`);

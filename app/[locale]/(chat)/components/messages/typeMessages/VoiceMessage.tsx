@@ -106,15 +106,15 @@ export default function VoiceMessage({
   };
 
   return (
-    <div className="flex items-center gap-2 max-w-sm md:max-w-2xl">
+    <div className="flex items-center gap-0 max-w-sm md:max-w-2xl">
       {/* Remove/Replay/Emoji */}
       <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
-      <div className="flex flex-col justify-end items-end">
+      <div className="flex flex-col  items-end mr-4 md:mr-4">
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
         <div
-          className={`m-2 md:m-4 flex items-center gap-2 md:gap-5 text-gray-500 dark:text-white py-2  md:py-4 text-sm rounded-md`}
+          className={`  flex items-center justify-center gap-2 md:gap-5 text-gray-500 dark:text-white  text-sm rounded-md`}
         >
-          <div>
+          <div className="-mt-2 h-6 w-6 md:h-8 md:w-8">
             <Image
               src={message.sender?.image}
               height={60}
@@ -125,7 +125,7 @@ export default function VoiceMessage({
             />
           </div>
 
-          <div className={"cursor-pointer text-sm md:text-xl"}>
+          <div className={"cursor-pointer text-sm md:text-lg -mt-2 md:mt-0"}>
             {!playing ? (
               <FaPlay onClick={handlePlayAudio} />
             ) : (
@@ -137,14 +137,12 @@ export default function VoiceMessage({
             <div className="pt-2 md:pt-6">
               <RepliedMessage message={message} currentUser={currentUser as any} />
             </div>
-            <div className={"w-24 md:w-60"} ref={waveformRef}></div>
+            <div className={"w-52 md:w-64"} ref={waveformRef}></div>
 
             <div
-              className={
-                "text-bubble-meta text-[11px] pt-1 flex justify-between absolute bottom-[-22px] w-full"
-              }
+             
             >
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium text-gray-400">
                 {playing ? currentTime : totalTime}
               </span>
               {/* REACTIONS */}

@@ -27,9 +27,8 @@ const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChat
   loading: () => <LoaderComponent text="Fetching Chats..." />,
 });
 
-const MainClientWrapper = dynamic(() => import("../components/Main")  , {
-  loading: () => <LoaderComponent
-  text="Fetching Messages..."/>,
+const MainClientWrapper = dynamic(() => import("../components/Main"), {
+  loading: () => <LoaderComponent text="Fetching Messages..." />,
 });
 // const PrefetchMessages = dynamic(
 //   () => import("../components/messages/PrefetchMessages"),
@@ -68,8 +67,9 @@ const page = async ({
         >
           {searchParams?.chatId ? (
             <MainClientWrapper>
-              <PrefetchMessages chatId={searchParams?.chatId as string} />
-              {/* <Messages chatId={searchParams?.chatId as string} /> */}
+              {/* <PrefetchMessages chatId={searchParams?.chatId as string} /> */}
+              {/* Client side rendering more than faster */}
+              <Messages chatId={searchParams?.chatId as string} />
             </MainClientWrapper>
           ) : (
             // <Messages chatId={searchParams?.chatId as string} />

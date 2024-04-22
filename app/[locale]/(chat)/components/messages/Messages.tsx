@@ -111,7 +111,6 @@ export default function Messages({ chatId }: { chatId: string }) {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-  if (messages?.length < 1) return <LoaderComponent text="Loading..." />;
   return (
     <div
       id="MessagesscrollableTarget"
@@ -120,7 +119,7 @@ export default function Messages({ chatId }: { chatId: string }) {
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
         next={fetchNextPage}
-        hasMore={!isLoading && hasNextPage}
+        hasMore={hasNextPage} //!isLoading &&
         loader={<LoaderComponent text="Fetching messages..." />}
         endMessage={
           !isLoading && (
@@ -139,7 +138,7 @@ export default function Messages({ chatId }: { chatId: string }) {
         }}
         inverse={true}
         scrollableTarget="MessagesscrollableTarget"
-        scrollThreshold={0.8}
+        scrollThreshold={0.1}
       >
         {/* //mb-[66px] */}
         <div className="messageRender flex flex-col-reverse m-1 p-1 gap-[7px] mr-1 md:mr-2  h-full">
@@ -153,9 +152,7 @@ export default function Messages({ chatId }: { chatId: string }) {
 
           <TypingIndicator onFriendListCard={false} />
           {isLoading ? (
-            <div className="flex justify-center items-center mt-6">
-              <div className="w-9 h-9 border-l-transparent border-t-2 border-blue-500 rounded-full animate-spin"></div>
-            </div>
+            <LoaderComponent text="Fetching messages..."/>
           ) : (
             messages &&
             messages?.length > 0 &&
@@ -177,6 +174,7 @@ export default function Messages({ chatId }: { chatId: string }) {
 
         {selectedChat &&
           !isLoading &&
+          !isFetching &&
           totalMessagesCount > 0 &&
           totalMessagesCount === messages?.length && (
             <NoChatProfile selectedChat={selectedChat as any} />

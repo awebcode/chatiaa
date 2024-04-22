@@ -17,7 +17,7 @@ export const allMessages = async ({
   }
 
   const { data } = await axiosClient.get(
-    `/allMessages/${chatId}?skip=${pageParam}&limit=${20}`,
+    `/allMessages/${chatId}?skip=${pageParam}&limit=${8}`,
     {
       headers: { "Content-Type": "application/json" },
       withCredentials: true,

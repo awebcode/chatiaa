@@ -502,11 +502,11 @@ export const messageReducer = (state: State, action: Action): State => {
           return m._id === action.payload._id;
         });
         //  console.log({payload:action.payload})
-        if (existingMessageIndex !== -1 && action.payload.addMessageType!=="notify") {
+        if (existingMessageIndex !== -1 && action.payload?.addMessageType!=="notify") {
           // Update the existing message
           updatedMessages = [...state.messages];
           if (
-            ["editMessage", "editSocketMessage"].includes(action.payload.addMessageType)
+            ["editMessage", "editSocketMessage"].includes(action.payload?.addMessageType)
           ) {
             //add editmessage
             const { isEdit, file, content, createdAt } = action.payload;
@@ -516,7 +516,7 @@ export const messageReducer = (state: State, action: Action): State => {
               isEdit,
               file,
               content:
-                action.payload.addMessageType === "editSocketMessage"
+                action.payload?.addMessageType === "editSocketMessage"
                   ? content
                   : isEdit.messageId.content,
               createdAt,

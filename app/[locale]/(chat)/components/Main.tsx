@@ -30,17 +30,14 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   //it only when use router.relace('/chat?chatId') on friends card
   const roomId = searchParams.get("chatId");
   useEffect(() => {
-     const localStorageChat=localStorage.getItem("selectedChat")
-    const chatData = localStorage.getItem("selectedChat");
-    if (!roomId || !chatData||!localStorageChat) {
+    const localStorageChat = localStorage.getItem("selectedChat");
+    if (!roomId || !localStorageChat) {
       router.replace("/chat");
     }
   }, [roomId, router]);
-   useEffect(() => {
-    if (!selectedChat||!roomId) return router.replace("/chat");
-   }, [roomId, router,selectedChat]);
+// 
   //<EmptyChat />;
-  if (!selectedChat) return null
+  // if (!selectedChat) return <LoaderComponent text="Redirecting..." />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}
