@@ -112,7 +112,7 @@ export default function VoiceMessage({
       <div className="flex flex-col justify-end items-end">
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
         <div
-          className={`md:m-4 flex items-center gap-5 text-gray-500 dark:text-white px4 pr-2 py-4 text-sm rounded-md`}
+          className={`m-2 md:m-4 flex items-center gap-2 md:gap-5 text-gray-500 dark:text-white py-2  md:py-4 text-sm rounded-md`}
         >
           <div>
             <Image
@@ -125,7 +125,7 @@ export default function VoiceMessage({
             />
           </div>
 
-          <div className={"cursor-pointer text-xl"}>
+          <div className={"cursor-pointer text-sm md:text-xl"}>
             {!playing ? (
               <FaPlay onClick={handlePlayAudio} />
             ) : (
@@ -134,10 +134,10 @@ export default function VoiceMessage({
           </div>
           <div className={"relative "}>
             {/* reply */}
-            <div className="pt-6">
+            <div className="pt-2 md:pt-6">
               <RepliedMessage message={message} currentUser={currentUser as any} />
             </div>
-            <div className={"w-28 md:w-60"} ref={waveformRef}></div>
+            <div className={"w-24 md:w-60"} ref={waveformRef}></div>
 
             <div
               className={
