@@ -260,7 +260,6 @@ exports.sendMessage = sendMessage;
 const updateChatMessageController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        console.log({ updateMessage: req.body });
         const { chatId, status } = req.body;
         if (!status || !chatId)
             return next(new errorHandler_1.CustomErrorHandler("Chat Id or status cannot be empty!", 400));

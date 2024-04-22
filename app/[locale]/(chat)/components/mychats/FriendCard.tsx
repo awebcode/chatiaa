@@ -193,7 +193,7 @@ const FriendsCard: React.FC<{
               src={
                 !chat.isGroupChat
                   ? isFriend?.image || "/vercel.svg"
-                  : (chat as any)?.image?.url || "/vercel.svg"
+                  : (chat as any)?.image?.url 
               }
               // loading="lazy"
             />

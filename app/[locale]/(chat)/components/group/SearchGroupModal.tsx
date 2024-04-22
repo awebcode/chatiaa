@@ -54,6 +54,7 @@ export default function SearchGroupModal() {
   const groupMutaion = useMutation({
     mutationFn: (data: any) => createGroup(data),
     onSuccess: (chat) => {
+      console.log({createGroup:chat})
       const isFriend = getSenderFull(currentUser, chat.users);
       toast.success("Group created successfully!");
       const chatData = {

@@ -293,7 +293,6 @@ export const updateChatMessageController = async (
   next: NextFunction
 ) => {
   try {
-    console.log({ updateMessage:req.body });
 
     const { chatId, status } = req.body;
     if (!status || !chatId)

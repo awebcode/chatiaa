@@ -119,23 +119,33 @@ export const fetchChats = async (
     //   ],
     // });
     // const user=await User.findById(req.id);
-    const chats = await Chat.find({
-      $and: [
-        { users: { $elemMatch: { $eq: req.id } } },
-        { chatName: { $regex: req.query.search, $options: "i" } },
-      ],
+  const chats = await Chat.find({
+    $and: [
+      { users: { $elemMatch: { $eq: req.id } } },
+      {
+        $or: [
+          {
+            $and: [
+              { chatName: { $regex: req.query.search, $options: "i" } }, // Matching chatName
+              { isGroupChat: true }, // When isGroupChat is true
+            ],
+          },
+          { isGroupChat: false }, // For non-group chats
+        ],
+      },
+    ],
+  })
+    .populate({
+      path: "users",
+      select: "name email image createdAt lastActive onlineStatus",
+      options: { limit: 10 }, // Set limit to Infinity to populate all documents
     })
-      .populate({
-        path: "users",
-        select: "name email image createdAt lastActive onlineStatus",
-        options: { limit: 10 }, // Set limit to Infinity to populate all documents
-      })
-      .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
-      .populate("latestMessage")
-      .populate("chatBlockedBy", "name image email createdAt lastActive onlineStatus")
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .skip(skip);
+    .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
+    .populate("latestMessage")
+    .populate("chatBlockedBy", "name image email createdAt lastActive onlineStatus")
+    .sort({ updatedAt: -1 })
+    .limit(limit)
+    .skip(skip);
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
       select: "name image email lastActive createdAt lastActive onlineStatus",
@@ -152,7 +162,6 @@ export const fetchChats = async (
           ) || chat.chatName.match(new RegExp(keyword.$or[0].name.$regex, "i")) // Add chatName filtering condition
       );
     }
-
     const filteredChatsWithUnseenCountPromises = filteredChats.map(async (chat: any) => {
       const correspondingUnseenCount = unseenCount.find(
         (count: any) => count._id.toString() === chat._id.toString()
@@ -230,7 +239,6 @@ export const fetchChats = async (
         }
       })
     );
-    console.log({ reqonFetchchats: req.id }); // Retrieve the IDs of the filtered users
     // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
     // // Retrieve the IDs of the filtered users
     res.status(200).send({

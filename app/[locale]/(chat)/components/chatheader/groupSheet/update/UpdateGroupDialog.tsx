@@ -67,7 +67,6 @@ export default function UpdateGroupDialog() {
     mutationKey: ["group"],
     mutationFn: (data: FormData) => updateGroupNamePhoto(data),
     onSuccess: (data) => {
-      console.log({ updgrpData: data });
       dispatch({ type: UPDATE_GROUP_INFO, payload: data });
       socket.emit("update_group_info", data);
       toast.success("Group info updated!");

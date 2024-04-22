@@ -118,7 +118,17 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         const chats = yield ChatModel_1.Chat.find({
             $and: [
                 { users: { $elemMatch: { $eq: req.id } } },
-                { chatName: { $regex: req.query.search, $options: "i" } },
+                {
+                    $or: [
+                        {
+                            $and: [
+                                { chatName: { $regex: req.query.search, $options: "i" } }, // Matching chatName
+                                { isGroupChat: true }, // When isGroupChat is true
+                            ],
+                        },
+                        { isGroupChat: false }, // For non-group chats
+                    ],
+                },
             ],
         })
             .populate({
@@ -183,7 +193,6 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 return null; // Return null or any other default value if needed
             }
         })));
-        console.log({ reqonFetchchats: req.id }); // Retrieve the IDs of the filtered users
         // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
         // // Retrieve the IDs of the filtered users
         res.status(200).send({

@@ -28,7 +28,7 @@ export default function SliderUsers() {
             <div className="p-1">
               <Card>
                 <CardContent className="flex flex-col aspect-square items-center justify-center p-6">
-                  <div className=" rounded-full relative h-12 w-12 md:h-16 md:w-16">
+                  <div className=" rounded-full relative h-8 w-8 md:h-12 md:w-12">
                     <Image
                       alt="Avatar"
                       src={user.image}
@@ -45,7 +45,7 @@ export default function SliderUsers() {
                       />
                     </span>
                   </div>
-                  <span className="text-sm  font-semibold text-gray-300">
+                  <span className="text-xs md:text-sm  font-semibold text-gray-300">
                     {user.name}
                   </span>
                 </CardContent>
