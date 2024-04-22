@@ -1,0 +1,31 @@
+{
+  "functions": {
+    "app/api/**/*": {
+      "maxDuration": 10
+    },
+    "app/**/*": {
+      "maxDuration": 10
+    }
+  },
+
+  "headers": [
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=1, stale-while-revalidate=59"
+        }
+      ]
+    },
+     {
+       "source": "/chat",
+       "headers": [
+         {
+           "key": "Cache-Control",
+           "value": "s-maxage=1, stale-while-revalidate=59"
+         }
+       ]
+     }
+  ]
+}

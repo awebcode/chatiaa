@@ -1,0 +1,4 @@
+{
+  "navigations": { "Home": "首页", "Chat": "聊天", "Login": "登录" },
+  "logo":"信使"
+}
