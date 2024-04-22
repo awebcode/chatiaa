@@ -142,7 +142,7 @@ export default function Messages({ chatId }: { chatId: string }) {
         scrollThreshold={0.8}
       >
         {/* //mb-[66px] */}
-        <div className="messageRender flex flex-col-reverse m-1 p-1 gap-[7px] mr-[10px]  h-full">
+        <div className="messageRender flex flex-col-reverse m-1 p-1 gap-[7px] mr-1 md:mr-2  h-full">
           {/* //gap-3 p-2  m-1 */}
           <div
             id="messageEndTarget"
