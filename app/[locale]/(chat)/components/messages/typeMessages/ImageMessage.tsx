@@ -55,11 +55,11 @@ function ImageMessage({
               <div className="pt-5">
                 <RepliedMessage message={message} currentUser={currentUser as any} />
               </div>
-              <div className="w-52 h-52 md:w-80 md:h-80">
+              <div className="w-[160px] h-40 md:w-[208px] md:h-52">
                 <Image
                   src={`${message.file.url}`}
                   alt={"Unknown file"}
-                  className={"rounded-lg w-auto h-auto "}
+                  className={"rounded-lg w-full h-full "}
                   height={300}
                   width={300}
                   loading="lazy"
