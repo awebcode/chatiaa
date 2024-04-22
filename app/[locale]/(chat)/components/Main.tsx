@@ -40,7 +40,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     if (!selectedChat||!roomId) return router.replace("/chat");
    }, [roomId, router,selectedChat]);
   //<EmptyChat />;
-  if (!selectedChat) return <EmptyChat />;
+  if (!selectedChat) return null
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}
