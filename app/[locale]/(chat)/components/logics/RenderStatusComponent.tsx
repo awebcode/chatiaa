@@ -18,7 +18,7 @@ export const RenderStatus = (
     case "seen":
       message?.sender?._id === currentUser?._id && type === "onFriendListCard"
         ? (statusDiv = (
-            <div className="h-4 w-4 md:h-4 md:w-4 relative mr-1 md:m-1">
+            <div className="h-4 w-4 md:h-4 md:w-4 relative mr-2 ">
               <Image
                 height={15}
                 width={15}
@@ -45,7 +45,7 @@ export const RenderStatus = (
     case "delivered":
       message.sender?._id !== currentUser?._id && type === "onFriendListCard"
         ? (statusDiv = (
-            <div className="h-4 w-4 md:h-4 md:w-4 relative mr-1 md:m-1 rounded-full bg-sky-500 flex items-center justify-center">
+            <div className="h-4 w-4 md:h-4 md:w-4 relative mr-2  rounded-full bg-sky-500 flex items-center justify-center">
               <span className="text-gray-900 absolute text-[10px]">
                 {unseenCount > 0 ? (unseenCount > 99 ? "99+" : unseenCount) : ""}
               </span>
@@ -53,14 +53,14 @@ export const RenderStatus = (
             </div>
           ))
         : (statusDiv = (
-            <div className="h-4 w-4 md:h-4 md:w-4 relative mr-1 md:m-1">
+            <div className="h-4 w-4 md:h-4 md:w-4 relative mr-2 ">
               <IoIosCheckmarkCircle className="h-full w-full relative text-gray-400" />
             </div>
           ));
       break;
     case "unseen":
       statusDiv = (
-        <div className="h-4 w-4 md:h-4 md:w-4 relative  mr-1 md:m-1">
+        <div className="h-4 w-4 md:h-4 md:w-4 relative  mr-2 ">
           <IoIosCheckmarkCircleOutline className="h-full w-full text-gray-400 rounded-full relative" />
         </div>
       );
@@ -68,7 +68,7 @@ export const RenderStatus = (
     default:
       !message._id
         ? (statusDiv = (
-            <div className="h-4 w-4 md:h-4 md:w-4 relative ">
+            <div className="h-4 w-4 md:h-4 md:w-4 relative mr-2">
               <BiLoaderCircle className="animate-spin h-full w-full text-blue-600 rounded-full relative" />
             </div>
           ))
