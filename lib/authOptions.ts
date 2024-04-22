@@ -9,6 +9,7 @@ import AccountModel from "@/lib/models/AccountModel";
 import { AuthOptions } from "next-auth";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
+export const maxDuration=300
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
 

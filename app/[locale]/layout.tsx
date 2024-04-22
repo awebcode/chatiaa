@@ -16,6 +16,7 @@ import { fetchUser } from "@/functions/serverActions";
 import SocketEvents from "./SocketEvents";
 import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
+export const maxDuration = 300;
 // const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 export const metadata: Metadata = {
   metadataBase: new URL("https://chatiaa.vercel.app"),
