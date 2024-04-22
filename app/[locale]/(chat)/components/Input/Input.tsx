@@ -220,7 +220,7 @@ const Input = () => {
     return (
       <>
         <EdRePreview setMessage={setMessage} />{" "}
-        <div className="w-full bg-gray-100 h-full dark:bg-gray-800 rounded p-5 flex items-center justify-center">
+        <div className="w-full bg-gray-100 h-full dark:bg-gray-800 rounded px-2 p-1 md:p-2 flex items-center justify-center">
           <CaptureAudio hide={setAudioRecorder} />
         </div>
       </>

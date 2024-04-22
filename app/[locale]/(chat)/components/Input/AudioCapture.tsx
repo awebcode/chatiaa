@@ -147,17 +147,17 @@ function CaptureAudio({ hide }: any) {
 
   const handlePlayRecording = () => {
     if (recordedAudio) {
-      waveform.stop();
-      waveform.play();
-      recordedAudio.play();
+      waveform?.stop();
+      waveform?.play();
+      recordedAudio?.play();
       setIsPlaying(true);
     }
   };
 
   const handlePauseRecording = () => {
     if (recordedAudio) {
-      waveform.stop();
-      recordedAudio.pause();
+      waveform?.stop();
+      recordedAudio?.pause();
       setIsPlaying(false);
     }
   };
@@ -186,7 +186,7 @@ function CaptureAudio({ hide }: any) {
       }
     } else {
       try {
-        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current?.stop();
         setIsRecording(false);
         //  waveform.stop();
 
@@ -264,8 +264,8 @@ function CaptureAudio({ hide }: any) {
     }
   };
   return (
-    <div className="flex text-2xl w-full  z-50 justify-end items-center">
-      <div className="pt-1">
+    <div className="flex  w-full  z-50 justify-end items-center">
+      <div className="">
         <FaTrash
           className="text-xs md:text-sm cursor-pointer"
           onClick={() => hide(false)}

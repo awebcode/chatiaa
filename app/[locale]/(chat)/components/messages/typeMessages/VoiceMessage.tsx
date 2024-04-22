@@ -46,6 +46,14 @@ const formWaveSurferOptions = (ref: any) => ({
   partialRender: true,
 });
 
+// Function to modify URLs to start with "https"
+const ensureHttps = (url: string): string => {
+  if (url.startsWith("http://")) {
+    return url.replace("http://", "https://");
+  }
+  return url;
+};
+
 export default function VoiceMessage({
   message,
   isCurrentUserMessage,
@@ -59,12 +67,11 @@ export default function VoiceMessage({
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState("00:00");
   const [totalTime, setTotalTime] = useState("00:00");
-  //   const url = `${HOST}/${message.message}`;
 
   useEffect(() => {
     // Create WaveSurfer instance when the component mounts
     wavesurfer.current = WaveSurfer.create(formWaveSurferOptions(waveformRef.current));
-    wavesurfer.current.load(message.file.url);
+    wavesurfer.current.load(ensureHttps(message.file.url)); // Ensure URL starts with "https://"
 
     // Set up event listeners
     wavesurfer.current.on("play", () => setPlaying(true));
@@ -154,7 +161,7 @@ export default function VoiceMessage({
               {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
               <RiDownloadCloudFill
                 className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
-                onClick={() => handleDownload(message?.file?.url)}
+                onClick={() => handleDownload(ensureHttps(message?.file?.url))}
               />
               {/* Seen by lists */}
               {message?.seenBy?.length > 0 && (
