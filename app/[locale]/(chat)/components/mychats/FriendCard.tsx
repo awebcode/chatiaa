@@ -74,7 +74,7 @@ const FriendsCard: React.FC<{
 
   const handleClick = async (chatId: string) => {
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
-    queryClient.invalidateQueries({ queryKey: ["messages"] });
+    // queryClient.invalidateQueries({ queryKey: ["messages"] });
     router.replace(`/chat?chatId=${chat?._id}`);
     if (selectedChat?.chatId === chatId) return;
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });

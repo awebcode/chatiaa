@@ -32,16 +32,16 @@ const ChatHeader = () => {
 
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
-    queryClient.invalidateQueries({ queryKey: ["chats"] });
+    // queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
     router.replace("/chat");
   };
-  useEffect(() => {
-    const localStorageChat=localStorage.getItem("selectedChat")
-    if (!selectedChat||!localStorageChat) return  router.replace("/chat");
-  }, [selectedChat, router]);
+  // useEffect(() => {
+  //   const localStorageChat=localStorage.getItem("selectedChat")
+  //   if (!selectedChat||!localStorageChat) return  router.replace("/chat");
+  // }, [selectedChat, router]);
   //  if (!selectedChat) return router.replace("/chat");
   return (
     <div className="p-[6px]  bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
