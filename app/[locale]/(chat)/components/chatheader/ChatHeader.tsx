@@ -13,6 +13,7 @@ import { useSocketContext } from "@/context/SocketContextProvider";
 import { Button } from "@/components/ui/button";
 import { handleSendCall } from "@/config/handleSendCall";
 import LoaderComponent from "@/components/Loader";
+import { useSearchParams } from "next/navigation";
 // import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -28,22 +29,24 @@ const ChatHeader = () => {
   const dispatch = useMessageDispatch();
   const { typingUsers } = useTypingStore();
   const isUserOnline = selectedChat?.isOnline as boolean;
-
+  const searchParams = useSearchParams();
   const clearselectedChat = async () => {
-    // window.history.pushState(null, "", "/chat");
-    router.replace("/chat");
+    window.history.pushState(null, "", "/chat");
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
+    // router.replace("/chat");
+    // router.refresh();
     // router.push("/chat");
   };
-  useEffect(() => {
-    const localStorageChat = localStorage.getItem("selectedChat");
-    if (!selectedChat || !localStorageChat) return router.push("/chat");
-  }, [selectedChat, router]);
+  const roomId = searchParams.get("chatId");
+  // useEffect(() => {
+  //   const localStorageChat = localStorage.getItem("selectedChat");
+  //   if (!selectedChat || !localStorageChat||!roomId) return router.replace("/chat");
+  // }, [selectedChat, router]);
   //  if (!selectedChat) return router.replace("/chat");
-  if (!selectedChat) return;
+  // if (!selectedChat) return <LoaderComponent text="Redirecting..."/>
   return (
     <div className="p-[6px]  bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
       <div className="flex items-center justify-center gap-1">

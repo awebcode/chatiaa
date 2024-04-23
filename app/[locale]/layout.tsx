@@ -16,6 +16,17 @@ import { fetchUser } from "@/functions/serverActions";
 import SocketEvents from "./SocketEvents";
 import Navbar from "@/components/Navbar";
 // const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit:"cover"
+  // Also supported by less commonly used
+  // interactiveWidget: 'resizes-visual',
+};
 export const metadata: Metadata = {
   metadataBase: new URL("https://chatiaa.vercel.app"),
 

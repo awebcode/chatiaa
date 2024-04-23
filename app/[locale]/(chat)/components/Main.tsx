@@ -19,6 +19,9 @@ import LoaderComponent from "@/components/Loader";
 import EmptyChat from "./Empty";
 import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
+import MyChats from "./mychats/MyChats";
+import LeftSideClientWrapper from "./LeftSide";
+import PrefetchMyChats from "./mychats/PrefetchChats";
 const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const { selectedChat } = useMessageState();
   const router = useRouter();
@@ -26,18 +29,24 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const { socket } = useSocketContext();
   useEffect(() => {
     socket.emit("join", { chatId: selectedChat?.chatId });
+    document.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+    });
+ 
+     // Add more conditions as needed for other key combinations
   }, [selectedChat?.chatId, socket]); //selectedChat
   //it only when use router.relace('/chat?chatId') on friends card
   const roomId = searchParams.get("chatId");
   useEffect(() => {
-    const localStorageChat = localStorage.getItem("selectedChat");
-    if (!roomId || !localStorageChat) {
+    if (!roomId || !selectedChat) {
       router.replace("/chat");
     }
-  }, [roomId, router]);
-// 
+  }, [searchParams, roomId, router, selectedChat]);
+  //
   //<EmptyChat />;
-  if (!selectedChat) return 
+  if (!selectedChat) return <LoaderComponent />;
+  // if (!selectedChat&&!roomId) return   <MyChats />
+
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}

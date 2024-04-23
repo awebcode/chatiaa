@@ -82,7 +82,7 @@ const FullScreenPreview = ({ file }: { file: { url: string; type: string } }) =>
         </Button>
       </DialogTrigger>
       <DialogContent className="z-50 h-full w-full  bg-opacity-85 ">
-        <div className="rounded-2xl p-2 max-h-[72vh]">
+        <div className="rounded-2xl p-2 max-h-[72vh] max-w-sm md:w-screen">
           {" "}
           <FilePreview fileUrl={file.url} fileType={file.type} />
         </div>
