@@ -13,7 +13,7 @@ import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actio
 import TypingIndicator from "../TypingIndicator";
 import { IMessage } from "@/context/reducers/interfaces";
 import { allMessages } from "@/functions/messageActions";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
 import MessageCard from "./MessageCard";
@@ -23,6 +23,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   const scrollbar = useRef<BaseScrollbar | null>(null);
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
+  const queryClient = useQueryClient();
 
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -43,8 +44,11 @@ export default function Messages({ chatId }: { chatId: string }) {
       return nextOffset;
     },
     initialPageParam: 0,
+
+    // initialData: { pages: [{ messages: [{ content: "sssss", type: "text" } ]}]} , //queryClient.getQueryData(['messages',chatId])
     staleTime: 24 * 60 * 60 * 1000,
   });
+  console.log({ messages: data });
 
   useEffect(() => {
     dispatch({
@@ -111,7 +115,7 @@ export default function Messages({ chatId }: { chatId: string }) {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
-  //return 
+  //return
   if (!selectedChat) return;
   return (
     <div

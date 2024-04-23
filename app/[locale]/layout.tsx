@@ -23,7 +23,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit:"cover"
+  viewportFit:"cover" //mobile screen cover will not displayed
   // Also supported by less commonly used
   // interactiveWidget: 'resizes-visual',
 };

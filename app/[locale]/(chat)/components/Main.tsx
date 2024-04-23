@@ -29,9 +29,9 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const { socket } = useSocketContext();
   useEffect(() => {
     socket.emit("join", { chatId: selectedChat?.chatId });
-    document.addEventListener("contextmenu", function (e) {
-      e.preventDefault();
-    });
+    // document.addEventListener("contextmenu", function (e) {
+    //   e.preventDefault();
+    // });
  
      // Add more conditions as needed for other key combinations
   }, [selectedChat?.chatId, socket]); //selectedChat
@@ -40,12 +40,13 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!roomId || !selectedChat) {
       router.replace("/chat");
+       router.refresh()
     }
   }, [searchParams, roomId, router, selectedChat]);
   //
   //<EmptyChat />;
   if (!selectedChat) return <LoaderComponent />;
-  // if (!selectedChat&&!roomId) return   <MyChats />
+ 
 
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">

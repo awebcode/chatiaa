@@ -73,6 +73,7 @@ const page = async ({
               {/* <Messages chatId={searchParams?.chatId as string} /> */}
             </MainClientWrapper>
           ) : (
+            // <Messages chatId={searchParams?.chatId as string} />
             <EmptyChat />
           )}
           {/* <EmptyChat /> */}
