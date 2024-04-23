@@ -27,6 +27,7 @@ import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 import { Tuser } from "@/store/types";
+import { BiLoaderCircle } from "react-icons/bi";
 
 // Dynamically import SeenBy component
 const SeenBy = dynamic(() => import("./status/SeenBy"));
@@ -40,6 +41,7 @@ const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
@@ -70,12 +72,13 @@ const FriendsCard: React.FC<{
       socket.emit("seenMessage", seenData);
     },
   });
-  const isFriend:Tuser = getSenderFull(currentUser, chat.users);
+  const isFriend: Tuser = getSenderFull(currentUser, chat.users);
 
   const handleClick = async (chatId: string) => {
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
     // queryClient.invalidateQueries({ queryKey: ["messages"] });
     if (selectedChat?.chatId === chatId) return;
+
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     //select chat
@@ -113,7 +116,7 @@ const FriendsCard: React.FC<{
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
     router.replace(`?chatId=${chat?._id}`);
-
+    //  setRedirectLoading({chatId:""})
     // router.replace(`/chat?chatId=${chat?._id}`);
     // router.push(`/chat/${chat?._id}`);
     // router.replace(`/chat?chatId=${chat?._id}`);
@@ -172,7 +175,7 @@ const FriendsCard: React.FC<{
       updateStatusMutation.mutateAsync(chatId);
     }
   };
-// console.log({chat})
+  // console.log({chat})
   // console.log({chat,isFriend})
   if (!chat) return;
   return (
@@ -194,7 +197,7 @@ const FriendsCard: React.FC<{
               src={
                 !chat.isGroupChat
                   ? isFriend?.image || "/vercel.svg"
-                  : (chat as any)?.image?.url 
+                  : (chat as any)?.image?.url
               }
               // loading="lazy"
             />
@@ -263,7 +266,9 @@ const FriendsCard: React.FC<{
               {!chat?.isOnline && !chat?.isGroupChat && (
                 <span className="text-[8px]  font-medium   mx-1 md:inline ">
                   <span className="mr-1">active</span>
-                  {moment(isFriend?.lastActive?isFriend?.lastActive:isFriend?.createdAt).fromNow()}
+                  {moment(
+                    isFriend?.lastActive ? isFriend?.lastActive : isFriend?.createdAt
+                  ).fromNow()}
                 </span>
               )}
             </span>
@@ -279,18 +284,16 @@ const FriendsCard: React.FC<{
             >
               Join call
             </Button>
-          ) : // ) : chat?.isGroupChat ? (
-          //   <SeenBy chat={chat as any} currentUser={currentUser as any} />
-          // ) : (
-          //   RenderStatus(
-          //     chat,
-          //     chat?.latestMessage as any,
-          //     "onFriendListCard",
-          //     chat?.unseenCount,
-          //     false
-          //   )
-          // )}
-          chat?.isGroupChat ? (
+          ) : selectedChat?.chatId === chat?._id &&
+            (!searchParams.get("chatId") || searchParams.get("chatId")!==selectedChat?._id) ? (
+            <div className="">
+              <BiLoaderCircle
+                className={`animate-spin h-3 w-3 md:h-4
+                 
+                 md:w-4 text-blue-600 rounded-full`}
+              />
+            </div>
+          ) : chat?.isGroupChat ? (
             <SeenByGroup chat={chat as any} currentUser={currentUser as any} />
           ) : (
             <SeenBy chat={chat as any} currentUser={currentUser as any} />

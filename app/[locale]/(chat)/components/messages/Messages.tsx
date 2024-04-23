@@ -72,29 +72,29 @@ export default function Messages({ chatId }: { chatId: string }) {
   }, [isIncomingMessage]);
 
   // setShowScrollToBottomButton
-  useEffect(() => {
-    const handleScroll = () => {
-      const container = document.getElementById("MessagesscrollableTarget");
-      if (container) {
-        const { scrollTop, scrollHeight, clientHeight } = container;
-        //when will scroll top greater than 500px
-        setShowScrollToBottomButton(scrollTop <= -500);
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     const container = document.getElementById("MessagesscrollableTarget");
+  //     if (container) {
+  //       const { scrollTop, scrollHeight, clientHeight } = container;
+  //       //when will scroll top greater than 500px
+  //       // setShowScrollToBottomButton(scrollTop <= -300);
+  //     }
+  //   };
 
-    const container = document.getElementById("MessagesscrollableTarget");
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-    }
+  //   const container = document.getElementById("MessagesscrollableTarget");
+  //   if (container) {
+  //     container.addEventListener("scroll", handleScroll);
+  //   }
 
-    // Check initial scroll position
+  //   // Check initial scroll position
 
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [messages]);
+  //   return () => {
+  //     if (container) {
+  //       container.removeEventListener("scroll", handleScroll);
+  //     }
+  //   };
+  // }, [messages]);
   //scrollToBottom
   const scrollToBottom = () => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
@@ -114,7 +114,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   return (
     <div
       id="MessagesscrollableTarget"
-      className="menu p-1 bg-base-200 max-h-[91vh] md:max-h-[86vh]   overflow-y-scroll  flex flex-col-reverse"
+      className="menu p-1 bg-base-200 max-h-[92vh] md:max-h-[86vh]   overflow-y-scroll  flex flex-col-reverse"
     >
       <InfiniteScroll
         dataLength={messages ? messages?.length : 0}
