@@ -14,6 +14,7 @@ export default async function PrefetchMessages({ chatId }: { chatId: string }) {
     queryKey: ["messages", chatId], //als0 give here the chat id
     queryFn: allMessagesServerAction as any,
     initialPageParam: 0,
+    staleTime: 24 * 60 * 60 * 1000,
 
     // staleTime: 100000 * 60,
   });

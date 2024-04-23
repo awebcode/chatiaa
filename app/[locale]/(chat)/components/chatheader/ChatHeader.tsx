@@ -43,7 +43,7 @@ const ChatHeader = () => {
   //   if (!selectedChat||!localStorageChat) return  router.replace("/chat");
   // }, [selectedChat, router]);
   //  if (!selectedChat) return router.replace("/chat");
-  if (!selectedChat) return <LoaderComponent text="Redirecting..." />;
+  // if (!selectedChat) return <LoaderComponent text="Redirecting..." />;
   return (
     <div className="p-[6px]  bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
       <div className="flex items-center justify-center gap-1">

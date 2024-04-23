@@ -37,7 +37,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, [roomId, router]);
 // 
   //<EmptyChat />;
-  // if (!selectedChat) return <LoaderComponent text="Redirecting..." />;
+  if (!selectedChat) return <LoaderComponent text="Loading..." />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}
@@ -46,7 +46,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
         <ChatHeader />
       </div>
       {/* Message */}
-      <div className="w-full fixed  md:absolute md:top-5 -bottom-4  py-2      z-20">
+      <div className="w-full fixed  md:absolute  bottom-2  py-2      z-20">
         {children}
       </div>
       {/* Inpute */}
