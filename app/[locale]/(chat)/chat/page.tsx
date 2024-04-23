@@ -48,7 +48,7 @@ const page = async ({
   if (!user?.email) return redirect("/");
   return (
     <>
-      <div className="flexBetween gap-2 overflow-hidden">
+      <div className="flexBetween gap-1 md:gap-2 overflow-hidden">
         {/* Left side */}
         <div
           className={`h-[93vh] md:h-[92vh] basis-[100%]  w-full md:basis-3/6 border  ${
