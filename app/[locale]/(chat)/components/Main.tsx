@@ -37,7 +37,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, [roomId, router]);
 // 
   //<EmptyChat />;
-  if (!selectedChat) return <LoaderComponent text="Loading..." />;
+  // if (!selectedChat) return <LoaderComponent text="Loading..." />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}
