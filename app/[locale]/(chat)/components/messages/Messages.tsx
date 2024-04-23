@@ -71,7 +71,7 @@ export default function Messages({ chatId }: { chatId: string }) {
     }
   }, [isIncomingMessage]);
 
-  setShowScrollToBottomButton
+  setShowScrollToBottomButton;
   useEffect(() => {
     const handleScroll = () => {
       const container = document.getElementById("MessagesscrollableTarget");
@@ -111,6 +111,8 @@ export default function Messages({ chatId }: { chatId: string }) {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
+  //return 
+  if (!selectedChat) return;
   return (
     <div
       id="MessagesscrollableTarget"
@@ -152,7 +154,7 @@ export default function Messages({ chatId }: { chatId: string }) {
 
           <TypingIndicator onFriendListCard={false} />
           {isLoading ? (
-            <LoaderComponent text="Fetching messages..."/>
+            <LoaderComponent text="Fetching messages..." />
           ) : (
             messages &&
             messages?.length > 0 &&
