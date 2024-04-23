@@ -43,7 +43,6 @@ export default function Messages({ chatId }: { chatId: string }) {
       return nextOffset;
     },
     initialPageParam: 0,
-    staleTime: 24 * 60 * 60 * 1000,
   });
 
   useEffect(() => {
