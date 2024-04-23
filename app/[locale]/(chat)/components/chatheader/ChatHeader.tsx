@@ -30,7 +30,8 @@ const ChatHeader = () => {
   const isUserOnline = selectedChat?.isOnline as boolean;
 
   const clearselectedChat = async () => {
-    window.history.pushState(null, "", "/chat");
+    // window.history.pushState(null, "", "/chat");
+    router.replace("/chat");
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
