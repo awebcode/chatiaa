@@ -3,16 +3,17 @@ import LeftSideClientWrapper from "../components/LeftSide";
 // import EmptyChat from "../components/Empty";
 // import MainClientWrapper from "../components/Main";
 // import PrefetchMyChats from "../components/mychats/PrefetchChats";
-// import PrefetchMessages from "../components/messages/PrefetchMessages";
+import PrefetchMessages from "../components/messages/PrefetchMessages";
+import MainClientWrapper from "../components/Main";
+
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
 import MyChats from "../components/mychats/MyChats";
-// import MainClientWrapper from "../components/Main";
 import { fetchUser } from "@/functions/serverActions";
 import { redirect } from "@/navigation";
-import PrefetchMessages from "../components/messages/PrefetchMessages";
+// import PrefetchMessages from "../components/messages/PrefetchMessages";
 // import Messages from "../components/messages/Messages";
 const Messages = dynamic(() => import("../components/messages/Messages"), {
   ssr: false,
@@ -27,9 +28,9 @@ const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChat
   loading: () => <LoaderComponent text="Fetching Chats..." />,
 });
 
-const MainClientWrapper = dynamic(() => import("../components/Main"), {
-  loading: () => <LoaderComponent text="Fetching Messages..." />,
-});
+// const MainClientWrapper = dynamic(() => import("../components/Main"), {
+//   loading: () => <LoaderComponent text="Fetching Messages..." />,
+// });
 // const PrefetchMessages = dynamic(
 //   () => import("../components/messages/PrefetchMessages"),
 //   {
@@ -67,9 +68,9 @@ const page = async ({
         >
           {searchParams?.chatId ? (
             <MainClientWrapper>
-              {/* <PrefetchMessages chatId={searchParams?.chatId as string} /> */}
+              <PrefetchMessages chatId={searchParams?.chatId as string} />
               {/* Client side rendering more than faster */}
-              <Messages chatId={searchParams?.chatId as string} />
+              {/* <Messages chatId={searchParams?.chatId as string} /> */}
             </MainClientWrapper>
           ) : (
             // <Messages chatId={searchParams?.chatId as string} />

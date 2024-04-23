@@ -37,14 +37,21 @@ const FilePreview = ({ fileUrl, fileType }: { fileUrl: string; fileType: string 
       <Image
         src={fileUrl}
         alt="Image"
-        height={1000}
-        width={1000}
-        className="max-h-screen  object-cover"
+        height={500}
+        width={500}
+        className="h-full w-full object-cover"
+        loading="lazy"
       />
     );
   } else if (fileType.startsWith("video")) {
     return (
-      <ReactPlayer url={fileUrl} autoPlay loop height={"100vh"} width="100vh" controls />
+      <ReactPlayer
+        url={fileUrl}
+        autoPlay
+        loop
+        className="h-full w-full object-cover"
+        controls
+      />
     );
   } else if (fileType.startsWith("application")) {
     return <PDFViewer file={fileUrl} />;
@@ -75,21 +82,21 @@ const FullScreenPreview = ({ file }: { file: { url: string; type: string } }) =>
         </Button>
       </DialogTrigger>
       <DialogContent className="z-50 h-full w-full  bg-opacity-85 ">
-        <div className="rounded-2xl p-2">
+        <div className="rounded-2xl p-2 max-h-[72vh]">
           {" "}
           <FilePreview fileUrl={file.url} fileType={file.type} />
         </div>
-        <DialogFooter>
+        <DialogFooter className="">
           <Button
-            size={"lg"}
+            size={"sm"}
             className="cursor-pointer bg-blue-500 hover:bg-blue-700"
             onClick={() => {document.getElementById("fullScreenDialogCloseId")?.click();}}
           >
             Close
           </Button>
           <Button
-            size={"lg"}
-            className=" cursor-pointer"
+            size={"sm"}
+            className=" cursor-pointer mt-1"
             onClick={() => handleDownload(file.url)}
           >
             <RiDownloadCloudFill /> Download File
