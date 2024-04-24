@@ -42,7 +42,9 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
       router.push("/chat");
       if (searchParams.get("isRefreshed")) {
          router.push("/chat");
-         router.refresh()
+        // router.refresh()
+        
+        window.history.pushState(null, "", "/chat");
       }
     }
   }, [roomId, router, selectedChat,searchParams]);
