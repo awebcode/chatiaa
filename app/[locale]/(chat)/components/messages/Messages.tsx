@@ -56,16 +56,15 @@ export default function Messages({ chatId }: { chatId: string }) {
         return undefined;
       }
     }, //queryClient.getQueryData(['messages',chatId])
-    staleTime: 1000,
+    staleTime: 0,
   });
 
   useEffect(() => {
     dispatch({
       type: SET_MESSAGES,
-      payload: data?.pages.flatMap((page) => page.messages ),
+      payload: data?.pages.flatMap((page) => page.messages),
     });
-   
-     
+
     const container = document.getElementById("MessagesscrollableTarget");
 
     //ofcontainer.scrollTop = scrollTop+clientHeight or greter than 50px
@@ -109,7 +108,7 @@ export default function Messages({ chatId }: { chatId: string }) {
       }
     };
   }, [messages]);
-  
+
   //scrollToBottom
   const scrollToBottom = () => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
