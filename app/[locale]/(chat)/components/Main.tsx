@@ -51,7 +51,6 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     roomId,
     router,
     selectedChat,
-    searchParams,
     router.replace,
     window.history.pushState,
   ]);
