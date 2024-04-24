@@ -55,7 +55,7 @@ const Drawer = () => {
               next={() => {
                 fetchNextPage();
               }}
-              hasMore={searchText.trim() !== "" && hasNextPage}
+              hasMore={hasNextPage}
               loader={<LoaderComponent text="Fetching..." />}
               endMessage={
                 users &&
@@ -74,7 +74,7 @@ const Drawer = () => {
           return <UserCard user={user} key={user._id} />;
         })} */}
                 {users && users?.length > 0 ? (
-                  searchText.trim() !== "" &&
+                  
                   users?.map((user: any) => {
                     return <UserCard user={user} key={user._id} />;
                   })
