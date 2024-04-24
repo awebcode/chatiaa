@@ -29,7 +29,7 @@ messageRoute
   .post(authMiddleware, uploadMiddleware.array("files"), sendMessage);
 messageRoute
   .route("/updateMessageStatus")
-  .patch(authMiddleware, updateChatMessageController);
+  .put(authMiddleware, updateChatMessageController);
 messageRoute
   .route("/updateMessageStatusSeen/:chatId")
   .put(authMiddleware, updateAllMessageStatusSeen);

@@ -18,7 +18,7 @@ messageRoute
     .post(authMiddleware_1.default, uploadMiddleware_1.default.array("files"), messageController_1.sendMessage);
 messageRoute
     .route("/updateMessageStatus")
-    .patch(authMiddleware_1.default, messageController_1.updateChatMessageController);
+    .put(authMiddleware_1.default, messageController_1.updateChatMessageController);
 messageRoute
     .route("/updateMessageStatusSeen/:chatId")
     .put(authMiddleware_1.default, messageController_1.updateAllMessageStatusSeen);

@@ -60,7 +60,7 @@ type TupdateStatus = {
 
 //update  message status
 export const updateMessageStatus = async (body: TupdateStatus) => {
-  const { data } = await axiosClient.patch(`/updateMessageStatus`, body, {
+  const { data } = await axiosClient.put(`/updateMessageStatus`, body, {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
