@@ -16,13 +16,9 @@ import Input from "./Input/Input";
 //   // text="Fetching..."/>,
 // });
 import LoaderComponent from "@/components/Loader";
-import EmptyChat from "./Empty";
 import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
-import MyChats from "./mychats/MyChats";
-import LeftSideClientWrapper from "./LeftSide";
-import PrefetchMyChats from "./mychats/PrefetchChats";
-// import { useMediaQuery } from "@uidotdev/usehooks";
+import Cookie from "js-cookie";
 const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   //  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   const { selectedChat } = useMessageState();
@@ -41,12 +37,11 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const roomId = searchParams.get("chatId");
   useEffect(() => {
     const localStorageChat = localStorage.getItem("selectedChat");
+    const locale = Cookie.get("NEXT_LOCALE");
     if (!roomId || !selectedChat || !localStorageChat) {
-       router.replace("/chat");
+      router.replace("/chat");
       if (searchParams.get("isRefreshed")) {
-        router.replace("/chat");
-
-        router.refresh();
+        window.history.pushState(null, "", `${locale}/chat`);
       }
     }
   }, [roomId, router, selectedChat]);
@@ -66,7 +61,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, []);
   //
   //<EmptyChat />;
-  if (!selectedChat||!roomId) return <LoaderComponent />; //<LoaderComponent />;
+  if (!selectedChat || !roomId) return <LoaderComponent />; //<LoaderComponent />;
   //  if (!selectedChat && !roomId && searchParams.get("isRefreshed")) return <LoaderComponent />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
