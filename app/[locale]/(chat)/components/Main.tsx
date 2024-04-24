@@ -53,6 +53,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     router.replace,
     router.refresh,
     searchParams,
+    window?.history?.pushState
   ]);
   useEffect(() => {
     const handleBeforeUnload = (e: any) => {

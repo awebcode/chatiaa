@@ -37,16 +37,16 @@ const MyChats = () => {
       return nextOffset;
     },
     initialPageParam: 0,
-    initialData: (): any => {
-      if (chats && chats.length > 0) {
-        return {
-          pageParams: [0],
-          pages: [{ chats }],
-        };
-      } else {
-        return undefined;
-      }
-    }, //queryClient.getQueryData(['messages',chatId])
+    // initialData: (): any => {
+    //   if (chats && chats.length > 0) {
+    //     return {
+    //       pageParams: [0],
+    //       pages: [{ chats }],
+    //     };
+    //   } else {
+    //     return undefined;
+    //   }
+    // }, //queryClient.getQueryData(['messages',chatId])
     staleTime: 0,
   });
   // set chats in reducer store
@@ -58,9 +58,9 @@ const MyChats = () => {
         total: data?.pages[0]?.total,
       },
     });
-    if (data?.pages[0]?.chats) {
-      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
-    }
+    // if (data?.pages[0]?.chats) {
+    //   localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
+    // }
   }, [data?.pages]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

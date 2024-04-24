@@ -19,18 +19,13 @@ export const RenderMessageWithEmojis = (
   const parts = [];
   const largeEmojis = [];
   let index = 0;
-  let allEmoji = true;
 
   for (const match of input.matchAll(regex)) {
     const emoji = match[0];
-    // Check if the character is an emoji
-    if (!emoji) {
-      allEmoji = false;
-      break;
-    }
+   
 
-    // Add the text before the emoji, if any
     if (index < (match as any).index) {
+      // Add the text before the emoji, if any
       parts.push(
         <span key={index + Math.random() * 500 + Date.now()}>
           {input.substring(index, (match as any).index)}
@@ -52,7 +47,7 @@ export const RenderMessageWithEmojis = (
       </div>
     );
     // Check if input length is less than 15 and all characters are emojis then show thier size as big
-    if (input.length < 15 && allEmoji && !onChatCard) {
+    if (input.length < 15  && !onChatCard && !extractTextWithoutEmoji(input)) {
       largeEmojis.push(
         <div className="inline-block">
           <span>
@@ -85,4 +80,15 @@ export const RenderMessageWithEmojis = (
 // Example function to get the unified code point of an emoji
 const getUnifiedCodePoint = (emoji: string) => {
   return (emoji as any)?.codePointAt(0)?.toString(16);
+};
+
+//extractTextWithoutEmoji
+export const extractTextWithoutEmoji = (input: string): string => {
+  // Regular expression to match emojis
+  const emojiRegexPattern = emojiRegex();
+
+  // Remove emojis from the input string
+  const textWithoutEmoji = input.replace(emojiRegexPattern, "");
+
+  return textWithoutEmoji.trim(); // Trim whitespace from both ends of the string
 };

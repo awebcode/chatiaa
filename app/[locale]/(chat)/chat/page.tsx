@@ -1,8 +1,8 @@
-import React, { Suspense } from "react";
+import React from "react";
 import LeftSideClientWrapper from "../components/LeftSide";
 // import EmptyChat from "../components/Empty";
 // import MainClientWrapper from "../components/Main";
-// import PrefetchMyChats from "../components/mychats/PrefetchChats";
+import PrefetchMyChats from "../components/mychats/PrefetchChats";
 import PrefetchMessages from "../components/messages/PrefetchMessages";
 import MainClientWrapper from "../components/Main";
 
@@ -10,18 +10,17 @@ import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
-import MyChats from "../components/mychats/MyChats";
-import { fetchUser } from "@/apisActions/serverActions";
+// import MyChats from "../components/mychats/MyChats";
 import { redirect } from "@/navigation";
-import Messages from "../components/messages/Messages";
+import { fetchUser } from "@/apisActions/serverActions";
 // import PrefetchMessages from "../components/messages/PrefetchMessages";
 // import Messages from "../components/messages/Messages";
-// const Messages = dynamic(() => import("../components/messages/Messages"), {
-//   ssr: false,
-//   loading: () => <LoaderComponent text="Fetching messages..." />,
-// });
+const Messages = dynamic(() => import("../components/messages/Messages"), {
+  ssr: false,
+  loading: () => <LoaderComponent text="Fetching messages..." />,
+});
 // const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
-//   // loading: () => <LoaderComponent text="Fetching Chats..." />,
+//   loading: () => <ChatSkeleton />,
 // });
 
 // const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats"), {
@@ -57,8 +56,8 @@ const page = async ({
           }`}
         >
           <LeftSideClientWrapper chatId={searchParams?.chatId as string}>
-            {/* <PrefetchMyChats /> */}
-            <MyChats />
+            <PrefetchMyChats />
+            {/* <MyChats /> */}
           </LeftSideClientWrapper>
         </div>
         {/* Rightside */}
@@ -69,9 +68,9 @@ const page = async ({
         >
           {searchParams?.chatId ? (
             <MainClientWrapper>
-              {/* <PrefetchMessages chatId={searchParams?.chatId as string} /> */}
+              <PrefetchMessages chatId={searchParams?.chatId as string} />
               {/* Client side rendering more than faster */}
-              <Messages chatId={searchParams?.chatId as string} />
+              {/* <Messages chatId={searchParams?.chatId as string} /> */}
             </MainClientWrapper>
           ) : (
             // <Messages chatId={searchParams?.chatId as string} />
