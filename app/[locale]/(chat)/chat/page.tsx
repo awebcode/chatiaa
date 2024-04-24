@@ -1,10 +1,10 @@
 import React, { Suspense } from "react";
-// import LeftSideClientWrapper from "../components/LeftSide";
+import LeftSideClientWrapper from "../components/LeftSide";
 // import EmptyChat from "../components/Empty";
 // import MainClientWrapper from "../components/Main";
 // import PrefetchMyChats from "../components/mychats/PrefetchChats";
 import PrefetchMessages from "../components/messages/PrefetchMessages";
-// import MainClientWrapper from "../components/Main";
+import MainClientWrapper from "../components/Main";
 
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
@@ -13,24 +13,25 @@ import EmptyChat from "../components/Empty";
 import MyChats from "../components/mychats/MyChats";
 import { fetchUser } from "@/functions/serverActions";
 import { redirect } from "@/navigation";
+import Messages from "../components/messages/Messages";
 // import PrefetchMessages from "../components/messages/PrefetchMessages";
 // import Messages from "../components/messages/Messages";
-const Messages = dynamic(() => import("../components/messages/Messages"), {
-  ssr: false,
-  loading: () => <LoaderComponent text="Fetching messages..." />,
-});
-const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
-  // loading: () => <LoaderComponent text="Fetching Chats..." />,
-});
+// const Messages = dynamic(() => import("../components/messages/Messages"), {
+//   ssr: false,
+//   loading: () => <LoaderComponent text="Fetching messages..." />,
+// });
+// const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
+//   // loading: () => <LoaderComponent text="Fetching Chats..." />,
+// });
 
 // const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats"), {
 //   ssr: false,
 //   loading: () => <LoaderComponent text="Fetching Chats..." />,
 // });
 
-const MainClientWrapper = dynamic(() => import("../components/Main"), {
-  loading: () => <LoaderComponent text="Fetching Messages..." />,
-});
+// const MainClientWrapper = dynamic(() => import("../components/Main"), {
+//   loading: () => <LoaderComponent text="Fetching Messages..." />,
+// });
 // const PrefetchMessages = dynamic(
 //   () => import("../components/messages/PrefetchMessages"),
 //   {

@@ -60,6 +60,9 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     const handleBeforeUnload = (e: any) => {
       if (roomId) {
         router.replace(`?chatId=${roomId}&isRefreshed=true`);
+      } else {
+        router.push(`/chat`);
+        window.history.pushState({}, "", "/chat");
       }
     };
     // Add event listener for beforeunload
@@ -69,7 +72,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
       // Cleanup event listener
       window.removeEventListener("load", handleBeforeUnload);
     };
-  }, []);
+  }, [router]);
   //
   //<EmptyChat />;
   if (!selectedChat) return <LoaderComponent />; //<LoaderComponent />;
