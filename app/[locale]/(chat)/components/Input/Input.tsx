@@ -30,7 +30,7 @@ type Temoji = {
 };
 const Input = () => {
   const { socket } = useSocketContext();
-
+  const messageInputRef=useRef<HTMLTextAreaElement>(null)
   const { user: currentUser, messages, selectedChat } = useMessageState();
   const [audioRecorder, setAudioRecorder] = useState(false);
   const [message, setMessage] = useState("");
@@ -125,6 +125,7 @@ const Input = () => {
     dispatch({ type: SET_MESSAGES, payload: socketData });
     socket.emit("sentMessage", socketData);
     setMessage("");
+    messageInputRef.current?.focus()
   }, [message, socket]);
   //editSubmitHandler
   const editSubmit = async () => {
@@ -140,7 +141,7 @@ const Input = () => {
       null,
       { ...isEdit, content: message } as any
     );
-    console.log({ isEdit, isReply });
+  
     const formData = new FormData();
     formData.append("tempMessageId", tempMessageId as string);
     formData.append("messageId", isEdit?._id as any);
@@ -153,6 +154,7 @@ const Input = () => {
     if (res.success) {
       cancelEdit();
       setMessage("");
+      messageInputRef.current?.focus();
     }
   };
   //replySubmitHandler
@@ -190,6 +192,7 @@ const Input = () => {
     if (res.success) {
       cancelReply();
       setMessage("");
+      messageInputRef.current?.focus();
     }
   };
 
@@ -252,6 +255,7 @@ const Input = () => {
         <ImageCapture />
         <div className="flex-grow px-2">
           <textarea
+            ref={messageInputRef}
             onKeyDown={handleKeyDown}
             value={message}
             onChange={(e) => setMessage(e.target.value)}

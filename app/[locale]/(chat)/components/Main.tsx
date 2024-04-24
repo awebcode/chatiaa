@@ -61,7 +61,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, []);
   //
   //<EmptyChat />;
-  if (!selectedChat || !roomId) return <LoaderComponent />; //<LoaderComponent />;
+  // if (!selectedChat || !roomId) return <LoaderComponent />; //<LoaderComponent />;
   //  if (!selectedChat && !roomId && searchParams.get("isRefreshed")) return <LoaderComponent />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
