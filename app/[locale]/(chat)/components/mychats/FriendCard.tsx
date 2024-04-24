@@ -75,7 +75,7 @@ const FriendsCard: React.FC<{
   const isFriend: Tuser = getSenderFull(currentUser, chat.users);
 
   const handleClick = async (chatId: string) => {
-    // queryClient.invalidateQueries({ queryKey: ["chats"] });
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
     queryClient.invalidateQueries({ queryKey: ["messages"] });
     if (selectedChat?.chatId === chatId) return;
 

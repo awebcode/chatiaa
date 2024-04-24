@@ -8,6 +8,7 @@ import TooltipWrapper from "./TooltipWrapper";
 import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import LoaderComponent from "@/components/Loader";
+import { ensureHttps } from "@/config/httpsParser";
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
@@ -44,7 +45,7 @@ export default function AudioFile({
   useEffect(() => {
     // Create WaveSurfer instance when the component mounts
     wavesurfer.current = WaveSurfer.create(formWaveSurferOptions(waveformRef.current));
-    wavesurfer.current.load(message.file.url);
+    wavesurfer.current.load(ensureHttps(message.file.url));
 
     // Set up event listeners
     wavesurfer.current.on("play", () => setPlaying(true));
@@ -85,7 +86,7 @@ export default function AudioFile({
       {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
       <RiDownloadCloudFill
         className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
-        onClick={() => handleDownload(message?.file?.url)}
+        onClick={() => handleDownload(ensureHttps(message.file.url))}
       />
       <div className="">
         <Time message={message} isCurrentUserMessage={true} />

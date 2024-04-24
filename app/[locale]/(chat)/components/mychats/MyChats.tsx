@@ -119,7 +119,11 @@ const MyChats = () => {
               dataLength={chats ? chats?.length : 0}
               next={fetchNextPage}
               hasMore={!isLoading && hasNextPage}
-              loader={<LoaderComponent />}
+              loader={
+                <>
+                  {/* <LoaderComponent /> */}
+                </>
+              }
               endMessage={
                 !isLoading &&
                 chats?.length > 10 && (

@@ -6,6 +6,7 @@ import Time from "./Time";
 import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import LoaderComponent from "@/components/Loader";
+import { ensureHttps } from "@/config/httpsParser";
 const FullScreenPreview = dynamic(() => import("../../chatheader/media/FullScreen"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
 });
@@ -56,16 +57,18 @@ function VideoMessage({
             </div>
             <div className="h-72 w-72">
               <video
-                src={`${message.file.url}`}
+                src={`${ensureHttps(message.file.url)}`}
                 controls
                 className={"rounded-lg w-full h-full"}
                 // height={300}
                 // width={300}
               />
-              <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+              <FullScreenPreview
+                file={{ url: ensureHttps(message.file.url), type: message.type }}
+              />
               <RiDownloadCloudFill
                 className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
-                onClick={() => handleDownload(message?.file?.url)}
+                onClick={() => handleDownload(ensureHttps(message.file.url))}
               />
             </div>
 

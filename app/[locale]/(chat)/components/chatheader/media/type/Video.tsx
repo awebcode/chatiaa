@@ -16,14 +16,21 @@ const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
 });
 import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
+import { ensureHttps } from "@/config/httpsParser";
 const VideoFile = ({ message }: { message: IMessage }) => {
   return (
     <div className="relative inline-block h-36 w-36">
-      <video src={message.file.url} controls className={"rounded-lg w-full h-full"} />
-      <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+      <video
+        src={ensureHttps(message?.file?.url)}
+        controls
+        className={"rounded-lg w-full h-full"}
+      />
+      <FullScreenPreview
+        file={{ url: ensureHttps(message?.file?.url), type: message.type }}
+      />
       <RiDownloadCloudFill
         className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
-        onClick={() => handleDownload(message?.file?.url)}
+        onClick={() => handleDownload(ensureHttps(message?.file?.url))}
       />
       <Time message={message} isCurrentUserMessage={true} />
       <TooltipWrapper message={message} />

@@ -10,11 +10,11 @@ const ChatHeader = dynamic(() => import("./chatheader/ChatHeader") as any, {
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { useMessageState } from "@/context/MessageContext";
 // import ChatHeader from "./chatheader/ChatHeader";
-import Input from "./Input/Input";
-// const Input = dynamic(() => import("./Input/Input"), {
-//   // loading: () => <LoaderComponent
-//   // text="Fetching..."/>,
-// });
+// import Input from "./Input/Input";
+const Input = dynamic(() => import("./Input/Input"), {
+  // loading: () => <LoaderComponent
+  // text="Fetching..."/>,
+});
 import LoaderComponent from "@/components/Loader";
 import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";

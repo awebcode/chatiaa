@@ -7,6 +7,7 @@ import { RiDownloadCloudFill } from "react-icons/ri";
 import { handleDownload } from "@/config/handleDownload";
 import FullScreenPreview from "../FullScreen";
 import LoaderComponent from "@/components/Loader";
+import { ensureHttps } from "@/config/httpsParser";
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
@@ -19,10 +20,10 @@ const Pdf = ({ message }: { message: IMessage }) => {
       <div>
         <h1>Document file</h1>
       </div>
-      <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} />
+      <FullScreenPreview file={{ url: ensureHttps(message?.file?.url), type: message.type }} />
       <RiDownloadCloudFill
         className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
-        onClick={() => handleDownload(message?.file?.url)}
+        onClick={() => handleDownload(ensureHttps(message?.file?.url))}
       />
       <Time message={message} isCurrentUserMessage={true} />
       <TooltipWrapper message={message} />
