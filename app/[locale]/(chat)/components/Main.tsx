@@ -42,13 +42,14 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const localStorageChat = localStorage.getItem("selectedChat");
     if (!roomId || !selectedChat || !localStorageChat) {
-       router.push("/chat");
+       router.replace("/chat");
       if (searchParams.get("isRefreshed")) {
+        router.replace("/chat");
+
         router.refresh();
-        router.push("/chat");
       }
     }
-  }, [roomId, router, selectedChat, searchParams]);
+  }, [roomId, router, selectedChat]);
   useEffect(() => {
     const handleBeforeUnload = (e: any) => {
       if (roomId) {
@@ -65,7 +66,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, []);
   //
   //<EmptyChat />;
-  if (!selectedChat) return <LoaderComponent />; //<LoaderComponent />;
+  if (!selectedChat||!roomId) return <LoaderComponent />; //<LoaderComponent />;
   //  if (!selectedChat && !roomId && searchParams.get("isRefreshed")) return <LoaderComponent />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
