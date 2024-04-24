@@ -25,10 +25,10 @@ import { FaEdit } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Textarea } from "@/components/ui/textarea";
 import { IoClose } from "react-icons/io5";
-import { updateUser } from "@/functions/authActions";
+import { updateUser } from "@/apisActions/authActions";
 import { Tuser } from "@/store/types";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import RevalidateTag from "@/functions/serverActions";
+import RevalidateTag from "@/apisActions/serverActions";
 export default function UpdateUserProfileDialog({ currentUser }: { currentUser: Tuser }) {
   const [selectedImage, setSelectedImage] = useState<File | null | string>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);

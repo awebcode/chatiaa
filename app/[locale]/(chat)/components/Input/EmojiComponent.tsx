@@ -1,4 +1,4 @@
-"use client"
+"use client";
 const EmojiPicker = dynamic(
   () => {
     return import("emoji-picker-react").then((module) => {
@@ -7,10 +7,16 @@ const EmojiPicker = dynamic(
   },
   { ssr: false }
 );
-import { Theme, EmojiStyle, SuggestionMode, Emoji } from "emoji-picker-react";import dynamic from "next/dynamic";
+import { Theme, EmojiStyle, SuggestionMode, Emoji } from "emoji-picker-react";
+import dynamic from "next/dynamic";
 
-
-const EmojiComponent = ({ onEmojiClick, openEmoji }: { onEmojiClick: any; openEmoji:any }) => {
+const EmojiComponent = ({
+  onEmojiClick,
+  openEmoji,
+}: {
+  onEmojiClick: any;
+  openEmoji: any;
+}) => {
   return (
     <div className="">
       {" "}
@@ -30,7 +36,7 @@ const EmojiComponent = ({ onEmojiClick, openEmoji }: { onEmojiClick: any; openEm
         lazyLoadEmojis
         // previewConfig={{defaultEmoji:<Emoji/>}}
         autoFocusSearch={false}
-        emojiStyle={EmojiStyle.APPLE}
+        emojiStyle={EmojiStyle.FACEBOOK}
         searchPlaceholder="Search chat emojis..."
         suggestedEmojisMode={SuggestionMode.RECENT}
         customEmojis={[
@@ -46,4 +52,4 @@ const EmojiComponent = ({ onEmojiClick, openEmoji }: { onEmojiClick: any; openEm
   );
 };
 
-export default EmojiComponent
+export default EmojiComponent;

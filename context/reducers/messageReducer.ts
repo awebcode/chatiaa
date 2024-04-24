@@ -613,7 +613,6 @@ export const messageReducer = (state: State, action: Action): State => {
 
     //reaction add/remove/update handler
     case ADD_REACTION_ON_MESSAGE:
-      
       return {
         ...state,
         // Update messages array based on message type
@@ -681,11 +680,11 @@ export const messageReducer = (state: State, action: Action): State => {
                 reactionsGroup: updatedReactionsGroup,
               };
             } else if (
-              (action.payload.type === "update" && action.payload.type !== "remove") ||
-              (updatedReactions.some(
-                (u) => u.reactBy._id === action.payload.reaction.reactBy._id
-              ) &&
-                action.payload.type !== "remove")
+              action.payload.type !== "remove" &&
+              (action.payload.type === "update" ||
+                updatedReactions.some(
+                  (u) => u.reactBy._id === action.payload.reaction.reactBy._id
+                ))
             ) {
               // For update type, replace the existing reaction with the updated one
               let updatedReactions = message.reactions.map((reaction) =>
@@ -719,46 +718,27 @@ export const messageReducer = (state: State, action: Action): State => {
                 );
 
                 if (updatedEmojiIndex !== -1) {
-                  // If the emoji exists in reactionsGroup, increment its count
+                  // If the emoji exists in reactionsGroup,and reactions increment its count
                   updatedReactionsGroup[updatedEmojiIndex].count++;
                 } else {
-                  const findExisting = message.reactions.find(
+                  const findIsExistReaction = message.reactions.find(
                     (user) => user.reactBy?._id === action.payload.reaction?.reactBy?._id
                   );
-                  ///////
-                  const updatedReactionIndex = updatedReactions.findIndex(
+                  const reactionIndex = updatedReactions.findIndex(
                     (user) => user.reactBy?._id === action.payload.reaction?.reactBy?._id
                   );
-                  const updatedEmojiIndex = updatedReactionsGroup.findIndex(
-                    (emoji) => emoji._id === findExisting?.emoji
+                  const emojiIndex = updatedReactionsGroup.findIndex(
+                    (emoji) => emoji._id === findIsExistReaction?.emoji
                   );
-                  // If the emoji doesn't exist, add a new entry
-                  if (findExisting) {
-                    //update reactions{
-                    if (updatedReactionIndex !== -1) {
-                      updatedReactions = updatedReactions.map((reaction, index) => {
-                        if (index === updatedReactionIndex) {
-                          return {
-                            ...reaction,
-                            emoji: action.payload.reaction.emoji,
-                          };
-                        }
-                        return reaction;
-                      });
+
+                  if (findIsExistReaction) {
+                    if (reactionIndex !== -1) {
+                      updatedReactions[reactionIndex].emoji =
+                        action.payload.reaction.emoji;
                     }
-                    //update group reaction
-                    if (updatedEmojiIndex !== -1) {
-                      updatedReactionsGroup = updatedReactionsGroup.map(
-                        (emoji, index) => {
-                          if (index === updatedEmojiIndex) {
-                            return {
-                              ...emoji,
-                              _id: action.payload.reaction.emoji,
-                            };
-                          }
-                          return emoji;
-                        }
-                      );
+                    if (emojiIndex !== -1) {
+                      updatedReactionsGroup[emojiIndex]._id =
+                        action.payload.reaction.emoji;
                     }
                   }
                 }

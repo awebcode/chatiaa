@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getAllUsers, getOnlineUsers } from "@/functions/authActions";
+import { getAllUsers, getOnlineUsers } from "@/apisActions/authActions";
 
 import dynamic from "next/dynamic";
 import { Tuser } from "@/store/types";

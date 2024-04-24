@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getAllUsers } from "@/functions/authActions";
+import { getAllUsers } from "@/apisActions/authActions";
 
 import dynamic from "next/dynamic";
 import { Input } from "@/components/ui/input";
 import LoaderComponent from "@/components/Loader";
 import { IMessage } from "@/context/reducers/interfaces";
-import { getSeenByInfoForSingleMessage } from "@/functions/messageActions";
+import { getSeenByInfoForSingleMessage } from "@/apisActions/messageActions";
 import { Tuser } from "@/store/types";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 const UserCard = dynamic(() => import("./UserCard"));

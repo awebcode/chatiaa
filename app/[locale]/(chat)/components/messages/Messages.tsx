@@ -12,7 +12,7 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
 import { IMessage } from "@/context/reducers/interfaces";
-import { allMessages } from "@/functions/messageActions";
+import { allMessages } from "@/apisActions/messageActions";
 import { QueryClient, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
@@ -73,20 +73,19 @@ export default function Messages({ chatId }: { chatId: string }) {
     }
     dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data?.pages[0]?.total });
     //update local storage chat
-   const storedChats = JSON.parse(localStorage.getItem("chats") || "[]");
-   const isExistChatIndex = storedChats.findIndex(
-     (chat: any) => chat?._id === selectedChat?.chatId
-   );
-   if (data?.pages[0]?.messages) {
-     if (isExistChatIndex !== -1) {
-       // Check if the chat exists in storedChats
-       // Update the messages of the selected chat
-       storedChats[isExistChatIndex].messages.messages = data?.pages[0]?.messages;
-       // Store the updated chats back to local storage
-       localStorage.setItem("chats", JSON.stringify(storedChats));
-     }
-   }
-
+    const storedChats = JSON.parse(localStorage.getItem("chats") || "[]");
+    const isExistChatIndex = storedChats.findIndex(
+      (chat: any) => chat?._id === selectedChat?.chatId
+    );
+    if (data?.pages[0]?.messages) {
+      if (isExistChatIndex !== -1) {
+        // Check if the chat exists in storedChats
+        // Update the messages of the selected chat
+        storedChats[isExistChatIndex].messages.messages = data?.pages[0]?.messages;
+        // Store the updated chats back to local storage
+        localStorage.setItem("chats", JSON.stringify(storedChats));
+      }
+    }
   }, [data?.pages]);
   useEffect(() => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work

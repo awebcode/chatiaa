@@ -44,11 +44,13 @@ const RepliedMessage = ({
                 {message.isReply.messageId.content?.length < 65
                   ? RenderMessageWithEmojis(
                       message.isReply.messageId?.content,
-                      isSmallDevice
+                      isSmallDevice,
+                      false
                     )
                   : RenderMessageWithEmojis(
-                      message.isReply.messageId?.content?.slice(0,65),
-                      isSmallDevice
+                      message.isReply.messageId?.content?.slice(0, 65),
+                      isSmallDevice,
+                      false
                     ) + "..."}
               </span>
             ) : message.isReply.messageId?.type === "image" ? (
@@ -124,11 +126,13 @@ const RepliedMessage = ({
             )}
           </div>
           <span
-            className={"break-all text-xs md:text-sm font-thin text-gray-700 dark:text-gray-200"}
+            className={
+              "break-all text-xs md:text-sm font-thin text-gray-700 dark:text-gray-200"
+            }
           >
             {message.status === "removed" && message.removedBy?._id === currentUser?._id
               ? "Removed"
-              : RenderMessageWithEmojis(message?.content, isSmallDevice)}
+              : RenderMessageWithEmojis(message?.content, isSmallDevice, false)}
           </span>
         </>
       ) : (
@@ -138,7 +142,7 @@ const RepliedMessage = ({
             "Removed"
           ) : showFullMessage || message?.content?.length <= 300 ? (
             <>
-              {RenderMessageWithEmojis(message?.content, isSmallDevice)}{" "}
+              {RenderMessageWithEmojis(message?.content, isSmallDevice, false)}{" "}
               {message?.content.length > 300 && (
                 <span
                   className="ml-1 text-xs text-violet-400 cursor-pointer"
@@ -150,7 +154,11 @@ const RepliedMessage = ({
             </>
           ) : (
             <>
-              {RenderMessageWithEmojis(message?.content.slice(0, 300), isSmallDevice)}{" "}
+              {RenderMessageWithEmojis(
+                message?.content.slice(0, 300),
+                isSmallDevice,
+                false
+              )}{" "}
               <span
                 className="ml-1 text-xs text-blue-400 cursor-pointer"
                 onClick={() => setShowFullMessage(true)}

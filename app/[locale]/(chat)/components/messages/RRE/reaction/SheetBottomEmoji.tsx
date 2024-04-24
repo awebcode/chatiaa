@@ -41,7 +41,7 @@ export default function EmojiBottomSheet({
           lazyLoadEmojis
           // previewConfig={{defaultEmoji:<Emoji/>}}
           autoFocusSearch={false}
-          emojiStyle={EmojiStyle.APPLE}
+          emojiStyle={EmojiStyle.FACEBOOK}
           searchPlaceholder="Search chat emojis..."
           suggestedEmojisMode={SuggestionMode.RECENT}
         />

@@ -8,7 +8,7 @@ const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import SkeletonContainer from "./SkeletonContainer";
 import { Button } from "@/components/ui/button";
-import { getChats } from "@/functions/chatActions";
+import { getChats } from "@/apisActions/chatActions";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
 import { SET_CHATS } from "@/context/reducers/actions";

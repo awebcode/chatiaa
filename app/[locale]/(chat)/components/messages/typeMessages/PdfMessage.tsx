@@ -2,7 +2,7 @@ import React from "react";
 import { FiFile } from "react-icons/fi"; // Assuming you have imported the File icon
 import { IMessage } from "@/context/reducers/interfaces";
 import { useMessageState } from "@/context/MessageContext";
-import { calculateTime } from "@/functions/formatTime";
+import { calculateTime } from "@/apisActions/formatTime";
 import { PiFilePdf } from "react-icons/pi";
 import { FaDownload } from "react-icons/fa";
 import dynamic from "next/dynamic";

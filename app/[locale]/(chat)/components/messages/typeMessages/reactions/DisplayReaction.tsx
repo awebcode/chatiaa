@@ -2,7 +2,7 @@ import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { ADD_REACTION_ON_MESSAGE } from "@/context/reducers/actions";
 import { IMessage } from "@/context/reducers/interfaces";
-import { addRemoveEmojiReactions } from "@/functions/messageActions";
+import { addRemoveEmojiReactions } from "@/apisActions/messageActions";
 import { Reaction, ReactionGroup } from "@/store/types";
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useClickAway, useMediaQuery } from "@uidotdev/usehooks";
@@ -28,10 +28,10 @@ const DisplayReaction = ({
   const { user: currentUser, selectedChat } = useMessageState();
   const [isOpenReactionListModal, setIsOpenReactionListModal] = useState(false);
   const [messageId, setMessageId] = useState("");
-  const dispatch=useMessageDispatch()
+  const dispatch = useMessageDispatch();
   const clickOutsideEmojiModal: any = useClickAway(() => {
     setIsOpenReactionListModal(false);
-    setMessageId("")
+    setMessageId("");
   });
   const handleRemoveReact = (
     messageId: string,
@@ -40,7 +40,7 @@ const DisplayReaction = ({
     emoji: string
   ) => {
     //update sender ui without delay
-    if (!messageId || !emoji || (!tempReactionId&&!reactionId)) return;
+    if (!messageId || !emoji || (!tempReactionId && !reactionId)) return;
     dispatch({
       type: ADD_REACTION_ON_MESSAGE,
       payload: {
@@ -70,7 +70,7 @@ const DisplayReaction = ({
   return (
     <div
       ref={clickOutsideEmojiModal}
-      className={`absolute -bottom-[15px]  ${
+      className={`absolute -bottom-[14px]  ${
         isCurrentUserMessage ? "right-0" : "right-0"
       }`}
     >
@@ -81,22 +81,22 @@ const DisplayReaction = ({
             setIsOpenReactionListModal(!isOpenReactionListModal);
             setMessageId(message._id);
           }}
-          className="relative  cursor-pointer flex gap-1 bg-gray-200 dark:bg-gray-700  p-[3px] rounded-lg"
+          className="relative  cursor-pointer flex gap-[2px]  rounded-lg"
         >
           {reactionsGroup.slice(0, 4).map((react, i) => {
             return (
               <Emoji
                 key={i}
-                size={isSmallDevice ? 12 : 14}
+                size={isSmallDevice ? 15 : 18}
                 lazyLoad
-                emojiStyle={EmojiStyle.APPLE}
+                emojiStyle={EmojiStyle.FACEBOOK}
                 unified={(react as any)?._id?.codePointAt(0).toString(16)}
               />
             );
           })}
 
           {message.totalReactions > 0 && (
-            <span className="text-[10px]">{message.totalReactions}</span>
+            <span className="text-[10px]  ">{message.totalReactions}</span>
           )}
         </PopoverTrigger>
         <ReactionLists

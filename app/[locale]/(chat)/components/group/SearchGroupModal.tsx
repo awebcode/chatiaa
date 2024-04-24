@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { getAllUsers } from "@/functions/authActions";
+import { getAllUsers } from "@/apisActions/authActions";
 
 import dynamic from "next/dynamic";
 import { Input } from "@/components/ui/input";
 import useGroupStore from "@/store/useGroupStore";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { toast } from "react-toastify";
-import { createGroup } from "@/functions/chatActions";
+import { createGroup } from "@/apisActions/chatActions";
 import { SET_CHATS, SET_SELECTED_CHAT } from "@/context/reducers/actions";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { getSenderFull } from "../logics/logics";
@@ -54,7 +54,7 @@ export default function SearchGroupModal() {
   const groupMutaion = useMutation({
     mutationFn: (data: any) => createGroup(data),
     onSuccess: (chat) => {
-      console.log({createGroup:chat})
+      console.log({ createGroup: chat });
       const isFriend = getSenderFull(currentUser, chat.users);
       toast.success("Group created successfully!");
       const chatData = {

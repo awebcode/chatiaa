@@ -5,7 +5,7 @@ import { MdAdd } from "react-icons/md";
 import { useClickAway, useMediaQuery } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { addRemoveEmojiReactions } from "@/functions/messageActions";
+import { addRemoveEmojiReactions } from "@/apisActions/messageActions";
 
 import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
 
@@ -13,8 +13,8 @@ import { ADD_REACTION_ON_MESSAGE } from "@/context/reducers/actions";
 import { v4 } from "uuid";
 
 // const EmojiBottomSheet = dynamic(() => import("./SheetBottomEmoji"), {
-//   // loading: () => <LoaderComponent 
-  // text="Fetching..."/>,
+//   // loading: () => <LoaderComponent
+// text="Fetching..."/>,
 // });
 
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
@@ -34,12 +34,12 @@ const ReactModal = ({
   //emoji
   const { selectedChat, user: currentUser } = useMessageState();
   const [isOpenEmojiModal, setIsOpenEmojiModal] = useState(false);
- 
+
   const onEmojiClick = async (
     e: { emoji: string; unified: string },
     messageId: string
   ) => {
-    if(!messageId||!e.emoji)return
+    if (!messageId || !e.emoji) return;
     const tempReactionId = v4();
     //update sender ui without delay
     dispatch({
@@ -66,7 +66,6 @@ const ReactModal = ({
     };
 
     addRemoveEmojiReactions(data);
-   
   };
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   return (
@@ -92,7 +91,7 @@ const ReactModal = ({
               <Emoji
                 size={isSmallDevice ? 20 : 24}
                 lazyLoad
-                emojiStyle={EmojiStyle.APPLE}
+                emojiStyle={EmojiStyle.FACEBOOK}
                 unified={(v as any)?.codePointAt(0).toString(16)}
               />{" "}
             </span>

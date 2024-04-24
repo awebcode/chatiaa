@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { UPDATE_GROUP_INFO } from "@/context/reducers/actions";
-import { updateGroupNamePhoto } from "@/functions/chatActions";
+import { updateGroupNamePhoto } from "@/apisActions/chatActions";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
@@ -210,7 +210,7 @@ export default function UpdateGroupDialog() {
             onClick={handleSubmit}
           >
             {updateGroupMutation.isPending ? (
-              <LoaderComponent text="Saving..."/>
+              <LoaderComponent text="Saving..." />
             ) : (
               "Save changes"
             )}

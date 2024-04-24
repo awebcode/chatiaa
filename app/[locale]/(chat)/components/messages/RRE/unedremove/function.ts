@@ -2,7 +2,7 @@ import { REMOVE_UNSENT_MESSAGE } from "@/context/reducers/actions";
 import {
   updateMessageStatusAsRemove,
   updateMessageStatusAsUnsent,
-} from "@/functions/messageActions";
+} from "@/apisActions/messageActions";
 import { Tuser } from "@/store/types";
 import { Socket } from "socket.io-client";
 

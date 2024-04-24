@@ -5,6 +5,7 @@ import { PiFilePdf } from "react-icons/pi";
 import { IChat } from "@/context/reducers/interfaces";
 import { Tuser } from "@/store/types";
 import { RenderMessageWithEmojis } from "../logics/checkEmoji";
+import { useMediaQuery } from "@uidotdev/usehooks";
 export function MessagePreview({
   chat,
   currentUser,
@@ -12,6 +13,7 @@ export function MessagePreview({
   chat: IChat;
   currentUser: Tuser;
 }) {
+   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   const isCurrentUserSender = chat?.latestMessage?.sender?._id === currentUser?._id;
   const senderName =
     chat?.latestMessage?.sender?._id === currentUser?._id
@@ -94,11 +96,16 @@ export function MessagePreview({
                 ? chat?.latestMessage?.content.substring(0, 25) + "..."
                 : RenderMessageWithEmojis(
                     chat?.latestMessage?.content.substring(0, 25),
-                    false
+                    isSmallDevice,
+                    true
                   ) + "..."
               : chat?.latestMessage?.type?.includes("notify" || "call-notify")
               ? chat?.latestMessage?.content.substring(0, 25) + "..."
-              : RenderMessageWithEmojis(chat?.latestMessage?.content, false)}
+              : RenderMessageWithEmojis(
+                  chat?.latestMessage?.content,
+                  isSmallDevice,
+                  true
+                )}
           </span>
         );
       } else {

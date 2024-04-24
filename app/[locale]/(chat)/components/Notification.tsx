@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { ADD_REPLY_MESSAGE, SET_MESSAGES } from "@/context/reducers/actions";
-import { replyMessage } from "@/functions/messageActions";
+import { replyMessage } from "@/apisActions/messageActions";
 import { useNotificationStore } from "@/store/notificationStore";
 import React, { useCallback, useEffect, useState } from "react";
 import { BiLoaderCircle } from "react-icons/bi";

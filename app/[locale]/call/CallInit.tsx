@@ -8,7 +8,7 @@ import {
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useRouter } from "@/navigation";
 import { useSocketContext } from "@/context/SocketContextProvider";
-import { updateOnCallMembers } from "@/functions/authActions";
+import { updateOnCallMembers } from "@/apisActions/authActions";
 const CallPage = ({ roomId }: { roomId: string }) => {
   const router = useRouter();
   const { user: currentUser } = useMessageState();

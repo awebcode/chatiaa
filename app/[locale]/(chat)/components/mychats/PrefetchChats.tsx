@@ -4,7 +4,7 @@ const MyChats = dynamic(() => import("./MyChats"), {
   ssr: false,
   loading: () => <ChatSkeleton />,
 });
-import { getChatsServerAction } from "@/functions/serverActions";
+import { getChatsServerAction } from "@/apisActions/serverActions";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "./ChatSkeleton";

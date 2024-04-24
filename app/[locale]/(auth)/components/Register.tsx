@@ -1,5 +1,5 @@
 "use client";
-import { registerUser } from "@/functions/authActions";
+import { registerUser } from "@/apisActions/authActions";
 import { signIn, useSession } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useState } from "react";

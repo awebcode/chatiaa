@@ -11,7 +11,7 @@ import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
 import MyChats from "../components/mychats/MyChats";
-import { fetchUser } from "@/functions/serverActions";
+import { fetchUser } from "@/apisActions/serverActions";
 import { redirect } from "@/navigation";
 import Messages from "../components/messages/Messages";
 // import PrefetchMessages from "../components/messages/PrefetchMessages";

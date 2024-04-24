@@ -1,5 +1,5 @@
 import { IMessage } from "@/context/reducers/interfaces";
-import { calculateTime, formatTime } from "@/functions/formatTime";
+import { calculateTime, formatTime } from "@/apisActions/formatTime";
 import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";

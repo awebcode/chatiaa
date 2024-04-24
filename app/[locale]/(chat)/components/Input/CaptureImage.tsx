@@ -10,7 +10,7 @@ import { FiLink } from "react-icons/fi";
 import dynamic from "next/dynamic";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { Button } from "@/components/ui/button";
-import { editMessage, replyMessage, sentMessage } from "@/functions/messageActions";
+import { editMessage, replyMessage, sentMessage } from "@/apisActions/messageActions";
 import useEditReplyStore from "@/store/useEditReply";
 import { SET_MESSAGES } from "@/context/reducers/actions";
 import { v4 } from "uuid";
@@ -20,7 +20,7 @@ const ImageList = dynamic(() => import("./ListImage"));
 const ActiveFile = dynamic(() => import("./ActiveFile"));
 const InputList = dynamic(() => import("./InputList"));
 const ImageCapture: React.FC = () => {
-  const dispatch=useMessageDispatch()
+  const dispatch = useMessageDispatch();
   const { user: currentUser, messages, selectedChat } = useMessageState();
 
   const [files, setFiles] = useState<File[]>([]);
@@ -29,7 +29,7 @@ const ImageCapture: React.FC = () => {
   const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (isEdit && e.target.files) {
-      const selectedFiles = e?.target?.files[0] ||[]
+      const selectedFiles = e?.target?.files[0] || [];
       setFiles([selectedFiles]);
     } else {
       const selectedFiles = Array.from(e.target.files || []);
@@ -77,7 +77,7 @@ const ImageCapture: React.FC = () => {
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
-           document.getElementById("closeFileDialog")?.click();
+        document.getElementById("closeFileDialog")?.click();
         const res = await sentMessage(formData);
         if (res.status === 200) {
           document.getElementById("closeFileDialog")?.click();
@@ -125,7 +125,7 @@ const ImageCapture: React.FC = () => {
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
         document.getElementById("closeFileDialog")?.click();
-         cancelEdit();
+        cancelEdit();
         const res = await editMessage(formData);
         if (res.success) {
           document.getElementById("closeFileDialog")?.click();
@@ -162,7 +162,6 @@ const ImageCapture: React.FC = () => {
               fileType,
               dispatch,
               isReply
-             
             );
             formData.append("files", file);
             formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
@@ -175,7 +174,7 @@ const ImageCapture: React.FC = () => {
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
         document.getElementById("closeFileDialog")?.click();
-         cancelReply();
+        cancelReply();
         const res = await replyMessage(formData);
         if (res.success) {
           document.getElementById("closeFileDialog")?.click();
@@ -192,7 +191,7 @@ const ImageCapture: React.FC = () => {
         cancelReply();
       }
     }
- document.getElementById("closeFileDialog")?.click();
+    document.getElementById("closeFileDialog")?.click();
     // socket.emit("sentMessage", socketData);
   };
 

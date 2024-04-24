@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getProfile } from "@/functions/authActions";
+import { getProfile } from "@/apisActions/authActions";
 import { useRouter } from "@/navigation";
 import Image from "next/image";
 import moment from "moment";

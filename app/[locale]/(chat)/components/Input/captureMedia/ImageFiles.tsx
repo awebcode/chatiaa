@@ -9,7 +9,7 @@ import {
 import { TabsContent } from "@/components/ui/tabs";
 import { fileTypeChecker, updateSenderMessagesUI } from "@/config/functions";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { editMessage, replyMessage, sentMessage } from "@/functions/messageActions";
+import { editMessage, replyMessage, sentMessage } from "@/apisActions/messageActions";
 import useEditReplyStore from "@/store/useEditReply";
 import { CameraIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
@@ -30,9 +30,9 @@ const ImageFiles = ({
   capturedImage: any[];
   removeImageFile: any;
   handleDownloadImage: any;
-  capturePhoto:any;
+  capturePhoto: any;
   clearCapturedPhoto: any;
-  }) => {
+}) => {
   const { user: currentUser, messages, selectedChat } = useMessageState();
   const [loading, setloading] = useState<boolean>(false);
   const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
@@ -56,7 +56,7 @@ const ImageFiles = ({
               fileType,
               dispatch
             );
-            formData.append("files", file  );
+            formData.append("files", file);
             formData.append("tempMessageId", tempMessageId as string); // Associate tempMessageId with the file
           } catch (error) {
             console.error("Error updating sender messages UI:", error);
@@ -66,8 +66,8 @@ const ImageFiles = ({
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
-           document.getElementById("closeFileDialog")?.click();
-           document.getElementById("cameraDialog")?.click();
+        document.getElementById("closeFileDialog")?.click();
+        document.getElementById("cameraDialog")?.click();
         const res = await sentMessage(formData);
         if (res.status === 200) {
           document.getElementById("closeFileDialog")?.click();
@@ -116,23 +116,23 @@ const ImageFiles = ({
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
-           document.getElementById("closeFileDialog")?.click();
-           document.getElementById("cameraDialog")?.click();
-             cancelEdit();
+        document.getElementById("closeFileDialog")?.click();
+        document.getElementById("cameraDialog")?.click();
+        cancelEdit();
         const res = await editMessage(formData);
-       if (res.success) {
-         setloading(false);
-         document.getElementById("closeFileDialog")?.click();
-         document.getElementById("cameraDialog")?.click();
-         clearCapturedPhoto();
-         cancelEdit();
-       }
+        if (res.success) {
+          setloading(false);
+          document.getElementById("closeFileDialog")?.click();
+          document.getElementById("cameraDialog")?.click();
+          clearCapturedPhoto();
+          cancelEdit();
+        }
       } catch (error) {
         setloading(false);
       } finally {
         setloading(false);
         document.getElementById("closeFileDialog")?.click();
-        clearCapturedPhoto()
+        clearCapturedPhoto();
         document.getElementById("cameraDialog")?.click();
         cancelEdit();
       }
@@ -169,9 +169,9 @@ const ImageFiles = ({
         formData.append("type", "file");
         formData.append("chatId", selectedChat?.chatId as any);
         formData.append("receiverId", selectedChat?.userInfo?._id as any);
-           document.getElementById("closeFileDialog")?.click();
+        document.getElementById("closeFileDialog")?.click();
         document.getElementById("cameraDialog")?.click();
-         cancelReply();
+        cancelReply();
         const res = await replyMessage(formData);
         if (res.success) {
           setloading(false);
@@ -190,11 +190,11 @@ const ImageFiles = ({
         cancelReply();
       }
     }
-     // socket.emit("sentMessage", socketData);
+    // socket.emit("sentMessage", socketData);
 
-     document.getElementById("closeFileDialog")?.click();
-     document.getElementById("cameraDialog")?.click();
-   };
+    document.getElementById("closeFileDialog")?.click();
+    document.getElementById("cameraDialog")?.click();
+  };
   return (
     <div>
       {" "}

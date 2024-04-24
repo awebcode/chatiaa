@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { TabsContent } from '@/components/ui/tabs';
-import React, { useState } from 'react'
-import Webcam from 'react-webcam';
+import { Button } from "@/components/ui/button";
+import { TabsContent } from "@/components/ui/tabs";
+import React, { useState } from "react";
+import Webcam from "react-webcam";
 import {
   Carousel,
   CarouselContent,
@@ -9,12 +9,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { formatTime } from '@/functions/formatTime';
-import { IoMdCloseCircleOutline } from 'react-icons/io';
-import { VideoIcon } from '@radix-ui/react-icons';
-import { useMessageState } from '@/context/MessageContext';
-import { editMessage, replyMessage, sentMessage } from '@/functions/messageActions';
-import useEditReplyStore from '@/store/useEditReply';
+import { formatTime } from "@/apisActions/formatTime";
+import { IoMdCloseCircleOutline } from "react-icons/io";
+import { VideoIcon } from "@radix-ui/react-icons";
+import { useMessageState } from "@/context/MessageContext";
+import { editMessage, replyMessage, sentMessage } from "@/apisActions/messageActions";
+import useEditReplyStore from "@/store/useEditReply";
 const VideoFiles = ({
   webcamRef,
   recordedChunks,
@@ -35,9 +35,9 @@ const VideoFiles = ({
   clearCapturedVideo: any;
   stopVideoRecording: any;
   videoPlaybackTime: any;
-  handleVideoPlaybackTimeUpdate:any;
-  removeVideoFile:any;
-  }) => {
+  handleVideoPlaybackTimeUpdate: any;
+  removeVideoFile: any;
+}) => {
   const { user: currentUser, messages, selectedChat } = useMessageState();
   const [loading, setloading] = useState<boolean>(false);
   const { cancelEdit, cancelReply, isEdit, isReply } = useEditReplyStore();
@@ -247,4 +247,4 @@ const VideoFiles = ({
   );
 };
 
-export default VideoFiles
+export default VideoFiles;

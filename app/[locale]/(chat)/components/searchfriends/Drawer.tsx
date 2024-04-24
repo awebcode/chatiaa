@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getAllUsers } from "@/functions/authActions";
+import { getAllUsers } from "@/apisActions/authActions";
 
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
@@ -74,7 +74,6 @@ const Drawer = () => {
           return <UserCard user={user} key={user._id} />;
         })} */}
                 {users && users?.length > 0 ? (
-                  
                   users?.map((user: any) => {
                     return <UserCard user={user} key={user._id} />;
                   })

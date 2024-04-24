@@ -7,8 +7,8 @@ import {
   makeAsAdmin,
   removeFromAdmin,
   removeFromGroup,
-} from "@/functions/chatActions";
-import { updateChatStatusAsBlockOUnblock } from "@/functions/messageActions";
+} from "@/apisActions/chatActions";
+import { updateChatStatusAsBlockOUnblock } from "@/apisActions/messageActions";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";

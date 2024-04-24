@@ -10,7 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useMessageState } from "@/context/MessageContext";
-import { getFilesInChat } from "@/functions/chatActions";
+import { getFilesInChat } from "@/apisActions/chatActions";
 import { SlActionRedo } from "react-icons/sl";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -110,7 +110,7 @@ export default function FilesSheet({ total }: { total: number }) {
                   fetchNextPage();
                 }}
                 hasMore={hasNextPage}
-                loader={<LoaderComponent/>}
+                loader={<LoaderComponent />}
                 endMessage={
                   <p className="text-green-400">
                     <b>all files here!</b>

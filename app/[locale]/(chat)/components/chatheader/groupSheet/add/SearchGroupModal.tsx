@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { allUsersForAddgroupExclueWhoinAlreadyChat, getAllUsers } from "@/functions/authActions";
+import {
+  allUsersForAddgroupExclueWhoinAlreadyChat,
+  getAllUsers,
+} from "@/apisActions/authActions";
 
 import dynamic from "next/dynamic";
 import { Input } from "@/components/ui/input";
 import useGroupStore from "@/store/useGroupStore";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { toast } from "react-toastify";
-import { addToGroup, createGroup } from "@/functions/chatActions";
+import { addToGroup, createGroup } from "@/apisActions/chatActions";
 import { SET_CHATS, SET_SELECTED_CHAT } from "@/context/reducers/actions";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { Button } from "@/components/ui/button";
@@ -20,7 +23,7 @@ const GroupCard = dynamic(() => import("./Card"));
 export default function SearchGroupModal() {
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
-  const { user: currentUser,selectedChat } = useMessageState();
+  const { user: currentUser, selectedChat } = useMessageState();
   const [searchTerm, setSearchTerm] = useState("");
   const { selectedAddGroupUsers } = useGroupStore();
   const searchText = useDebounce(searchTerm, 600);
@@ -45,10 +48,10 @@ export default function SearchGroupModal() {
   });
   //add new user to  group mutation
   const addGroupMutaion = useMutation({
-     mutationFn: (data: any) => addToGroup(data),
+    mutationFn: (data: any) => addToGroup(data),
     onSuccess: (chat) => {
       toast.success("Added members to group successfully!");
-     
+
       socket.emit("addUserTogroupNotify", { chatId: chat._id, chat });
 
       document.getElementById("closeAddGroupDialog")?.click();
@@ -61,14 +64,14 @@ export default function SearchGroupModal() {
   const users = data?.pages.flatMap((page) => page?.users);
   //createGroupHandler
   const addGroupHandler = () => {
-    if (selectedAddGroupUsers.length <1 ) {
+    if (selectedAddGroupUsers.length < 1) {
       return;
     }
 
     const userIds = selectedAddGroupUsers.map((user: any) => user._id);
     const groupData = {
       userIds,
-      chatId:selectedChat?.chatId,
+      chatId: selectedChat?.chatId,
     };
     addGroupMutaion.mutateAsync(groupData);
   };

@@ -4,7 +4,7 @@ import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query
 //   ssr: false,
 //   loading: () => <LoaderComponent text="Fetching messages..."/>,
 // });
-import { allMessagesServerAction } from "@/functions/serverActions";
+import { allMessagesServerAction } from "@/apisActions/serverActions";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import Messages from "./Messages";

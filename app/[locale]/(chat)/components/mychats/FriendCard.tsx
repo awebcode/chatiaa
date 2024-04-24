@@ -9,7 +9,7 @@ import {
   pushgroupSeenBy,
   updateAllMessageStatusAsSeen,
   updateMessageStatus,
-} from "@/functions/messageActions";
+} from "@/apisActions/messageActions";
 import { getSender, getSenderFull } from "../logics/logics";
 import { BsThreeDots } from "react-icons/bs";
 import dynamic from "next/dynamic";
@@ -110,7 +110,7 @@ const FriendsCard: React.FC<{
       isOnline: chat?.isOnline,
       onCallMembers: chat?.onCallMembers,
       messages: {
-       ... chat?.messages
+        ...chat?.messages,
       },
     };
 
@@ -262,12 +262,12 @@ const FriendsCard: React.FC<{
                 <MessagePreview chat={chat} currentUser={currentUser as any} />
               )}
             </span>
-            <span className="text-[8px]  inline mr-2">
+            <span className="text-[11px]  inline mr-2 font-thin">
               {chat?.latestMessage?.content
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}
               {!chat?.isOnline && !chat?.isGroupChat && (
-                <span className="text-[8px]  font-medium   mx-1 md:inline ">
+                <span className="   mx-1 md:inline ">
                   <span className="mr-1">active</span>
                   {moment(
                     isFriend?.lastActive ? isFriend?.lastActive : isFriend?.createdAt
@@ -288,7 +288,8 @@ const FriendsCard: React.FC<{
               Join call
             </Button>
           ) : selectedChat?.chatId === chat?._id &&
-            (!searchParams.get("chatId") || searchParams.get("chatId")!==selectedChat?._id) ? (
+            (!searchParams.get("chatId") ||
+              searchParams.get("chatId") !== selectedChat?._id) ? (
             <div className="">
               <BiLoaderCircle
                 className={`animate-spin h-3 w-3 md:h-4

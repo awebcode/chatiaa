@@ -16,8 +16,7 @@ import { BsThreeDots } from "react-icons/bs";
 import { Tuser } from "@/store/types";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { deleteUserByAdmin } from "@/functions/authActions";
-
+import { deleteUserByAdmin } from "@/apisActions/authActions";
 
 export default function UserDropdownMenu({ user }: { user: Tuser }) {
   const queryClient = useQueryClient();

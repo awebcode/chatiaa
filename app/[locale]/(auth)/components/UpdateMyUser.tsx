@@ -19,12 +19,12 @@ import { FaEdit } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Textarea } from "@/components/ui/textarea";
 import { IoClose } from "react-icons/io5";
-import { updateUser } from "@/functions/authActions";
+import { updateUser } from "@/apisActions/authActions";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Tuser } from "@/store/types";
-import RevalidateTag from "@/functions/serverActions";
+import RevalidateTag from "@/apisActions/serverActions";
 import LoaderComponent from "@/components/Loader";
-export default function UpdateMyProfileDialog({currentUser}:{currentUser:Tuser}) {
+export default function UpdateMyProfileDialog({ currentUser }: { currentUser: Tuser }) {
   // const { user: currentUser } = useMessageState();
   const [selectedImage, setSelectedImage] = useState<File | null | string>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export default function UpdateMyProfileDialog({currentUser}:{currentUser:Tuser})
       newErrors.bio = "";
     }
     // Check if password length is less than 6 or greater than 20
-    if (password?.length < 6 ) {
+    if (password?.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     } else if (password.length > 20) {
       newErrors.password = "Password should less than 20  characters";
@@ -79,9 +79,9 @@ export default function UpdateMyProfileDialog({currentUser}:{currentUser:Tuser})
     onSuccess: (data) => {
       //   dispatch({ type: UPDATE_GROUP_INFO, payload: data });
       //   socket.emit("update_group_info", data);
-       setName("");
-       setBio("");
-      RevalidateTag("my-profile")
+      setName("");
+      setBio("");
+      RevalidateTag("my-profile");
       toast.success("User info updated!");
       document.getElementById("updateCurrentUserDialog")?.click();
     },
@@ -128,12 +128,7 @@ export default function UpdateMyProfileDialog({currentUser}:{currentUser:Tuser})
     const isBioExceedsLimit = bio?.length > 100;
 
     // Return true if either condition is met
-    return (
-      (isnameSelected && isBioSelected) ||
-      isnameExceedsLimit ||
- 
-      isBioExceedsLimit
-    );
+    return (isnameSelected && isBioSelected) || isnameExceedsLimit || isBioExceedsLimit;
   };
   return (
     <Dialog>

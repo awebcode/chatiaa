@@ -14,7 +14,7 @@ import useEditReplyStore from "@/store/useEditReply";
 import { useClickAway } from "@uidotdev/usehooks";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { editMessage, replyMessage } from "@/functions/messageActions";
+import { editMessage, replyMessage } from "@/apisActions/messageActions";
 import { ADD_REPLY_MESSAGE, SET_MESSAGES } from "@/context/reducers/actions";
 import { v4 } from "uuid";
 import { updateSenderMessagesUI } from "@/config/functions";
@@ -30,7 +30,7 @@ type Temoji = {
 };
 const Input = () => {
   const { socket } = useSocketContext();
-  const messageInputRef=useRef<HTMLTextAreaElement>(null)
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const { user: currentUser, messages, selectedChat } = useMessageState();
   const [audioRecorder, setAudioRecorder] = useState(false);
   const [message, setMessage] = useState("");
@@ -125,7 +125,7 @@ const Input = () => {
     dispatch({ type: SET_MESSAGES, payload: socketData });
     socket.emit("sentMessage", socketData);
     setMessage("");
-    messageInputRef.current?.focus()
+    messageInputRef.current?.focus();
   }, [message, socket]);
   //editSubmitHandler
   const editSubmit = async () => {
@@ -141,7 +141,7 @@ const Input = () => {
       null,
       { ...isEdit, content: message } as any
     );
-  
+
     const formData = new FormData();
     formData.append("tempMessageId", tempMessageId as string);
     formData.append("messageId", isEdit?._id as any);
@@ -243,7 +243,7 @@ const Input = () => {
             <Emoji
               size={20}
               lazyLoad
-              emojiStyle={EmojiStyle.APPLE}
+              emojiStyle={EmojiStyle.FACEBOOK}
               unified={"1f642"}
             />{" "}
           </div>

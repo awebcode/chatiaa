@@ -1,10 +1,10 @@
 import { Input } from "@/components/ui/input";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import {  getUsersInAChat } from "@/functions/chatActions";
+import { getUsersInAChat } from "@/apisActions/chatActions";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
-import React, {  useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Card from "./Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddMembers from "./add/AddMembers";
@@ -16,7 +16,7 @@ const Members = () => {
   const [searchTerm, setsearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 600);
   const { data, isFetching, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
-    queryKey: [selectedChat?.chatId, debouncedSearch,"groupUsers"],
+    queryKey: [selectedChat?.chatId, debouncedSearch, "groupUsers"],
 
     queryFn: getUsersInAChat as any,
 
@@ -35,8 +35,8 @@ const Members = () => {
     initialPageParam: 0,
   });
   const users = useMemo(() => {
-   return data?.pages.flatMap((page) => page?.users);
-  },[data]);
+    return data?.pages.flatMap((page) => page?.users);
+  }, [data]);
   //SET_GROUP_USERS_ON_FETCHING on group
   // useEffect(() => {
   //   if (users) {
@@ -61,7 +61,7 @@ const Members = () => {
           />
           <div className="flex items-center justify-between">
             <h1>Members</h1>
-            <AddMembers/>
+            <AddMembers />
           </div>
 
           {/* Infinite scrolling */}
@@ -75,7 +75,7 @@ const Members = () => {
                 fetchNextPage();
               }}
               hasMore={hasNextPage}
-              loader={<LoaderComponent/>}
+              loader={<LoaderComponent />}
               endMessage={
                 users &&
                 users?.length > 0 && (

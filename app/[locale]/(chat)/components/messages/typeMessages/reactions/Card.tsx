@@ -14,7 +14,8 @@ const Card = ({
   handleRemoveReact: (
     messageId: string,
     reactionId: string,
-    tempReactionId:string,emoji: string
+    tempReactionId: string,
+    emoji: string
   ) => void;
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
@@ -73,7 +74,7 @@ const Card = ({
         <Emoji
           size={isSmallDevice ? 14 : 16}
           lazyLoad
-          emojiStyle={EmojiStyle.APPLE}
+          emojiStyle={EmojiStyle.FACEBOOK}
           unified={(reaction as any).emoji?.codePointAt(0).toString(16)}
         />{" "}
         {/* <span className="">{v.emoji}</span> */}

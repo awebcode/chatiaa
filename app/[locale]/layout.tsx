@@ -12,7 +12,7 @@ import NextAuthProvider from "@/providers/NextAuthProvider";
 
 import { ReactQueryClientProvider } from "@/providers/QueryProvider";
 import { MessageContextProvider } from "@/context/MessageContext";
-import { fetchUser } from "@/functions/serverActions";
+import { fetchUser } from "@/apisActions/serverActions";
 import SocketEvents from "./SocketEvents";
 import Navbar from "@/components/Navbar";
 // const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
@@ -23,7 +23,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit:"cover" //mobile screen cover will not displayed
+  viewportFit: "cover", //mobile screen cover will not displayed
   // Also supported by less commonly used
   // interactiveWidget: 'resizes-visual',
 };
@@ -102,7 +102,7 @@ export default async function LocaleLayout({
   } catch (error) {
     notFound();
   }
-  
+
   return (
     <html lang={locale} suppressHydrationWarning>
       {/* {locale} */}

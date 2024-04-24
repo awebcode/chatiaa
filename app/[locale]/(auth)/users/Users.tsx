@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getAllAdminUsers, getAllUsers } from "@/functions/authActions";
+import { getAllAdminUsers, getAllUsers } from "@/apisActions/authActions";
 import {
   Table,
   TableBody,

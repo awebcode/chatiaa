@@ -17,18 +17,18 @@ import Image from "next/image";
 import { FiUsers } from "react-icons/fi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { fetchClientUser } from "@/functions/authActions";
+import { fetchClientUser } from "@/apisActions/authActions";
 import { useMessageState } from "@/context/MessageContext";
 const ThemeButton = dynamic(() => import("./ThemeButton"));
 const LanguageChanger = dynamic(() => import("./LanguageChanger"));
 const Navbar = () => {
   const queryClient = useQueryClient();
   const t = useTranslations();
-  const {user}=useMessageState()
+  const { user } = useMessageState();
   // const { data:  } = use();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams=useSearchParams()
+  const searchParams = useSearchParams();
 
   const logoutHandler = async () => {
     await signOut();
@@ -36,7 +36,7 @@ const Navbar = () => {
     router.push("/");
   };
   // const isHidden = pathname.includes("/chat?chatId=");
-  const isHidden=searchParams.get("chatId")
+  const isHidden = searchParams.get("chatId");
   return (
     <nav
       className={`${
@@ -67,7 +67,7 @@ const Navbar = () => {
           <ThemeButton />
           <LanguageChanger />
         </div>
-        { user && user ? (
+        {user && user ? (
           // If user is authenticated, display profile image
           <DropdownMenu>
             <DropdownMenuTrigger className="border-none outline-none">
@@ -107,9 +107,7 @@ const Navbar = () => {
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                className={`${
-                  (user as any)?.role === "admin" ? "block" : "hidden"
-                }`}
+                className={`${(user as any)?.role === "admin" ? "block" : "hidden"}`}
               >
                 <Link href={"/users"} className="flex gap-2">
                   <FiUsers className="h-4 w-4" />

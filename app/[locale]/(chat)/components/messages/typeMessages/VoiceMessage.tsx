@@ -1,6 +1,6 @@
 import { useMessageState } from "@/context/MessageContext";
 import { IMessage } from "@/context/reducers/interfaces";
-import { formatTime } from "@/functions/formatTime";
+import { formatTime } from "@/apisActions/formatTime";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
@@ -10,6 +10,7 @@ import Time from "./Time";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import { handleDownload } from "@/config/handleDownload";
 import LoaderComponent from "@/components/Loader";
+import { ensureHttps } from "@/config/httpsParser";
 
 const SeenBy = dynamic(() => import("./seenby/SeenBy"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -45,14 +46,6 @@ const formWaveSurferOptions = (ref: any) => ({
   normalize: true,
   partialRender: true,
 });
-
-// Function to modify URLs to start with "https"
-const ensureHttps = (url: string): string => {
-  if (url.startsWith("http://")) {
-    return url.replace("http://", "https://");
-  }
-  return url;
-};
 
 export default function VoiceMessage({
   message,
@@ -139,9 +132,7 @@ export default function VoiceMessage({
             </div>
             <div className={"w-52 md:w-64"} ref={waveformRef}></div>
 
-            <div
-             
-            >
+            <div>
               <span className="text-sm font-medium text-gray-400">
                 {playing ? currentTime : totalTime}
               </span>

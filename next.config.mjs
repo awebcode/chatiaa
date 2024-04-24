@@ -1,17 +1,31 @@
 /** @type {import('next').NextConfig} */
 import nextIntl from "next-intl/plugin";
 const withNextIntl = nextIntl();
-
 const nextConfig = {
-  // reactStrictMode: true,
-  // swcMinify: true,
+  reactStrictMode: true,
+  swcMinify: true,
   images: {
-    domains: [
-      "res.cloudinary.com",
-      "lh3.googleusercontent.com",
-      "avatars.githubusercontent.com",
-      "avataaars.io",
-      "lottie.host",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lottie.host",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avataaars.io",
+      },
     ],
   },
   webpack: (config, options) => {

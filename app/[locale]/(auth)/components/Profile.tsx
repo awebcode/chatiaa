@@ -1,5 +1,5 @@
-'use server'
-import { deleteUser, fetchUser } from "@/functions/serverActions";
+"use server";
+import { deleteUser, fetchUser } from "@/apisActions/serverActions";
 import { redirect } from "@/navigation";
 import { getServerSession } from "next-auth";
 import Image from "next/image";
@@ -18,7 +18,6 @@ const Profile = async () => {
   //    return redirect("/");
   //   }
   //   const { user } = data;
-  
 
   return (
     <div className="container mx-auto flex items-center justify-center h-[60vh]">

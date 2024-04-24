@@ -32,10 +32,7 @@ const EmojiModal = ({
   const { theme } = useTheme();
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   return (
-    <PopoverContent
-     
-      className="bg-transparent border-none outline-none shadow-none"
-    >
+    <PopoverContent className="bg-transparent border-none outline-none shadow-none">
       <PopoverArrow
         fill={theme === "dark" ? "#1f2937" : "#e5e7eb"}
         height={12}
@@ -55,13 +52,13 @@ const EmojiModal = ({
           setIsOpenReactModal(false);
           setIsOpenEmojiModal(false);
         }}
-         autoFocusSearch={false}
+        autoFocusSearch={false}
         // autoFocusSearch
         theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
         lazyLoadEmojis
         // previewConfig={{defaultEmoji:<Emoji/>}}
 
-        emojiStyle={EmojiStyle.APPLE}
+        emojiStyle={EmojiStyle.FACEBOOK}
         searchPlaceholder="Search chat emojis..."
         suggestedEmojisMode={SuggestionMode.RECENT}
       />

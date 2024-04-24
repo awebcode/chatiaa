@@ -1,9 +1,9 @@
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
-import { getAllAdminUsers } from "@/functions/authActions";
+import { getAllAdminUsers } from "@/apisActions/authActions";
 import dynamic from "next/dynamic";
 import { redirect } from "@/navigation";
 import LoaderComponent from "@/components/Loader";
-import { fetchUser } from "@/functions/serverActions";
+import { fetchUser } from "@/apisActions/serverActions";
 const Users = dynamic(() => import("./Users"), {
   ssr: false,
   loading: () => <LoaderComponent text="Fetching..." />,
