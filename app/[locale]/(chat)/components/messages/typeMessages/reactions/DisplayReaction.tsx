@@ -40,7 +40,7 @@ const DisplayReaction = ({
     emoji: string
   ) => {
     //update sender ui without delay
-    if (!messageId || !emoji || !reactionId) return;
+    if (!messageId || !emoji || (!tempReactionId&&!reactionId)) return;
     dispatch({
       type: ADD_REACTION_ON_MESSAGE,
       payload: {

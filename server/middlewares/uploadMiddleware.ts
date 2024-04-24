@@ -4,14 +4,14 @@ import multer, { Multer, MulterError } from "multer";
 // Define the storage configuration
 const storage = multer.diskStorage({
   destination: (
-    req: Request,
+    req: Request | any,
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
   ) => {
     cb(null, "uploads"); // Set the destination folder
   },
   filename: (
-    req: Request,
+    req: Request | any,
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void
   ) => {
@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 // Define the file filter function
 // Define the file filter function
 const fileFilter: any = (
-  req: Request,
+  req: Request | any,
   file: Express.Multer.File,
   cb: (error: Error | null, acceptFile: boolean) => void
 ) => {

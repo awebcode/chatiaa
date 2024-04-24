@@ -363,8 +363,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   // Add Reaction on Message Handler
   const handleAddReactionOnMessage = useCallback(
-    (reaction: Reaction & { type: string }) => {
-      dispatch({ type: ADD_REACTION_ON_MESSAGE, payload: reaction });
+    (data: { reaction: any } & { type: string }) => {
+      if (data.reaction.reactBy?.toString() !== currentUserRef.current?._id) { //currentUser cannot get this
+        dispatch({ type: ADD_REACTION_ON_MESSAGE, payload: data });
+      }
     },
     []
   );

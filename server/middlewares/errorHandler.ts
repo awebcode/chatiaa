@@ -23,7 +23,7 @@ interface AppError extends Error {
 
 export const errorHandler = (
   err: AppError,
-  req: Request,
+  req: Request | any,
   res: Response,
   next: NextFunction
 ) => {

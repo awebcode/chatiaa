@@ -128,26 +128,76 @@ const countReactionsGroupForMessage = (messageId) => __awaiter(void 0, void 0, v
     }
 });
 exports.countReactionsGroupForMessage = countReactionsGroupForMessage;
-//get reaction base on message id while scroll and filter
+// //get reaction base on message id while scroll and filter
+// export const getMessageReactions = async (
+//   req: Request | any,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { messageId } = req.params;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const page = parseInt(req.query.page) || 1;
+//     const skip = (page - 1) * limit;
+//     const reactions = await Reaction.find(
+//       req.query.emoji === "all" || req.query.emoji === ""
+//         ? {
+//             messageId,
+//           }
+//         : { messageId, emoji: req.query.emoji }
+//     )
+//       .populate({
+//         path: "reactBy",
+//         select: "name image email lastActive createdAt onlineStatus",
+//       })
+//       .sort({ updatedAt: -1, reactBy: req.id })
+//       .limit(limit)
+//       .skip(skip)
+//       .exec();
+//     res.json(reactions);
+//   } catch (error) {
+//     console.error("Error getting message reactions:", error);
+//     next(error);
+//   }
+// };
 const getMessageReactions = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { messageId } = req.params;
         const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * limit;
-        const reactions = yield reactModal_1.Reaction.find(req.query.emoji === "all" || req.query.emoji === ""
-            ? {
-                messageId,
-            }
-            : { messageId, emoji: req.query.emoji })
-            .populate({
-            path: "reactBy",
-            select: "name image email lastActive createdAt onlineStatus",
-        })
-            .sort({ updatedAt: -1 })
-            .limit(limit)
-            .skip(skip)
-            .exec();
+        // Define the aggregation pipeline
+        const pipeline = [
+            // Match reactions for the specific messageId and optionally for a specific emoji
+            {
+                $match: Object.assign({ messageId }, (req.query.emoji && req.query.emoji !== "all" && { emoji: req.query.emoji })),
+            },
+            // Sort by whether the user reacted or not
+            {
+                $addFields: {
+                    reactedByCurrentUser: { $eq: ["$reactBy", req.id] },
+                },
+            },
+            {
+                $sort: {
+                    reactedByCurrentUser: -1, // Sort descending, so the reactions by current user appear first
+                },
+            },
+            // Perform a left outer join with the 'reactBy' collection to get user details
+            {
+                $lookup: {
+                    from: "reactBy",
+                    localField: "reactBy",
+                    foreignField: "_id",
+                    as: "reactByDetails",
+                },
+            },
+            // Limit and skip for pagination
+            { $skip: skip },
+            { $limit: limit },
+        ];
+        // Execute the aggregation pipeline
+        const reactions = yield reactModal_1.Reaction.aggregate(pipeline);
         res.json(reactions);
     }
     catch (error) {
@@ -670,6 +720,7 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
     try {
         const { messageId, emoji, type, reactionId, receiverId, chatId, tempReactionId } = req.body;
         const chat = yield ChatModel_1.Chat.findByIdAndUpdate(chatId);
+        // const currentUser=await User.findById
         switch (type) {
             case "add": {
                 if (!messageId || !emoji) {
@@ -718,9 +769,14 @@ const addRemoveEmojiReactions = (req, res, next) => __awaiter(void 0, void 0, vo
                 break;
             }
             case "remove": {
-                if (!reactionId)
+                if (!reactionId || !tempReactionId)
                     return next(new errorHandler_1.CustomErrorHandler("reactionId cannot be empty!", 400));
-                const reaction = yield reactModal_1.Reaction.findByIdAndDelete(reactionId);
+                const reaction = yield reactModal_1.Reaction.findOneAndDelete({
+                    $or: [
+                        { tempReactionId }, // Assuming tempReactionId is the field name
+                        { _id: reactionId }, // Assuming reactionId is the field name for the permanent ID
+                    ],
+                });
                 if (chat === null || chat === void 0 ? void 0 : chat.isGroupChat) {
                     const emitData = { reaction, type: "remove" };
                     yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "addReactionOnMessage", chatId, emitData);

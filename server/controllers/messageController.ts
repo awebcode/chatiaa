@@ -15,11 +15,7 @@ import { getFileType } from "./functions";
 import { MessageSeenBy } from "../model/seenByModel";
 import { emitEventToGroupUsers } from "../common/groupSocket";
 //@access          Protected
-export const allMessages = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const allMessages = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
@@ -133,7 +129,38 @@ export const countReactionsGroupForMessage = async (messageId: any) => {
     throw error; // Forward error to the caller
   }
 };
-//get reaction base on message id while scroll and filter
+// //get reaction base on message id while scroll and filter
+// export const getMessageReactions = async (
+//   req: Request | any,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { messageId } = req.params;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const page = parseInt(req.query.page) || 1;
+//     const skip = (page - 1) * limit;
+//     const reactions = await Reaction.find(
+//       req.query.emoji === "all" || req.query.emoji === ""
+//         ? {
+//             messageId,
+//           }
+//         : { messageId, emoji: req.query.emoji }
+//     )
+//       .populate({
+//         path: "reactBy",
+//         select: "name image email lastActive createdAt onlineStatus",
+//       })
+//       .sort({ updatedAt: -1, reactBy: req.id })
+//       .limit(limit)
+//       .skip(skip)
+//       .exec();
+//     res.json(reactions);
+//   } catch (error) {
+//     console.error("Error getting message reactions:", error);
+//     next(error);
+//   }
+// };
 export const getMessageReactions = async (
   req: Request | any,
   res: Response,
@@ -144,35 +171,56 @@ export const getMessageReactions = async (
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
-    const reactions = await Reaction.find(
-      req.query.emoji === "all" || req.query.emoji === ""
-        ? {
-            messageId,
-          }
-        : { messageId, emoji: req.query.emoji }
-    )
-      .populate({
-        path: "reactBy",
-        select: "name image email lastActive createdAt onlineStatus",
-      })
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .skip(skip)
-      .exec();
+
+    // Define the aggregation pipeline
+    const pipeline = [
+      // Match reactions for the specific messageId and optionally for a specific emoji
+      {
+        $match: {
+          messageId,
+          // Optionally filter by emoji if provided
+          ...(req.query.emoji && req.query.emoji !== "all" && { emoji: req.query.emoji }),
+        },
+      },
+      // Sort by whether the user reacted or not
+      {
+        $addFields: {
+          reactedByCurrentUser: { $eq: ["$reactBy", req.id] },
+        },
+      },
+      {
+        $sort: {
+          reactedByCurrentUser: -1, // Sort descending, so the reactions by current user appear first
+        },
+      },
+      // Perform a left outer join with the 'reactBy' collection to get user details
+      {
+        $lookup: {
+          from: "reactBy",
+          localField: "reactBy",
+          foreignField: "_id",
+          as: "reactByDetails",
+        },
+      },
+      // Limit and skip for pagination
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    // Execute the aggregation pipeline
+    const reactions = await Reaction.aggregate(pipeline as any);
+
     res.json(reactions);
   } catch (error) {
     console.error("Error getting message reactions:", error);
     next(error);
   }
 };
+
 //@description     Create New Message
 //@route           POST /api/Message/
 //@access          Protected
-export const sendMessage = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const sendMessage = async (req: Request|any, res: Response, next: NextFunction) => {
   const { content, chatId, type, receiverId } = req.body;
 
   if (!chatId) {
@@ -495,11 +543,7 @@ export const updateMessageStatusAsUnsent = async (
 
 //reply Message
 
-export const replyMessage = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const replyMessage = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     const { chatId, messageId, content, type, receiverId } = req.body;
     if (!chatId || !messageId) {
@@ -661,11 +705,7 @@ export const replyMessage = async (
 
 //edit message
 
-export const editMessage = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const editMessage = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     const { messageId, chatId, content, type, receiverId } = req.body;
     if (!messageId) {
@@ -811,7 +851,7 @@ export const addRemoveEmojiReactions = async (
     const { messageId, emoji, type, reactionId, receiverId, chatId, tempReactionId } =
       req.body;
     const chat = await Chat.findByIdAndUpdate(chatId);
-
+    // const currentUser=await User.findById
     switch (type) {
       case "add": {
         if (!messageId || !emoji) {
@@ -868,9 +908,15 @@ export const addRemoveEmojiReactions = async (
         break;
       }
       case "remove": {
-        if (!reactionId)
+        if (!reactionId || !tempReactionId)
           return next(new CustomErrorHandler("reactionId cannot be empty!", 400));
-        const reaction = await Reaction.findByIdAndDelete(reactionId);
+        const reaction = await Reaction.findOneAndDelete({
+          $or: [
+            { tempReactionId }, // Assuming tempReactionId is the field name
+            { _id: reactionId }, // Assuming reactionId is the field name for the permanent ID
+          ],
+        });
+
         if (chat?.isGroupChat) {
           const emitData = { reaction, type: "remove" };
           await emitEventToGroupUsers(io, "addReactionOnMessage", chatId, emitData);

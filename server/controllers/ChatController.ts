@@ -19,11 +19,7 @@ import { allMessages } from "./messageController";
 import { allInitMessages } from "../common/getInitMessages";
 
 //@access          Protected
-export const accessChat = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const accessChat = async (req: Request|any, res: Response, next: NextFunction) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -80,11 +76,7 @@ export const accessChat = async (
   }
 };
 
-export const fetchChats = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const fetchChats = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     // console.log({fetchChats:req.id})
     const limit = parseInt(req.query.limit) || 10;
@@ -121,38 +113,38 @@ export const fetchChats = async (
     //   ],
     // });
     // const user=await User.findById(req.id);
-  const chats = await Chat.find({
-    $and: [
-      { users: { $elemMatch: { $eq: req.id } } },
-      {
-        $or: [
-          {
-            $and: [
-              { chatName: { $regex: req.query.search, $options: "i" } }, // Matching chatName
-              { isGroupChat: true }, // When isGroupChat is true
-            ],
-          },
-          { isGroupChat: false }, // For non-group chats
-        ],
-      },
-    ],
-  })
-    .populate({
-      path: "users",
-      select: "name email image createdAt lastActive onlineStatus",
-      options: { limit: 10 }, // Set limit to Infinity to populate all documents
+    const chats = await Chat.find({
+      $and: [
+        { users: { $elemMatch: { $eq: req.id } } },
+        {
+          $or: [
+            {
+              $and: [
+                { chatName: { $regex: req.query.search, $options: "i" } }, // Matching chatName
+                { isGroupChat: true }, // When isGroupChat is true
+              ],
+            },
+            { isGroupChat: false }, // For non-group chats
+          ],
+        },
+      ],
     })
-    .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
-    .populate("latestMessage")
-    .populate("chatBlockedBy", "name image email createdAt lastActive onlineStatus")
-    .sort({ updatedAt: -1 })
-    .limit(limit)
-    .skip(skip);
+      .populate({
+        path: "users",
+        select: "name email image createdAt lastActive onlineStatus",
+        options: { limit: 10 }, // Set limit to Infinity to populate all documents
+      })
+      .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
+      .populate("latestMessage")
+      .populate("chatBlockedBy", "name image email createdAt lastActive onlineStatus")
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .skip(skip);
     const populatedChats = await User.populate(chats, {
       path: "latestMessage.sender",
       select: "name image email lastActive createdAt lastActive onlineStatus",
     });
-   
+
     // Filter the populatedChats array based on the keyword
     let filteredChats: any = [];
     if (req.query.search && keyword) {
@@ -177,7 +169,7 @@ export const fetchChats = async (
           chat?.latestMessage?._id,
           req.id
         );
- const messages = await allInitMessages(chat._id);
+        const messages = await allInitMessages(chat._id);
         // Construct updated chat object with awaited results
         return {
           ...chat.toObject(),
@@ -185,7 +177,7 @@ export const fetchChats = async (
             ...chat.latestMessage?._doc,
             isSeen: !!isLatestMessageSeen,
             seenBy,
-            
+
             totalseenBy: totalSeenCount || 0,
           },
           messages,
@@ -220,7 +212,7 @@ export const fetchChats = async (
             chat?.latestMessage?._id,
             req.id
           );
-const messages = await allInitMessages(chat._id);
+          const messages = await allInitMessages(chat._id);
           // Construct updated chat object with awaited results
           const updatedChat = {
             ...chat.toObject(),
@@ -566,11 +558,7 @@ export const removeFromGroup = async (
 // @desc    Add user to Group / Leave
 // @route   PUT /api/chat/groupadd
 // @access  Protected
-export const addToGroup = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const addToGroup = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     const { chatId, userIds } = req.body;
     //
@@ -672,11 +660,7 @@ export const deleteSingleChat = async (
 };
 
 ///make admin
-export const makeAdmin = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const makeAdmin = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     const { chatId, userId } = req.body;
 
@@ -849,11 +833,7 @@ export const updateChatStatusAsBlockOrUnblock = async (
 };
 
 //LeaveChat
-export const leaveFromChat = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const leaveFromChat = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     const { chatId, userId } = req.body;
 
@@ -955,11 +935,7 @@ export const getInitialFilesInChat = async (
 
 //find files from a chat
 
-export const getFilesInChat = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const getFilesInChat = async (req: Request|any, res: Response, next: NextFunction) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = parseInt(req.query.skip) || 0;
 

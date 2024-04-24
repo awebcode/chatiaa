@@ -72,6 +72,21 @@ export default function Messages({ chatId }: { chatId: string }) {
       container.scrollTop = container.scrollTop + 200;
     }
     dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data?.pages[0]?.total });
+    //update local storage chat
+   const storedChats = JSON.parse(localStorage.getItem("chats") || "[]");
+   const isExistChatIndex = storedChats.findIndex(
+     (chat: any) => chat?._id === selectedChat?.chatId
+   );
+   if (data?.pages[0]?.messages) {
+     if (isExistChatIndex !== -1) {
+       // Check if the chat exists in storedChats
+       // Update the messages of the selected chat
+       storedChats[isExistChatIndex].messages.messages = data?.pages[0]?.messages;
+       // Store the updated chats back to local storage
+       localStorage.setItem("chats", JSON.stringify(storedChats));
+     }
+   }
+
   }, [data?.pages]);
   useEffect(() => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work

@@ -7,7 +7,7 @@ import { User } from "../model/UserModel";
 import { Chat } from "../model/ChatModel";
 import { AvatarGenerator } from "random-avatar-generator";
 import AccountModel from "../model/AccountModel";
-const register = async (req: Request | any, res: Response, next: NextFunction) => {
+const register = async (req: Request|any, res: Response, next: NextFunction) => {
   const { name, password, email } = req.body;
 
   try {
@@ -49,7 +49,7 @@ const register = async (req: Request | any, res: Response, next: NextFunction) =
   }
 };
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
+const login = async (req: Request|any, res: Response, next: NextFunction) => {
   const { name, password } = req.body;
 
   try {
@@ -82,10 +82,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     next(error); // Pass the error to the next middleware
   }
 };
-interface CustomRequest extends Request {
-  id: any;
-}
-const getUser: any = async (req: CustomRequest, res: Response, next: NextFunction) => {
+
+const getUser: any = async (req: Request | any, res: Response, next: NextFunction) => {
   try {
     // Access the authenticated user from the request
     //with serverside in next js req.id not work you can use getserversession for accessing user
@@ -106,7 +104,7 @@ const getUser: any = async (req: CustomRequest, res: Response, next: NextFunctio
 };
 //get profile
 export const getProfile: any = async (
-  req: CustomRequest,
+  req: Request|any,
   res: Response,
   next: NextFunction
 ) => {
@@ -127,7 +125,7 @@ export const getProfile: any = async (
     next(error);
   }
 };
-const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunction) => {
+const allUsers = async (req: Request|any, res: Response, next: NextFunction) => {
   const limit = parseInt(req.query.limit) || 4;
   const skip = parseInt(req.query.skip) || 0;
   // Assuming you have a MongoDB model named 'User'
@@ -168,7 +166,7 @@ const allUsers = async (req: CustomRequest | any, res: Response, next: NextFunct
 //find for adding in group who not exists in chat
 
 export const allUsersForAddgroupExclueWhoinAlreadyChat = async (
-  req: CustomRequest | any,
+  req: Request|any,
   res: Response,
   next: NextFunction
 ) => {
@@ -202,7 +200,7 @@ export const allUsersForAddgroupExclueWhoinAlreadyChat = async (
 //all users for admin
 
 export const allAdminUsers = async (
-  req: CustomRequest | any,
+  req: Request|any,
   res: Response,
   next: NextFunction
 ) => {
@@ -260,7 +258,7 @@ export const allAdminUsers = async (
   }
 };
 
-export const logout = (req: CustomRequest | any, res: Response, next: NextFunction) => {
+export const logout = (req: Request|any, res: Response, next: NextFunction) => {
   res.cookie("authToken", "", {
     expires: new Date(0),
     secure: true,
@@ -275,7 +273,7 @@ export const logout = (req: CustomRequest | any, res: Response, next: NextFuncti
 };
 
 export const deleteUser = async (
-  req: CustomRequest | any,
+  req: Request|any,
   res: Response,
   next: NextFunction
 ) => {
@@ -313,7 +311,7 @@ export const deleteUser = async (
 //Delete user by admin
 
 export const deleteUserByAdmin = async (
-  req: CustomRequest | any,
+  req: Request|any,
   res: Response,
   next: NextFunction
 ) => {
@@ -351,11 +349,7 @@ export const deleteUserByAdmin = async (
   }
 };
 // @access  Protected updateUser
-export const updateUser = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const updateUser = async (req: Request|any, res: Response, next: NextFunction) => {
   try {
     const { userId, name, password, bio, role } = req.body;
     const currentUser = await User.findById(userId);
@@ -410,7 +404,7 @@ export const updateUser = async (
 
 // getOnlineUsersInMyChats
 export const getOnlineUsersInMyChats = async (
-  req: CustomRequest | any,
+  req: Request|any,
   res: Response,
   next: NextFunction
 ) => {

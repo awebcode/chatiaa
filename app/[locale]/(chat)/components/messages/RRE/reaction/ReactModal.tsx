@@ -34,9 +34,7 @@ const ReactModal = ({
   //emoji
   const { selectedChat, user: currentUser } = useMessageState();
   const [isOpenEmojiModal, setIsOpenEmojiModal] = useState(false);
-  const clickEmojiOutsideRef: any = useClickAway(() => {
-    setIsOpenEmojiModal(false);
-  });
+ 
   const onEmojiClick = async (
     e: { emoji: string; unified: string },
     messageId: string
@@ -67,9 +65,8 @@ const ReactModal = ({
       tempReactionId,
     };
 
-    const res = await addRemoveEmojiReactions(data);
-    if (res.success) {
-    }
+    addRemoveEmojiReactions(data);
+   
   };
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   return (

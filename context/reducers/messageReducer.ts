@@ -613,6 +613,7 @@ export const messageReducer = (state: State, action: Action): State => {
 
     //reaction add/remove/update handler
     case ADD_REACTION_ON_MESSAGE:
+      
       return {
         ...state,
         // Update messages array based on message type
@@ -634,7 +635,6 @@ export const messageReducer = (state: State, action: Action): State => {
                 (u) => u.reactBy._id === action.payload.reaction.reactBy._id
               )?._id
             ) {
-              ///if tempreactionId but no id exists then
               let updatedReactionsGroup = Array.isArray(message.reactionsGroup)
                 ? [...message.reactionsGroup]
                 : [];
@@ -681,14 +681,16 @@ export const messageReducer = (state: State, action: Action): State => {
                 reactionsGroup: updatedReactionsGroup,
               };
             } else if (
-              action.payload.type === "update" ||
-              updatedReactions.some(
+              (action.payload.type === "update" && action.payload.type !== "remove") ||
+              (updatedReactions.some(
                 (u) => u.reactBy._id === action.payload.reaction.reactBy._id
-              )
+              ) &&
+                action.payload.type !== "remove")
             ) {
               // For update type, replace the existing reaction with the updated one
-              const updatedReactions = message.reactions.map((reaction) =>
-                reaction._id === action.payload.reaction._id
+              let updatedReactions = message.reactions.map((reaction) =>
+                reaction._id === action.payload.reaction._id ||
+                reaction.tempReactionId === action.payload.reaction.tempReactionId
                   ? action.payload.reaction // Replace the existing reaction with the updated one
                   : reaction
               );
@@ -723,12 +725,28 @@ export const messageReducer = (state: State, action: Action): State => {
                   const findExisting = message.reactions.find(
                     (user) => user.reactBy?._id === action.payload.reaction?.reactBy?._id
                   );
-
+                  ///////
+                  const updatedReactionIndex = updatedReactions.findIndex(
+                    (user) => user.reactBy?._id === action.payload.reaction?.reactBy?._id
+                  );
                   const updatedEmojiIndex = updatedReactionsGroup.findIndex(
                     (emoji) => emoji._id === findExisting?.emoji
                   );
                   // If the emoji doesn't exist, add a new entry
                   if (findExisting) {
+                    //update reactions{
+                    if (updatedReactionIndex !== -1) {
+                      updatedReactions = updatedReactions.map((reaction, index) => {
+                        if (index === updatedReactionIndex) {
+                          return {
+                            ...reaction,
+                            emoji: action.payload.reaction.emoji,
+                          };
+                        }
+                        return reaction;
+                      });
+                    }
+                    //update group reaction
                     if (updatedEmojiIndex !== -1) {
                       updatedReactionsGroup = updatedReactionsGroup.map(
                         (emoji, index) => {
@@ -761,9 +779,9 @@ export const messageReducer = (state: State, action: Action): State => {
               // Filter out emojis with count === 1 before mapping
               let updatedReactionsGroup;
               // if (message.reactions.length < 3) {
-                updatedReactionsGroup = message.reactionsGroup.filter(
-                  (emoji) => emoji._id !== action.payload.reaction.emoji
-                ); // Filter out emojis with count === 1
+              updatedReactionsGroup = message.reactionsGroup.filter(
+                (emoji) => emoji._id !== action.payload.reaction.emoji
+              ); // Filter out emojis with count === 1
               // }
               return {
                 ...message,

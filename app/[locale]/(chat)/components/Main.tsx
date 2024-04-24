@@ -43,7 +43,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
       if (searchParams.get("isRefreshed")) {
         router.replace("/chat");
         router.refresh();
-
+        window.history.pushState({}, "", "/chat");
         // window.history.pushState({}, "", "/chat");
       }
     }
@@ -53,7 +53,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     selectedChat,
     router.replace,
     router.refresh,
-    window.history.pushState,
+    window?.history?.pushState,
     searchParams,
   ]);
   useEffect(() => {

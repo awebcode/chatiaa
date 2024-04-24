@@ -5,11 +5,7 @@ import { CustomErrorHandler } from "../middlewares/errorHandler";
 import { MessageSeenBy } from "../model/seenByModel";
 import { Chat } from "../model/ChatModel";
 
-export const pushSeenBy = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction
-) => {
+export const pushSeenBy = async (req: Request | any, res: Response, next: NextFunction) => {
   try {
     const { messageId, chatId } = req.body;
 
@@ -84,7 +80,6 @@ export const getSeenByInfoForSingleMessage = async (
       })
       .select("-_id userId");
     let total = totalFound.filter((user) => user.userId !== null).length;
-  
 
     res.status(200).json({ users, total, limit, skip });
   } catch (error) {
