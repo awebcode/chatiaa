@@ -15,7 +15,7 @@ export default async function PrefetchMyChats() {
     queryKey: ["chats", ""],
     queryFn: getChatsServerAction as any,
     initialPageParam: 0,
-    staleTime: 24 * 60 * 60 * 1000,
+    staleTime: 1000,
   });
 
   return (

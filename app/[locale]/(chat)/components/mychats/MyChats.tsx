@@ -47,7 +47,7 @@ const MyChats = () => {
         return undefined;
       }
     }, //queryClient.getQueryData(['messages',chatId])
-    staleTime: 24 * 60 * 60 * 1000,
+    staleTime: 1000,
   });
   // set chats in reducer store
   useEffect(() => {
@@ -58,8 +58,10 @@ const MyChats = () => {
         total: data?.pages[0]?.total,
       },
     });
-    if (data?.pages[0]?.chats)
-      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
+    if (data?.pages[0]?.chats){
+       localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
+    }
+     
   }, [data?.pages]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

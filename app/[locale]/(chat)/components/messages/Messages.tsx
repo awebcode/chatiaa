@@ -45,18 +45,18 @@ export default function Messages({ chatId }: { chatId: string }) {
     },
     initialPageParam: 0,
 
-    initialData: ():any => {
+    initialData: (): any => {
       const messages = selectedChat?.messages?.messages;
       if (messages) {
         return {
-          pageParams:[0],
+          pageParams: [0],
           pages: [{ messages }],
         };
       } else {
         return undefined;
       }
     }, //queryClient.getQueryData(['messages',chatId])
-    staleTime: 24 * 60 * 60 * 1000,
+    staleTime: 1000,
   });
 
   useEffect(() => {
