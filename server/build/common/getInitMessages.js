@@ -18,7 +18,7 @@ const seenByModel_1 = require("../model/seenByModel");
 //@access          Protected
 const allInitMessages = (chatId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const limit = 12;
+        const limit = 10;
         const page = 1;
         // const skip = (page - 1) * limit;
         const skip = 0;

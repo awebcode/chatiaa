@@ -12,7 +12,7 @@ export default function NotifyMessage({
   return (
     <div className="   text-center flex flex-col justify-center items-center  rounded  ">
       <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
-      <h1 className="text-sm text-center flex gap-1 font-medium text-gray-400 ">
+      <h1 className="text-xs md:text-sm text-center flex gap-1 font-medium text-gray-400 ">
         <IoReturnUpBackOutline  />
         {message.content}
       </h1>

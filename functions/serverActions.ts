@@ -11,7 +11,7 @@ export const getChatsServerAction = async ({
   queryKey: any;
 }) => {
   const { data } = await axios.get(
-    `${BaseUrl}/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${12}`,
+    `${BaseUrl}/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${8}`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -41,7 +41,7 @@ export const allMessagesServerAction = async ({
   queryKey: any;
 }) => {
   const { data } = await axios.get(
-    `${BaseUrl}/allMessages/${queryKey[1]}?skip=${pageParam}&limit=${8}`,
+    `${BaseUrl}/allMessages/${queryKey[1]}?skip=${pageParam}&limit=${10}`,
     {
       headers: {
         "Content-Type": "application/json",

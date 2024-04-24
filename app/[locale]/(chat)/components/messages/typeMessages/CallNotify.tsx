@@ -43,10 +43,10 @@ const CallNotify = ({
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
 
         <div
-          className={`relative m-4 p-1 rounded  ${
+          className={`relative  m-4 p-[2px]  rounded  ${
             message?.sender?._id === currentChatUser?.userInfo?._id
-              ? "bg-gray-200 text-gray-900 dark:text-gray-200 dark:bg-incoming-background rounded-bl-3xl"
-              : "dark:bg-outgoing-background rounded-br-3xl bg-gray-300"
+              ? "bg-gray-200 text-gray-900 dark:text-gray-200 dark:bg-incoming-background rounded-tr-lg"
+              : "dark:bg-outgoing-background rounded-br-lg bg-gray-300"
           }`}
         >
           <div className={""}>

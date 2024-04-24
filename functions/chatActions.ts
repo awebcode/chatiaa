@@ -17,7 +17,7 @@ export const getChats = async ({
   queryKey: any;
 }) => {
   const { data } = await axiosClient.get(
-    `/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${10}`,
+    `/fetchChats?search=${queryKey[1]}&skip=${pageParam}&limit=${8}`,
     {
       headers: { "Content-Type": "application/json" },
       withCredentials: true,
