@@ -37,14 +37,14 @@ const ChatHeader = () => {
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
     router.replace("/chat");
-    router.refresh();
+    // router.refresh();
     // router.push("/chat");
   };
   const roomId = searchParams.get("chatId");
   // useEffect(() => {
   //   const localStorageChat = localStorage.getItem("selectedChat");
   //   if (!selectedChat || !localStorageChat||!roomId) return router.replace("/chat");
-  // }, [selectedChat, router]);
+  // }, [selectedChat, router,roomId]);
   //  if (!selectedChat) return router.replace("/chat");
   // if (!selectedChat) return <LoaderComponent text="Redirecting..."/>
   return (

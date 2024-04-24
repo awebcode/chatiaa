@@ -109,6 +109,9 @@ const FriendsCard: React.FC<{
       },
       isOnline: chat?.isOnline,
       onCallMembers: chat?.onCallMembers,
+      messages: {
+       ... chat?.messages
+      },
     };
 
     // router.replace

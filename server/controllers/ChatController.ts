@@ -15,6 +15,8 @@ import { emitEventToGroupUsers } from "../common/groupSocket";
 import { sentGroupNotifyMessage } from "./functions";
 import { generateUpdateMessage } from "../common/generateUpdateMessage";
 import { checkIfAnyUserIsOnline } from "../common/checkIsOnline";
+import { allMessages } from "./messageController";
+import { allInitMessages } from "../common/getInitMessages";
 
 //@access          Protected
 export const accessChat = async (
@@ -150,6 +152,7 @@ export const fetchChats = async (
       path: "latestMessage.sender",
       select: "name image email lastActive createdAt lastActive onlineStatus",
     });
+   
     // Filter the populatedChats array based on the keyword
     let filteredChats: any = [];
     if (req.query.search && keyword) {
@@ -174,7 +177,7 @@ export const fetchChats = async (
           chat?.latestMessage?._id,
           req.id
         );
-
+ const messages = await allInitMessages(chat._id);
         // Construct updated chat object with awaited results
         return {
           ...chat.toObject(),
@@ -182,8 +185,10 @@ export const fetchChats = async (
             ...chat.latestMessage?._doc,
             isSeen: !!isLatestMessageSeen,
             seenBy,
+            
             totalseenBy: totalSeenCount || 0,
           },
+          messages,
           isOnline: isAnyUserOnline,
           unseenCount: correspondingUnseenCount
             ? correspondingUnseenCount.unseenMessagesCount
@@ -215,7 +220,7 @@ export const fetchChats = async (
             chat?.latestMessage?._id,
             req.id
           );
-
+const messages = await allInitMessages(chat._id);
           // Construct updated chat object with awaited results
           const updatedChat = {
             ...chat.toObject(),
@@ -225,6 +230,7 @@ export const fetchChats = async (
               seenBy,
               totalseenBy: totalSeenCount || 0,
             },
+            messages,
             isOnline: isAnyUserOnline,
             unseenCount: correspondingUnseenCount
               ? correspondingUnseenCount.unseenMessagesCount

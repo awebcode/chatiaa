@@ -74,6 +74,7 @@ export const useAccessChatMutation = (closeDialogId: string) => {
         },
         isOnline: chat?.chatData?.isOnline,
         onCallMembers: chat?.chatData?.onCallMembers,
+        messages: { ...chat?.chatData?.messages },
       };
       // setSelectedChat(chatData as any);
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
@@ -272,15 +273,15 @@ export const useRemoveAdminFromGroup = (chatId: string, user: Tuser) => {
 export const useDeleteAllMessagesInAChatMutation = (chatId: string) => {
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
-  const {totalMessagesCount}=useMessageState()
+  const { totalMessagesCount } = useMessageState();
   return useMutation({
     mutationFn: () => deleteAllMessagesInAChat(chatId),
     onSuccess: (data) => {
       toast.success("All messages deleted successfully!");
-       dispatch({
-         type: SET_TOTAL_MESSAGES_COUNT,
-         payload: 0,
-       });
+      dispatch({
+        type: SET_TOTAL_MESSAGES_COUNT,
+        payload: 0,
+      });
       dispatch({
         type: DELETE_ALL_MESSAGE_IN_CHAT,
         payload: { chatId },

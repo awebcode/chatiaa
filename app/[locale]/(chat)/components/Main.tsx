@@ -39,10 +39,10 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const roomId = searchParams.get("chatId");
   useEffect(() => {
     if (!roomId || !selectedChat) {
-      router.replace("/chat");
+       router.replace("/chat");
        router.refresh()
     }
-  }, [searchParams, roomId, router, selectedChat]);
+  }, [roomId, router, selectedChat]);
   //
   //<EmptyChat />;
   if (!selectedChat) return <LoaderComponent />;

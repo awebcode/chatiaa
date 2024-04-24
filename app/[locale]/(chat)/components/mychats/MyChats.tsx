@@ -9,13 +9,15 @@ import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import SkeletonContainer from "./SkeletonContainer";
 import { Button } from "@/components/ui/button";
 import { getChats } from "@/functions/chatActions";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
 import { SET_CHATS } from "@/context/reducers/actions";
 import FriendsCard from "./FriendCard";
 import LoaderComponent from "@/components/Loader";
+import { IChat } from "@/context/reducers/interfaces";
 
 const MyChats = () => {
+  const queryClient = new QueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const searchText = useDebounce(searchTerm, 700);
   const { user: currentUser, selectedChat, chats, totalChats } = useMessageState();
@@ -35,6 +37,16 @@ const MyChats = () => {
       return nextOffset;
     },
     initialPageParam: 0,
+    initialData: (): any => {
+      if (chats && chats.length > 0) {
+        return {
+          pageParams: [0],
+          pages: [{ chats }],
+        };
+      } else {
+        return undefined;
+      }
+    }, //queryClient.getQueryData(['messages',chatId])
     staleTime: 24 * 60 * 60 * 1000,
   });
   // set chats in reducer store
@@ -46,6 +58,8 @@ const MyChats = () => {
         total: data?.pages[0]?.total,
       },
     });
+    if (data?.pages[0]?.chats)
+      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
   }, [data?.pages]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -81,7 +95,7 @@ const MyChats = () => {
 
     container?.scrollTo({ top: 0, behavior: "smooth" });
   };
-  // console.log({chats})
+  console.log({ chats: queryClient.getQueryData(["chats", searchText]) });
 
   return (
     <>
@@ -125,7 +139,10 @@ const MyChats = () => {
                   <SkeletonContainer />
                 ) : chats && chats.length > 0 ? (
                   chats.map((chat) => (
-                    <FriendsCard chat={chat} key={chat._id + Date.now().toString()+Math.random()*100} />
+                    <FriendsCard
+                      chat={chat}
+                      key={chat._id + Date.now().toString() + Math.random() * 100}
+                    />
                   ))
                 ) : (
                   <h1 className="text-sm md:text-xl m-4 text-center font-medium">

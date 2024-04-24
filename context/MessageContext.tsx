@@ -1,13 +1,13 @@
 // MessageContext.tsx
 "use client";
-import React, {  useReducer, ReactNode, useEffect, useMemo } from "react";
+import React, { useReducer, ReactNode, useEffect, useMemo } from "react";
 import {
   MessageDispatchContext,
   MessageStateContext,
   messageReducer,
 } from "./reducers/messageReducer";
 import { State } from "./reducers/interfaces";
-import {  useContextSelector } from "use-context-selector";
+import { useContextSelector } from "use-context-selector";
 const initialState: State = {
   selectedChat:
     typeof window !== "undefined"
@@ -18,7 +18,10 @@ const initialState: State = {
   user: null,
   totalMessagesCount: 0,
   totalChats: 0,
-  chats: [],
+  chats:
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("chats") as any) || []
+      : [],
   callInfo: null,
 };
 

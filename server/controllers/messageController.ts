@@ -118,7 +118,7 @@ export const allMessages = async (
   }
 };
 // Count the number of reactions for a specific message
-const countReactionsGroupForMessage = async (messageId: any) => {
+export const countReactionsGroupForMessage = async (messageId: any) => {
   try {
     const reactionsGroup = await Reaction.aggregate([
       { $match: { messageId: new mongoose.Types.ObjectId(messageId) } }, // Match reactions for the given message ID
@@ -293,7 +293,6 @@ export const updateChatMessageController = async (
   next: NextFunction
 ) => {
   try {
-
     const { chatId, status } = req.body;
     if (!status || !chatId)
       return next(new CustomErrorHandler("Chat Id or status cannot be empty!", 400));
@@ -391,7 +390,7 @@ export const updateChatMessageAsDeliveredController = async (
       if (!chat.latestMessage) {
         return; // Skip chats without a latest message
       }
-    
+
       // Update the latest message's status to "delivered"
       if (
         chat.latestMessage?.status === "unseen" &&
@@ -648,7 +647,7 @@ export const replyMessage = async (
     if (chat?.isGroupChat) {
       await emitEventToGroupUsers(io, "receiveMessage", chatId, emitData);
     } else {
-       const receiverSocketId = await getSocketConnectedUser(receiverId);
+      const receiverSocketId = await getSocketConnectedUser(receiverId);
       io.to(chat?._id.toString() as any)
         .to(receiverSocketId?.socketId as string)
         .emit("receiveMessage", { ...emitData, receiverId }); ///added event as replyMessage

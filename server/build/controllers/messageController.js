@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addRemoveEmojiReactions = exports.editMessage = exports.replyMessage = exports.updateMessageStatusAsUnsent = exports.updateMessageStatusAsRemove = exports.updateChatMessageAsDeliveredController = exports.updateAllMessageStatusSeen = exports.updateChatMessageController = exports.sendMessage = exports.getMessageReactions = exports.allMessages = void 0;
+exports.addRemoveEmojiReactions = exports.editMessage = exports.replyMessage = exports.updateMessageStatusAsUnsent = exports.updateMessageStatusAsRemove = exports.updateChatMessageAsDeliveredController = exports.updateAllMessageStatusSeen = exports.updateChatMessageController = exports.sendMessage = exports.getMessageReactions = exports.countReactionsGroupForMessage = exports.allMessages = void 0;
 const MessageModel_1 = require("../model/MessageModel");
 const UserModel_1 = require("../model/UserModel");
 const ChatModel_1 = require("../model/ChatModel");
@@ -73,7 +73,7 @@ const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         });
         // Populate reactions for each message
         messages = yield Promise.all(messages.map((message) => __awaiter(void 0, void 0, void 0, function* () {
-            const { reactionsGroup, totalReactions } = yield countReactionsGroupForMessage(message._id);
+            const { reactionsGroup, totalReactions } = yield (0, exports.countReactionsGroupForMessage)(message._id);
             const reactions = yield reactModal_1.Reaction.find({ messageId: message._id })
                 .populate({
                 path: "reactBy",
@@ -127,6 +127,7 @@ const countReactionsGroupForMessage = (messageId) => __awaiter(void 0, void 0, v
         throw error; // Forward error to the caller
     }
 });
+exports.countReactionsGroupForMessage = countReactionsGroupForMessage;
 //get reaction base on message id while scroll and filter
 const getMessageReactions = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

@@ -20,7 +20,7 @@ const Messages = dynamic(() => import("../components/messages/Messages"), {
   loading: () => <LoaderComponent text="Fetching messages..." />,
 });
 const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
-  loading: () => <LoaderComponent text="Fetching Chats..." />,
+  // loading: () => <LoaderComponent text="Fetching Chats..." />,
 });
 
 // const PrefetchMyChats = dynamic(() => import("../components/mychats/PrefetchChats"), {

@@ -13,7 +13,7 @@ import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actio
 import TypingIndicator from "../TypingIndicator";
 import { IMessage } from "@/context/reducers/interfaces";
 import { allMessages } from "@/functions/messageActions";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
 import MessageCard from "./MessageCard";
@@ -23,7 +23,7 @@ export default function Messages({ chatId }: { chatId: string }) {
   const scrollbar = useRef<BaseScrollbar | null>(null);
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
-  const queryClient = useQueryClient();
+  const queryClient = new QueryClient();
 
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -45,16 +45,27 @@ export default function Messages({ chatId }: { chatId: string }) {
     },
     initialPageParam: 0,
 
-    // initialData: { pages: [{ messages: [{ content: "sssss", type: "text" } ]}]} , //queryClient.getQueryData(['messages',chatId])
+    initialData: ():any => {
+      const messages = selectedChat?.messages?.messages;
+      if (messages) {
+        return {
+          pageParams:[0],
+          pages: [{ messages }],
+        };
+      } else {
+        return undefined;
+      }
+    }, //queryClient.getQueryData(['messages',chatId])
     staleTime: 24 * 60 * 60 * 1000,
   });
-  console.log({ messages: data });
 
   useEffect(() => {
     dispatch({
       type: SET_MESSAGES,
-      payload: data?.pages.flatMap((page) => page.messages),
+      payload: data?.pages.flatMap((page) => page.messages ),
     });
+   
+     
     const container = document.getElementById("MessagesscrollableTarget");
 
     //ofcontainer.scrollTop = scrollTop+clientHeight or greter than 50px
@@ -99,6 +110,7 @@ export default function Messages({ chatId }: { chatId: string }) {
       }
     };
   }, [messages]);
+  
   //scrollToBottom
   const scrollToBottom = () => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
