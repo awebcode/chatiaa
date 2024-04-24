@@ -39,12 +39,14 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     const localStorageChat = localStorage.getItem("selectedChat");
     const locale = Cookie.get("NEXT_LOCALE");
     if (!roomId || !selectedChat || !localStorageChat) {
-      router.replace("/chat");
+      router.push("/chat");
       if (searchParams.get("isRefreshed")) {
-        window.history.pushState(null, "", `/chat`);
+         router.push("/chat");
+         router.refresh()
+        //  window.location.href="/chat"
       }
     }
-  }, [roomId, router, selectedChat]);
+  }, [roomId, router, selectedChat,searchParams]);
   useEffect(() => {
     const handleBeforeUnload = (e: any) => {
       if (roomId) {
