@@ -45,7 +45,7 @@ const Drawer = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => handleInputChange(e)}
-            placeholder="Enter name or email here"
+            placeholder="Search for group people"
             className="shadow-lg w-full bg-transparent border border-gray-500 text  text-sm py-3 px-3 rounded-md  outline-none border-1  transition-all duration-300"
           />
 

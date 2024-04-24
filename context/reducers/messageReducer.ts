@@ -48,7 +48,6 @@ export const MessageDispatchContext = createContext<Dispatch<Action> | undefined
 
 export const messageReducer = (state: State, action: Action): State => {
   switch (action.type) {
-     
     case SET_USER:
       return { ...state, user: action.payload };
 
@@ -217,13 +216,15 @@ export const messageReducer = (state: State, action: Action): State => {
           state.selectedChat && state.selectedChat.chatId === action.payload.chatId
             ? {
                 ...state.selectedChat,
-                chatBlockedBy:state.selectedChat?.chatBlockedBy&& state.selectedChat?.chatBlockedBy?.some(
-                  (user) => user._id === action.payload.user._id
-                )
-                  ? state.selectedChat?.chatBlockedBy?.filter(
-                      (user) => user._id !== action.payload.user._id
-                    )
-                  : [...state.selectedChat?.chatBlockedBy, action.payload.user],
+                chatBlockedBy:
+                  state.selectedChat?.chatBlockedBy &&
+                  state.selectedChat?.chatBlockedBy?.some(
+                    (user) => user._id === action.payload.user._id
+                  )
+                    ? state.selectedChat?.chatBlockedBy?.filter(
+                        (user) => user._id !== action.payload.user._id
+                      )
+                    : [...state.selectedChat?.chatBlockedBy, action.payload.user],
               }
             : null,
       };
@@ -502,7 +503,7 @@ export const messageReducer = (state: State, action: Action): State => {
           return m._id === action.payload._id;
         });
         //  console.log({payload:action.payload})
-        if (existingMessageIndex !== -1 && action.payload?.addMessageType!=="notify") {
+        if (existingMessageIndex !== -1 && action.payload?.addMessageType !== "notify") {
           // Update the existing message
           updatedMessages = [...state.messages];
           if (
@@ -522,7 +523,6 @@ export const messageReducer = (state: State, action: Action): State => {
               createdAt,
             };
           } else {
-
             updatedMessages[existingMessageIndex] = action.payload;
           }
         } else {
@@ -660,12 +660,13 @@ export const messageReducer = (state: State, action: Action): State => {
                     (u) => u.reactBy._id === action.payload.reaction.reactBy._id
                   )
                 ) {
-                  updatedReactionsGroup.push({
-                    _id: action.payload.reaction.emoji,
-                    count: 1,
-                  });
+                  updatedReactionsGroup = [
+                    ...updatedReactionsGroup,
+                    { _id: action.payload.reaction.emoji, count: 1 },
+                  ];
                 }
               }
+
               //updatedReactions
               if (existingReactionIndex !== -1) {
                 updatedReactions[existingReactionIndex] = action.payload.reaction; // just update when id available bcz previously sender updated ui
@@ -729,8 +730,17 @@ export const messageReducer = (state: State, action: Action): State => {
                   // If the emoji doesn't exist, add a new entry
                   if (findExisting) {
                     if (updatedEmojiIndex !== -1) {
-                      updatedReactionsGroup[updatedEmojiIndex]._id =
-                        action.payload.reaction.emoji;
+                      updatedReactionsGroup = updatedReactionsGroup.map(
+                        (emoji, index) => {
+                          if (index === updatedEmojiIndex) {
+                            return {
+                              ...emoji,
+                              _id: action.payload.reaction.emoji,
+                            };
+                          }
+                          return emoji;
+                        }
+                      );
                     }
                   }
                 }
@@ -744,15 +754,17 @@ export const messageReducer = (state: State, action: Action): State => {
             } else if (action.payload.type === "remove") {
               // For remove type, filter out the removed reaction and update the reactionsGroup
               const updatedReactions = message.reactions.filter(
-                (reaction) => reaction._id !== action.payload.reaction._id
+                (reaction) =>
+                  reaction._id !== action.payload.reaction._id ||
+                  reaction.tempReactionId !== action.payload.reaction.tempReactionId
               );
               // Filter out emojis with count === 1 before mapping
               let updatedReactionsGroup;
-              if (message.reactions.length < 3) {
+              // if (message.reactions.length < 3) {
                 updatedReactionsGroup = message.reactionsGroup.filter(
                   (emoji) => emoji._id !== action.payload.reaction.emoji
                 ); // Filter out emojis with count === 1
-              }
+              // }
               return {
                 ...message,
                 totalReactions: totalReactions - 1,

@@ -33,7 +33,7 @@ const ReactionLists = ({
   isCurrentUserMessage: boolean;
   isOpenReactionListModal: boolean;
   setIsOpenReactionListModal: Dispatch<boolean>;
-  handleRemoveReact: (messageId: string, reactionId: string, emoji: string) => void;
+    handleRemoveReact: (messageId: string, reactionId: string, tempReactionId: string, emoji: string) => void;
   reactionsGroup: ReactionGroup[];
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");

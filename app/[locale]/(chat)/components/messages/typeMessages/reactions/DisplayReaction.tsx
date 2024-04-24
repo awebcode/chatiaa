@@ -33,10 +33,14 @@ const DisplayReaction = ({
     setIsOpenReactionListModal(false);
     setMessageId("")
   });
-  const handleRemoveReact = (messageId: string, reactionId: string,emoji:string) => {
+  const handleRemoveReact = (
+    messageId: string,
+    reactionId: string,
+    tempReactionId: string,
+    emoji: string
+  ) => {
     //update sender ui without delay
-     if (!messageId || !emoji||!reactionId) return;
-     const tempReactionId = v4();
+    if (!messageId || !emoji || !reactionId) return;
     dispatch({
       type: ADD_REACTION_ON_MESSAGE,
       payload: {
@@ -59,9 +63,9 @@ const DisplayReaction = ({
       chatId: selectedChat?.chatId,
       receiverId: selectedChat?.userInfo?._id,
       type: "remove",
-      tempReactionId
+      tempReactionId,
     };
-     addRemoveEmojiReactions(data);
+    addRemoveEmojiReactions(data);
   };
   return (
     <div

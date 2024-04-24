@@ -11,7 +11,11 @@ const Card = ({
   handleRemoveReact,
 }: {
   reaction: Reaction;
-  handleRemoveReact: (messageId: string, reactionId: string,emoji:string) => void;
+  handleRemoveReact: (
+    messageId: string,
+    reactionId: string,
+    tempReactionId:string,emoji: string
+  ) => void;
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   const { onlineUsers } = useOnlineUsersStore();
@@ -49,7 +53,12 @@ const Card = ({
             <span
               className="text-rose-300 text-[8px] md:text-[10px] cursor-pointer my-1"
               onClick={() => {
-             handleRemoveReact(reaction.messageId, reaction._id,reaction.emoji);
+                handleRemoveReact(
+                  reaction.messageId,
+                  reaction._id,
+                  reaction.tempReactionId,
+                  reaction.emoji
+                );
                 // setIsOpenReactionListModal(false);
               }}
             >
