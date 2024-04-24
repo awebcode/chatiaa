@@ -86,7 +86,6 @@ export default function Messages({ chatId }: { chatId: string }) {
     }
   }, [isIncomingMessage]);
 
-  setShowScrollToBottomButton;
   useEffect(() => {
     const handleScroll = () => {
       const container = document.getElementById("MessagesscrollableTarget");

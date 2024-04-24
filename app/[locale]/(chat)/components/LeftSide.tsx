@@ -15,6 +15,7 @@ const OnlineFriends = dynamic(() => import("./mychats/online/OnlieFriends"), {
 import { useOnlineUsersStore } from "@/store/useOnlineUsers";
 import { useMessageState } from "@/context/MessageContext";
 import dynamic from "next/dynamic";
+import { useRouter } from "@/navigation";
 const LeftSideClientWrapper = ({
   children,
   chatId,
@@ -22,12 +23,14 @@ const LeftSideClientWrapper = ({
   children: ReactNode;
   chatId?: string;
 }) => {
+  const router=useRouter()
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser } = useMessageState();
 
   useEffect(() => {
     if (localStorage.getItem("selectedChat") && !chatId) {
       localStorage.removeItem("selectedChat");
+       router.replace("/chat");
     }
   }, [chatId]);
 

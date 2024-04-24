@@ -95,7 +95,7 @@ const MyChats = () => {
 
     container?.scrollTo({ top: 0, behavior: "smooth" });
   };
-  console.log({ chats: queryClient.getQueryData(["chats", searchText]) });
+  // console.log({ chats: queryClient.getQueryData(["chats", searchText]) });
 
   return (
     <>

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { handleSendCall } from "@/config/handleSendCall";
 import LoaderComponent from "@/components/Loader";
 import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 // import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -23,6 +24,7 @@ const RightGroupDrawer = dynamic(() => import("./groupSheet/RightGroupDrawer"), 
 });
 
 const ChatHeader = () => {
+  const queryClient=useQueryClient()
   const { socket } = useSocketContext();
   const router = useRouter();
   const { selectedChat, user: currentUser } = useMessageState();
@@ -32,11 +34,12 @@ const ChatHeader = () => {
   const searchParams = useSearchParams();
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
+    router.replace("/chat");
+
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
-    router.replace("/chat");
     // router.refresh();
     // router.push("/chat");
   };
