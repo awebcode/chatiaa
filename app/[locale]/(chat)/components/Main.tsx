@@ -42,19 +42,19 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const localStorageChat = localStorage.getItem("selectedChat");
     if (!roomId || !selectedChat || !localStorageChat) {
-      router.replace("/chat");
+       router.push("/chat");
       if (searchParams.get("isRefreshed")) {
         router.refresh();
+        router.push("/chat");
       }
     }
-  }, [roomId, router, selectedChat,searchParams]);
-useEffect(() => {
-    const handleBeforeUnload = (e:any) => {
-    
-      if(roomId){
+  }, [roomId, router, selectedChat, searchParams]);
+  useEffect(() => {
+    const handleBeforeUnload = (e: any) => {
+      if (roomId) {
         router.replace(`?chatId=${roomId}&isRefreshed=true`);
       }
-    }
+    };
     // Add event listener for beforeunload
     window.addEventListener("load", handleBeforeUnload);
 
@@ -62,11 +62,11 @@ useEffect(() => {
       // Cleanup event listener
       window.removeEventListener("load", handleBeforeUnload);
     };
-  }, [])
+  }, []);
   //
   //<EmptyChat />;
   if (!selectedChat) return <LoaderComponent />; //<LoaderComponent />;
-  //  if (!selectedChat && !roomId && searchParams.get("isRefreshed")) return <LoaderComponent />; 
+  //  if (!selectedChat && !roomId && searchParams.get("isRefreshed")) return <LoaderComponent />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}
