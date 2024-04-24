@@ -39,15 +39,22 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     const localStorageChat = localStorage.getItem("selectedChat");
     const locale = Cookie.get("NEXT_LOCALE");
     if (!roomId || !selectedChat || !localStorageChat) {
-      router.push("/chat");
+      router.replace("/chat");
       if (searchParams.get("isRefreshed")) {
-        //  router.replace("/chat");
-        // router.refresh()
-        
-        window.history.pushState(null, "", "/chat");
+        router.replace("/chat");
+        router.refresh();
+
+        window.history.pushState({}, "", "/chat");
       }
     }
-  }, [roomId, router, selectedChat,searchParams]);
+  }, [
+    roomId,
+    router,
+    selectedChat,
+    searchParams,
+    router.replace,
+    window.history.pushState,
+  ]);
   useEffect(() => {
     const handleBeforeUnload = (e: any) => {
       if (roomId) {
