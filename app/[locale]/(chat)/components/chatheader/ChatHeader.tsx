@@ -36,7 +36,7 @@ const ChatHeader = () => {
     // window.history.pushState(null, "", "/chat");
     router.replace("/chat");
 
-    // queryClient.invalidateQueries({ queryKey: ["chats"] });
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
