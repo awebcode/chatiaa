@@ -41,7 +41,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     if (!roomId || !selectedChat || !localStorageChat) {
       router.push("/chat");
       if (searchParams.get("isRefreshed")) {
-         router.push("/chat");
+        //  router.replace("/chat");
         // router.refresh()
         
         window.history.pushState(null, "", "/chat");
