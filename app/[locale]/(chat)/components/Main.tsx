@@ -44,7 +44,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
         router.replace("/chat");
         router.refresh();
 
-        window.history.pushState({}, "", "/chat");
+        // window.history.pushState({}, "", "/chat");
       }
     }
   }, [
@@ -52,7 +52,9 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     router,
     selectedChat,
     router.replace,
+    router.refresh,
     window.history.pushState,
+    searchParams,
   ]);
   useEffect(() => {
     const handleBeforeUnload = (e: any) => {
