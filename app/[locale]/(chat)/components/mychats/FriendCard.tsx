@@ -36,10 +36,11 @@ const SeenBy = dynamic(() => import("./status/SeenBy"));
 const SeenByGroup = dynamic(() => import("./status/SeeByGroup"));
 
 const Modal = dynamic(() => import("./Modal"));
-
+import Cookie from "js-cookie"
 const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
+ 
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -76,6 +77,7 @@ const FriendsCard: React.FC<{
 
   const handleClick = async (chatId: string) => {
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
+     Cookie.set("selectedChat", chatId);
     queryClient.invalidateQueries({ queryKey: ["messages"] });
     if (selectedChat?.chatId === chatId) return;
 

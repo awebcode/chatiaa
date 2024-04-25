@@ -32,7 +32,7 @@ const LeftSideClientWrapper = ({
       localStorage.removeItem("selectedChat");
        router.replace("/chat");
     }
-  }, [chatId]);
+  }, [chatId,router]);
 
   return (
     <div className=" flex flex-col md:border-r border-emerald-500/30">

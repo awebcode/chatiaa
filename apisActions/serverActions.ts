@@ -115,3 +115,8 @@ export default async function RevalidateTag(tag: string) {
 export async function RevalidatePath(path: string, type?: string | any) {
   revalidatePath(path, type || "page");
 }
+
+
+export async function wait (ms:number){
+  return new Promise((resolve)=>setInterval(resolve,ms))
+}

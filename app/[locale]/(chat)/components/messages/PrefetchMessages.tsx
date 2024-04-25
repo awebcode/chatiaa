@@ -8,15 +8,16 @@ import { allMessagesServerAction } from "@/apisActions/serverActions";
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import Messages from "./Messages";
+import { cookies } from "next/headers";
+import { BiMessageSquareAdd } from "react-icons/bi";
 export default async function PrefetchMessages({ chatId }: { chatId: string }) {
   const queryClient = new QueryClient();
-
   await queryClient.prefetchInfiniteQuery({
     queryKey: ["messages", chatId], //als0 give here the chat id
     queryFn: allMessagesServerAction as any,
     initialPageParam: 0,
     staleTime: 60 * 1000,
-
+    
     // staleTime: 000 * 60,
   });
   return (

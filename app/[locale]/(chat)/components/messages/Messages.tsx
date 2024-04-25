@@ -3,7 +3,9 @@
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-// const MessageCard = dynamic(() => import("./MessageCard"));
+// const MessageCard = dynamic(() => import("./MessageCard"), {
+//   loading: () => <MessageLoader />,
+// });
 // const NoChatProfile = dynamic(() => import("../NoChatProfile"));
 import { FaArrowDown } from "react-icons/fa";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
@@ -17,13 +19,12 @@ import { QueryClient, useInfiniteQuery, useQueryClient } from "@tanstack/react-q
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
 import MessageCard from "./MessageCard";
-import { Scrollbar } from "smooth-scrollbar-react";
 import type { Scrollbar as BaseScrollbar } from "smooth-scrollbar/scrollbar";
+import MessageLoader from "@/components/MessageLoader";
 export default function Messages({ chatId }: { chatId: string }) {
-  const scrollbar = useRef<BaseScrollbar | null>(null);
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
-  const queryClient = new QueryClient();
+  // const queryClient = new QueryClient();
 
   const dispatch = useMessageDispatch();
   const messageEndRef = useRef<HTMLDivElement | null>(null);

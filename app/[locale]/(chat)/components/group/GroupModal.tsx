@@ -1,3 +1,4 @@
+"use client"
 import LoaderComponent from "@/components/Loader";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +18,10 @@ const SearchGroupModal = dynamic(() => import("./SearchGroupModal"), {
 });
 
 export default function CreateGroupModal() {
-  const isSmallDevice=useMediaQuery("only screen and (max-width:768px)")
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size={isSmallDevice?"sm":"lg"} className="mt-1 md:mt-2 w-full bg-blue-600 hover:bg-blue-700">
+        <Button size={"sm"} className="mt-1 md:mt-2 w-full bg-blue-600 hover:bg-blue-700">
           +Create Group
         </Button>
       </DialogTrigger>

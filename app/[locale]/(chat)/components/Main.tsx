@@ -20,6 +20,7 @@ import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
 import Cookie from "js-cookie";
 import { useQueryClient } from "@tanstack/react-query";
+import { log } from "console";
 const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
   //  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
@@ -77,6 +78,8 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
       window.removeEventListener("load", handleBeforeUnload);
     };
   }, [router,roomId]);
+  console.log("main page render");
+  
   //
   //<EmptyChat />;
   if (!selectedChat) return <LoaderComponent />; //<LoaderComponent />;

@@ -15,6 +15,7 @@ import { handleSendCall } from "@/config/handleSendCall";
 import LoaderComponent from "@/components/Loader";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import Cookie from "js-cookie"
 // import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -34,6 +35,7 @@ const ChatHeader = () => {
   const searchParams = useSearchParams();
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
+    Cookie.remove("selectedChat");
     router.replace("/chat");
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
