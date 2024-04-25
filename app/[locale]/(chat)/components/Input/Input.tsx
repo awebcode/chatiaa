@@ -150,9 +150,12 @@ const Input = () => {
     formData.append("receiverId", selectedChat?.userInfo?._id as any);
     cancelEdit();
     setMessage("");
+    messageInputRef.current?.focus();
     const res = await editMessage(formData);
+
     if (res.success) {
       cancelEdit();
+
       setMessage("");
       messageInputRef.current?.focus();
     }
@@ -187,7 +190,7 @@ const Input = () => {
 
     cancelReply();
     setMessage("");
-
+    messageInputRef.current?.focus();
     const res = await replyMessage(formData);
     if (res.success) {
       cancelReply();

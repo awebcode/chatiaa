@@ -19,7 +19,9 @@ import LoaderComponent from "@/components/Loader";
 import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
 import Cookie from "js-cookie";
+import { useQueryClient } from "@tanstack/react-query";
 const MainClientWrapper = ({ children }: { children: ReactNode }) => {
+  const queryClient = useQueryClient();
   //  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   const { selectedChat } = useMessageState();
   const router = useRouter();
@@ -58,6 +60,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const handleBeforeUnload = (e: any) => {
       if (roomId) {
+        queryClient.invalidateQueries({ queryKey: ["messages"] });
         router.replace(`?chatId=${roomId}&isRefreshed=true`);
       } else {
         router.push(`/chat`);

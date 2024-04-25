@@ -56,7 +56,7 @@ export default function Messages({ chatId }: { chatId: string }) {
     //     return undefined;
     //   }
     // }, //queryClient.getQueryData(['messages',chatId])
-    staleTime: 0,
+    staleTime: 60*1000,
   });
 
   useEffect(() => {
