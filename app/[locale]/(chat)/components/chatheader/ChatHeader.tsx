@@ -15,7 +15,8 @@ import { handleSendCall } from "@/config/handleSendCall";
 import LoaderComponent from "@/components/Loader";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import Cookie from "js-cookie"
+import Cookie from "js-cookie";
+import { RevalidatePath } from "@/apisActions/serverActions";
 // import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -36,19 +37,21 @@ const ChatHeader = () => {
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
     Cookie.remove("selectedChat");
-    router.replace("/chat");
+    router.replace("?isEmpty=true");
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
+    // RevalidatePath("/chat")
     // router.refresh();
     // router.push("/chat");
   };
-  const roomId = searchParams.get("chatId");
+  //  const roomId = searchParams.get("chatId");
+  //  const isEmpty = searchParams.get("isEmpty");
   // useEffect(() => {
   //   const localStorageChat = localStorage.getItem("selectedChat");
-  //   if (!selectedChat || !localStorageChat||!roomId) return router.replace("/chat");
-  // }, [selectedChat, router,roomId]);
+  //   if (!selectedChat || !localStorageChat||!roomId||isEmpty) return router.replace("/chat");
+  // }, [selectedChat, router,roomId,isEmpty]);
   //  if (!selectedChat) return router.replace("/chat");
   // if (!selectedChat) return <LoaderComponent text="Redirecting..."/>
   return (

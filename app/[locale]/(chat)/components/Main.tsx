@@ -20,7 +20,6 @@ import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
 import Cookie from "js-cookie";
 import { useQueryClient } from "@tanstack/react-query";
-import { log } from "console";
 const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
   //  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
@@ -36,54 +35,16 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
 
     // Add more conditions as needed for other key combinations
   }, [selectedChat?.chatId, socket]); //selectedChat
-  //it only when use router.relace('/chat?chatId') on friends card
+
   const roomId = searchParams.get("chatId");
+  const isEmpty = searchParams.get("isEmpty");
   useEffect(() => {
     const localStorageChat = localStorage.getItem("selectedChat");
-    const locale = Cookie.get("NEXT_LOCALE");
-    if (!roomId || !selectedChat || !localStorageChat) {
-      router.replace("/chat");
-      if (searchParams.get("isRefreshed")) {
-        router.replace("/chat");
-        router.refresh();
-        // window.history.pushState({}, "", "/chat");
-        // window.location.reload()
-        window.location.href="/"+locale+"/chat"
-      }
+    if (!roomId || !selectedChat || !localStorageChat || isEmpty) {
+      router.push("?isEmpty=true");
     }
-  }, [
-    roomId,
-    router,
-    selectedChat,
-    router.replace,
-    router.refresh,
-    searchParams,
-    window ?.history?.pushState,
-  ]);
-  useEffect(() => {
-    const handleBeforeUnload = (e: any) => {
-      if (roomId) {
-        queryClient.invalidateQueries({ queryKey: ["messages"] });
-        router.replace(`?chatId=${roomId}&isRefreshed=true`);
-      } else {
-        router.replace(`/chat`);
-        window.history.pushState({}, "", "/chat");
-      }
-    };
-    // Add event listener for beforeunload
-    window.addEventListener("load", handleBeforeUnload);
-
-    return () => {
-      // Cleanup event listener
-      window.removeEventListener("load", handleBeforeUnload);
-    };
-  }, [router,roomId]);
-  console.log("main page render");
-  
-  //
-  //<EmptyChat />;
+  }, [roomId, router, selectedChat, searchParams]);
   if (!selectedChat) return <LoaderComponent />; //<LoaderComponent />;
-  //  if (!selectedChat && !roomId && searchParams.get("isRefreshed")) return <LoaderComponent />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}

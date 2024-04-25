@@ -12,10 +12,7 @@ import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
 // import MyChats from "../components/mychats/MyChats";
 import { redirect } from "@/navigation";
-import { fetchUser, wait } from "@/apisActions/serverActions";
-import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
-import { setInterval } from "timers/promises";
+import { fetchUser } from "@/apisActions/serverActions";
 // import PrefetchMessages from "../components/messages/PrefetchMessages";
 // import Messages from "../components/messages/Messages";
 const Messages = dynamic(() => import("../components/messages/Messages"), {
@@ -47,10 +44,8 @@ const page = async ({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
-  const selectedChatInCookie = cookies().get("selectedChat")?.value;
   const user = await fetchUser();
   if (!user?.email) return redirect("/");
-  console.log({ selectedChatInCookie });
   return (
     <>
       <div className="flexBetween gap-1 md:gap-2 overflow-hidden">
@@ -66,24 +61,27 @@ const page = async ({
           </LeftSideClientWrapper>
         </div>
         {/* Rightside */}
-        <div
-          className={`relative h-screen  ${
-            searchParams?.chatId && selectedChatInCookie ? "block" : "hidden"
-          } md:block  md:h-[92vh] border w-full `}
-         
-        >
-          {searchParams?.chatId && selectedChatInCookie ? (
-            <MainClientWrapper>
-              <PrefetchMessages chatId={searchParams?.chatId as string} />
-              {/* Client side rendering more than faster */}
-              {/* <Messages chatId={searchParams?.chatId as string} /> */}
-            </MainClientWrapper>
-          ) : (
-            // <Messages chatId={searchParams?.chatId as string} />
-            <EmptyChat />
-          )}
-          {/* <EmptyChat /> */}
-        </div>
+        {searchParams.isEmpty ? (
+          <EmptyChat />
+        ) : (
+          <div
+            className={`relative h-screen  ${
+              searchParams?.chatId && !searchParams.isEmpty ? "block" : "hidden"
+            } md:block  md:h-[92vh] border w-full `}
+          >
+            {searchParams?.chatId ? (
+              <MainClientWrapper>
+                <PrefetchMessages chatId={searchParams?.chatId as string} />
+                {/* Client side rendering more than faster */}
+                {/* <Messages chatId={searchParams?.chatId as string} /> */}
+              </MainClientWrapper>
+            ) : (
+              // <Messages chatId={searchParams?.chatId as string} />
+              <EmptyChat />
+            )}
+            {/* <EmptyChat /> */}
+          </div>
+        )}
       </div>
     </>
   );
