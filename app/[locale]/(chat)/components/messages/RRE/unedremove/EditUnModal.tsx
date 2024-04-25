@@ -5,7 +5,7 @@ import { IMessage } from "@/context/reducers/interfaces";
 import useEditReplyStore from "@/store/useEditReply";
 import React, { useCallback } from "react";
 import { unsent_remove_Message_function } from "./function";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 const EditUnModal = ({ message }: { message: IMessage }) => {
@@ -78,7 +78,9 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
   const onCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text).then(
       () => {
-        toast.success("Text copied to clipboard");
+        toast.success("Text copied to clipboard", {
+          position: "top-left",
+        });
       },
       (err) => {
         toast.error("Could not copy text");
@@ -171,6 +173,14 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           Unsent
         </DropdownMenuItem>
       )}
+      {isCurrentUserMessage &&
+        <DropdownMenuItem
+          onClick={() => removeFromAllHandler(message._id)}
+          className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+        >
+          Delete
+        </DropdownMenuItem>
+      }
     </DropdownMenuContent>
   );
 };

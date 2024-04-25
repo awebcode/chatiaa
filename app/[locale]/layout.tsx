@@ -15,8 +15,10 @@ import { MessageContextProvider } from "@/context/MessageContext";
 import { fetchUser } from "@/apisActions/serverActions";
 import SocketEvents from "./SocketEvents";
 import Navbar from "@/components/Navbar";
+import { Toaster } from "react-hot-toast";
 // const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 import type { Viewport } from "next";
+import { cookies } from "next/headers";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -119,6 +121,17 @@ export default async function LocaleLayout({
                     {children} {/* <IntlPolyfills /> */}
                   </MessageContextProvider>
                   <ToastProvider />
+                  {/* React hot toast */}
+
+                  <Toaster
+                    position="top-center"
+                    toastOptions={{
+                      className:
+                        cookies().get("theme")?.value === "dark"
+                          ? "hot-toast-bg-white"
+                          : "hot-toast-bg-dark",
+                    }}
+                  />
                 </NextIntlClientProvider>
               </NextThemeProvider>
             </body>

@@ -62,11 +62,14 @@ const page = async ({
         </div>
         {/* Rightside */}
         {searchParams.isEmpty ? (
-          <EmptyChat />
+          <div className="hidden md:block w-full">
+            {" "}
+            <EmptyChat />
+          </div>
         ) : (
           <div
             className={`relative h-screen  ${
-              searchParams?.chatId && !searchParams.isEmpty ? "block" : "hidden"
+              searchParams?.chatId ? "block" : "hidden"
             } md:block  md:h-[92vh] border w-full `}
           >
             {searchParams?.chatId ? (

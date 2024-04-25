@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 
 import dynamic from "next/dynamic";
@@ -15,6 +15,7 @@ import { SET_CHATS } from "@/context/reducers/actions";
 import FriendsCard from "./FriendCard";
 import LoaderComponent from "@/components/Loader";
 import { IChat } from "@/context/reducers/interfaces";
+import { inittialDummyChats } from "@/config/dummyData/chats";
 
 const MyChats = () => {
   const queryClient = new QueryClient();
@@ -38,10 +39,10 @@ const MyChats = () => {
     },
     initialPageParam: 0,
     // initialData: (): any => {
-    //   if (chats && chats.length > 0) {
+    //   if (inittialDummyChats && inittialDummyChats.length > 0) {
     //     return {
     //       pageParams: [0],
-    //       pages: [{ chats }],
+    //       pages: [{ chats: inittialDummyChats }],
     //     };
     //   } else {
     //     return undefined;
@@ -50,18 +51,24 @@ const MyChats = () => {
     staleTime: 0,
   });
   // set chats in reducer store
+  const chatsPayload = useMemo(() => {
+    return {
+      chats: data?.pages.flatMap((page) => page.chats),
+      total: data?.pages[0]?.total,
+    };
+  }, [data?.pages]);
+
   useEffect(() => {
     dispatch({
       type: SET_CHATS,
-      payload: {
-        chats: data?.pages.flatMap((page) => page.chats),
-        total: data?.pages[0]?.total,
-      },
+      payload: chatsPayload,
     });
+
+    // Uncomment the following lines if you want to save chats to localStorage
     // if (data?.pages[0]?.chats) {
     //   localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
     // }
-  }, [data?.pages]);
+  }, [chatsPayload, dispatch]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -119,11 +126,7 @@ const MyChats = () => {
               dataLength={chats ? chats?.length : 0}
               next={fetchNextPage}
               hasMore={!isLoading && hasNextPage}
-              loader={
-                <>
-                  {/* <LoaderComponent /> */}
-                </>
-              }
+              loader={<>{/* <LoaderComponent /> */}</>}
               endMessage={
                 !isLoading &&
                 chats?.length > 10 && (
@@ -155,7 +158,7 @@ const MyChats = () => {
                   </h1>
                 )}
               </div>
-              {isFetching && <LoaderComponent />}
+              {/* {isFetching && <LoaderComponent />} */}
             </InfiniteScroll>
             <Button
               onClick={scrollToTop}

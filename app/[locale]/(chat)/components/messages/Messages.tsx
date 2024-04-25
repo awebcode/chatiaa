@@ -1,11 +1,11 @@
 "use client";
 
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-// const MessageCard = dynamic(() => import("./MessageCard"), {
-//   loading: () => <MessageLoader />,
-// });
+const MessageCard = dynamic(() => import("./MessageCard"), {
+  loading: () => <MessageLoader />,
+});
 // const NoChatProfile = dynamic(() => import("../NoChatProfile"));
 import { FaArrowDown } from "react-icons/fa";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
@@ -18,9 +18,10 @@ import { allMessages } from "@/apisActions/messageActions";
 import { QueryClient, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
-import MessageCard from "./MessageCard";
+// import MessageCard from "./MessageCard";
 import type { Scrollbar as BaseScrollbar } from "smooth-scrollbar/scrollbar";
 import MessageLoader from "@/components/MessageLoader";
+import { inittialDummyMessages } from "@/config/dummyData/messages";
 export default function Messages({ chatId }: { chatId: string }) {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
@@ -47,47 +48,48 @@ export default function Messages({ chatId }: { chatId: string }) {
     initialPageParam: 0,
 
     // initialData: (): any => {
-    //   const messages = selectedChat?.messages?.messages;
-    //   if (messages) {
+    //   // const messages = selectedChat?.messages?.messages;
+    //   if (inittialDummyMessages) {
     //     return {
     //       pageParams: [0],
-    //       pages: [{ messages }],
+    //       pages: [{ messages:inittialDummyMessages }],
     //     };
     //   } else {
     //     return undefined;
     //   }
     // }, //queryClient.getQueryData(['messages',chatId])
-    staleTime: 60*1000,
+    staleTime: 24*60*1000,
   });
+
+  const messagesPayload = useMemo(() => {
+    return data?.pages.flatMap((page) => page.messages);
+  }, [data?.pages]);
 
   useEffect(() => {
     dispatch({
       type: SET_MESSAGES,
-      payload: data?.pages.flatMap((page) => page.messages),
+      payload: messagesPayload,
     });
-
+   ///down from the top without set it then will infinite refetching without scrolling
     const container = document.getElementById("MessagesscrollableTarget");
-
-    //ofcontainer.scrollTop = scrollTop+clientHeight or greter than 50px
     if (container) {
-      container.scrollTop = container.scrollTop + 200;
+      container.scrollTop = container.scrollTop + 100; //200
     }
+
     dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data?.pages[0]?.total });
-    //update local storage chat
+
+    // Uncomment the following lines if you want to update local storage chat
     // const storedChats = JSON.parse(localStorage.getItem("chats") || "[]");
     // const isExistChatIndex = storedChats.findIndex(
-    //   (chat: any) => chat?._id === selectedChat?.chatId
+    //   (chat) => chat?._id === selectedChat?.chatId
     // );
     // if (data?.pages[0]?.messages) {
     //   if (isExistChatIndex !== -1) {
-    //     // Check if the chat exists in storedChats
-    //     // Update the messages of the selected chat
     //     storedChats[isExistChatIndex].messages.messages = data?.pages[0]?.messages;
-    //     // Store the updated chats back to local storage
     //     localStorage.setItem("chats", JSON.stringify(storedChats));
     //   }
     // }
-  }, [data?.pages]);
+  }, [messagesPayload, data?.pages, dispatch, selectedChat]);
   useEffect(() => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
 
