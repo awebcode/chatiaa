@@ -11,6 +11,7 @@ import { RiDownloadCloudFill } from "react-icons/ri";
 import { handleDownload } from "@/config/handleDownload";
 import LoaderComponent from "@/components/Loader";
 import { ensureHttps } from "@/config/httpsParser";
+import { useMediaQuery } from "@uidotdev/usehooks";
 
 const SeenBy = dynamic(() => import("./seenby/SeenBy"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -34,19 +35,6 @@ const Status = dynamic(() => import("./Status"), {
 // Import RepliedMessage dynamically
 // styles
 
-const formWaveSurferOptions = (ref: any) => ({
-  container: ref,
-  waveColor: "#7ae3c3",
-  progressColor: "#4a9eff",
-  cursorColor: "#ddd",
-  barWidth: 4,
-  barRadius: 3,
-  height: 50,
-  responsive: true,
-  normalize: true,
-  partialRender: true,
-});
-
 export default function VoiceMessage({
   message,
   isCurrentUserMessage,
@@ -54,13 +42,25 @@ export default function VoiceMessage({
   message: IMessage;
   isCurrentUserMessage: boolean;
 }) {
+  const isSmallDevice = useMediaQuery("only screen and (max-width:768px)");
   const { selectedChat: currentChatUser, user: currentUser } = useMessageState();
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState("00:00");
   const [totalTime, setTotalTime] = useState("00:00");
-
+  const formWaveSurferOptions = (ref: any) => ({
+    container: ref,
+    waveColor: "#7ae3c3",
+    progressColor: "#4a9eff",
+    cursorColor: "#ddd",
+    barWidth: isSmallDevice ? 2 : 4,
+    barRadius: isSmallDevice ? 2 : 3,
+    height: isSmallDevice ? 20 : 40,
+    responsive: true,
+    normalize: true,
+    partialRender: true,
+  });
   useEffect(() => {
     // Create WaveSurfer instance when the component mounts
     wavesurfer.current = WaveSurfer.create(formWaveSurferOptions(waveformRef.current));
@@ -99,15 +99,29 @@ export default function VoiceMessage({
   };
 
   return (
-    <div className="flex items-center gap-0 max-w-sm md:max-w-2xl">
+    <div
+      className={` flex items-center  gap-0 max-w-sm md:max-w-2xl  ${
+        isCurrentUserMessage ? "" : "flex-row-reverse"
+      }`}
+    >
       {/* Remove/Replay/Emoji */}
       <RREsystem message={message} isCurrentUserMessage={isCurrentUserMessage} />
-      <div className="flex flex-col  items-end mr-4 md:mr-4">
+      <div
+        className={`${
+          isCurrentUserMessage
+            ? "flex flex-col  items-end mr-4 md:mr-4"
+            : "flex flex-col  items-start "
+        }`}
+      >
         <Time message={message} isCurrentUserMessage={isCurrentUserMessage} />
         <div
           className={`  flex items-center justify-center gap-2 md:gap-5 text-gray-500 dark:text-white  text-sm rounded-md`}
         >
-          <div className="-mt-2 h-6 w-6 md:h-8 md:w-8">
+          <div
+            className={`-mt-2 h-6 w-6 md:h-8 md:w-8 ${
+              isCurrentUserMessage ? "" : "hidden"
+            }`}
+          >
             <Image
               src={message.sender?.image}
               height={60}
@@ -125,15 +139,15 @@ export default function VoiceMessage({
               <FaStop onClick={handlePauseAudio} />
             )}
           </div>
-          <div className={"relative "}>
+          <div className={`relative ${isCurrentUserMessage ? "" : "p-[2px]"} `}>
             {/* reply */}
             <div className="pt-2 md:pt-6">
               <RepliedMessage message={message} currentUser={currentUser as any} />
             </div>
-            <div className={"w-52 md:w-64"} ref={waveformRef}></div>
+            <div className={"w-24 md:w-40"} ref={waveformRef}></div>
 
             <div>
-              <span className="text-sm font-medium text-gray-400">
+              <span className="text-xs md:text-sm font-medium text-gray-400">
                 {playing ? currentTime : totalTime}
               </span>
               {/* REACTIONS */}
@@ -149,7 +163,7 @@ export default function VoiceMessage({
               <Status isCurrentUserMessage={isCurrentUserMessage} message={message} />
               {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
               <RiDownloadCloudFill
-                className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+                className="absolute bottom-1 right-1 text-sm md:text-lg cursor-pointer text-gray-300"
                 onClick={() => handleDownload(ensureHttps(message?.file?.url))}
               />
               {/* Seen by lists */}

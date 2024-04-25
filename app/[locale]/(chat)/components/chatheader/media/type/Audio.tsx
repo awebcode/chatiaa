@@ -9,24 +9,12 @@ import { handleDownload } from "@/config/handleDownload";
 import { RiDownloadCloudFill } from "react-icons/ri";
 import LoaderComponent from "@/components/Loader";
 import { ensureHttps } from "@/config/httpsParser";
+import { useMediaQuery } from "@uidotdev/usehooks";
 const Time = dynamic(() => import("../../../messages/typeMessages/Time"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
 // Import RepliedMessage dynamically
 // styles
-
-const formWaveSurferOptions = (ref: any) => ({
-  container: ref,
-  waveColor: "#7ae3c3",
-  progressColor: "#4a9eff",
-  cursorColor: "#ddd",
-  barWidth: 4,
-  barRadius: 3,
-  height: 50,
-  responsive: true,
-  normalize: true,
-  partialRender: true,
-});
 
 export default function AudioFile({
   message,
@@ -35,13 +23,25 @@ export default function AudioFile({
   message: IMessage;
   onPreview: boolean;
 }) {
+  const isSmallDevice = useMediaQuery("only screen and (max-width:768px)");
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState("00:00");
   const [totalTime, setTotalTime] = useState("00:00");
   //   const url = `${HOST}/${message.message}`;
-
+  const formWaveSurferOptions = (ref: any) => ({
+    container: ref,
+    waveColor: "#7ae3c3",
+    progressColor: "#4a9eff",
+    cursorColor: "#ddd",
+    barWidth: isSmallDevice ? 2 : 4,
+    barRadius: isSmallDevice ? 2 : 3,
+    height: isSmallDevice ? 20 : 40,
+    responsive: true,
+    normalize: true,
+    partialRender: true,
+  });
   useEffect(() => {
     // Create WaveSurfer instance when the component mounts
     wavesurfer.current = WaveSurfer.create(formWaveSurferOptions(waveformRef.current));
@@ -80,12 +80,12 @@ export default function AudioFile({
   };
 
   return (
-    <div className="relative flex items-center gap-2 ">
+    <div className="relative flex items-center gap-1  md:gap-2 ">
       {/* Remove/Replay/Emoji */}
       <TooltipWrapper message={message} />
       {/* <FullScreenPreview file={{ url: message?.file?.url, type: message.type }} /> */}
       <RiDownloadCloudFill
-        className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+        className="absolute bottom-1 right-1 text-sm md:text-lg cursor-pointer text-gray-300"
         onClick={() => handleDownload(ensureHttps(message.file.url))}
       />
       <div className="">

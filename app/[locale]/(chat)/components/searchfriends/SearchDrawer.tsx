@@ -25,7 +25,7 @@ export default function SearchDrawer() {
             Search User
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-screen  sm:w-screen ">
+        <SheetContent side="left" className="w-screen"> 
           <SheetHeader>
             <SheetTitle>Search User</SheetTitle>
             <Drawer />

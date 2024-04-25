@@ -36,8 +36,8 @@ const UserCard: React.FC<{ user: Tuser | any }> = ({ user }) => {
           ></span>
         </div>
         <div className="flex flex-col text-left gap-1">
-          <h3 className="text-xs md:text-sm font-bold">{user?.name}</h3>
-          <span className="text-[8px]">{user?.email?.slice(0, 30)}</span>
+          <h3 className="text-sm md:text-lg font-bold">{user?.name}</h3>
+          <span className="text-xs md:text-sm">{user?.email}</span>
         </div>
       </div>
     </div>

@@ -94,7 +94,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           onClick={() => {
             onCopy(message.content);
           }}
-          className="cursor-pointer text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
           Copy
         </DropdownMenuItem>
@@ -106,7 +106,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
             onEdit(message as any);
             cancelReply();
           }}
-          className="cursor-pointer text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
           Edit
         </DropdownMenuItem>
@@ -129,12 +129,14 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
               Remove from all
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem
-              onClick={() => removeFromAllHandler(message._id)}
-              className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
-            >
-              Delete
-            </DropdownMenuItem>
+            <>
+              {/* <DropdownMenuItem
+          onClick={() => removeFromAllHandler(message._id)}
+          className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+        >
+          Delete
+        </DropdownMenuItem> */}
+            </>
           )}
         </>
       ) : message.status === "removed" && message.removedBy?._id === currentUser?._id ? (
@@ -173,14 +175,14 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           Unsent
         </DropdownMenuItem>
       )}
-      {isCurrentUserMessage &&
+      {isCurrentUserMessage && (
         <DropdownMenuItem
           onClick={() => removeFromAllHandler(message._id)}
           className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
           Delete
         </DropdownMenuItem>
-      }
+      )}
     </DropdownMenuContent>
   );
 };

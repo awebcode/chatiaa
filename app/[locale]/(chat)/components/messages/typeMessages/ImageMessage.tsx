@@ -66,9 +66,11 @@ function ImageMessage({
                   loading="lazy"
                 />
               </div>
-              <FullScreenPreview file={{ url: ensureHttps(message.file.url), type: message.type }} />
+              <FullScreenPreview
+                file={{ url: ensureHttps(message.file.url), type: message.type }}
+              />
               <RiDownloadCloudFill
-                className="absolute bottom-1 right-1 text-xl cursor-pointer text-gray-300"
+                className="absolute bottom-1 right-1 text-sm md:text-lg cursor-pointer text-gray-300"
                 onClick={() => handleDownload(ensureHttps(message.file.url))}
               />
 

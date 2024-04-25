@@ -289,9 +289,9 @@ const FriendsCard: React.FC<{
             >
               Join call
             </Button>
-          ) : selectedChat?.chatId === chat?._id &&
+          ) : (selectedChat?.chatId === chat?._id &&
             (!searchParams.get("chatId") ||
-              searchParams.get("chatId") !== selectedChat?._id) ? (
+              searchParams.get("chatId") !== selectedChat?._id)) ? (
             <div className="">
               <BiLoaderCircle
                 className={`animate-spin h-3 w-3 md:h-4

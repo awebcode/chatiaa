@@ -485,12 +485,12 @@ export const messageReducer = (state: State, action: Action): State => {
       return { ...state, selectedChat: action.payload, isSelectedChat: action.payload };
     //selected chat end
     case SET_MESSAGES:
-      let updatedMessages;
+      let updatedMessages = [...state.messages];
       //&&
       // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
       if (Array.isArray(action.payload)) {
         // updatedMessages = [...state.messages, ...action.payload];
-        updatedMessages = [...action.payload];
+        updatedMessages = [...state.messages,...action.payload];
       } else {
         const existingMessageIndex = state.messages.findIndex((m) => {
           if (m?.tempMessageId === action.payload?.tempMessageId) {
@@ -505,7 +505,7 @@ export const messageReducer = (state: State, action: Action): State => {
         //  console.log({payload:action.payload})
         if (existingMessageIndex !== -1 && action.payload?.addMessageType !== "notify") {
           // Update the existing message
-          updatedMessages = [...state.messages];
+         
           if (
             ["editMessage", "editSocketMessage"].includes(action.payload?.addMessageType)
           ) {

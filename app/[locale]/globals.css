@@ -164,9 +164,7 @@
 
 /* messages */
 
-.messageRender:first-child{
-  /* grid-gap: 4px !important; */
-}
+
 /* React hot toast  */
 
 .hot-toast-bg-black{

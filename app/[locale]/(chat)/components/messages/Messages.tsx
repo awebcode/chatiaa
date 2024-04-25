@@ -58,7 +58,7 @@ export default function Messages({ chatId }: { chatId: string }) {
     //     return undefined;
     //   }
     // }, //queryClient.getQueryData(['messages',chatId])
-    staleTime: 24*60*1000,
+   staleTime: 0,
   });
 
   const messagesPayload = useMemo(() => {
