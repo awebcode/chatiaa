@@ -1,7 +1,7 @@
 "use server";
 import { BaseUrl } from "@/config/BaseUrl";
 import axios from "axios";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 export const getChatsServerAction = async ({
   queryKey = "",
@@ -110,4 +110,8 @@ export const deleteUser = async () => {
 //use revalidate tag
 export default async function RevalidateTag(tag: string) {
   revalidateTag(tag);
+}
+//use revalidate path
+export async function RevalidatePath(path: string, type?: string | any) {
+  revalidatePath(path, type || "page");
 }

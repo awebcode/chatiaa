@@ -45,7 +45,9 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
       if (searchParams.get("isRefreshed")) {
         router.replace("/chat");
         router.refresh();
-        window.history.pushState({}, "", "/chat");
+        // window.history.pushState({}, "", "/chat");
+        // window.location.reload()
+        window.location.href="/"+locale+"/chat"
       }
     }
   }, [
@@ -55,7 +57,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
     router.replace,
     router.refresh,
     searchParams,
-    window?.history?.pushState
+    window ?.history?.pushState,
   ]);
   useEffect(() => {
     const handleBeforeUnload = (e: any) => {
@@ -63,7 +65,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
         queryClient.invalidateQueries({ queryKey: ["messages"] });
         router.replace(`?chatId=${roomId}&isRefreshed=true`);
       } else {
-        router.push(`/chat`);
+        router.replace(`/chat`);
         window.history.pushState({}, "", "/chat");
       }
     };
@@ -74,7 +76,7 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
       // Cleanup event listener
       window.removeEventListener("load", handleBeforeUnload);
     };
-  }, [router]);
+  }, [router,roomId]);
   //
   //<EmptyChat />;
   if (!selectedChat) return <LoaderComponent />; //<LoaderComponent />;
