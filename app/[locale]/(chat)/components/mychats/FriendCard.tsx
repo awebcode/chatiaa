@@ -262,7 +262,7 @@ const FriendsCard: React.FC<{
                 <MessagePreview chat={chat} currentUser={currentUser as any} />
               )}
             </span>
-            <span className="text-[11px]  inline mr-2 font-thin">
+            <span className="text-[11px] font-medium  inline mr-2">
               {chat?.latestMessage?.content
                 ? moment(chat?.latestMessage?.createdAt).format("LT")
                 : moment(chat?.createdAt).format("LT")}

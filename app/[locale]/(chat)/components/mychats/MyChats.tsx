@@ -101,13 +101,13 @@ const MyChats = () => {
   return (
     <>
       <div>
-        <div className="menu p-4     bg-base-200 text-base-content overflow-y-auto">
+        <div className="menu p-2 md:p-4     bg-base-200 text-base-content overflow-y-auto">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => handleInputChange(e)}
             placeholder="Search for group people"
-            className="bg-transparent w-full    text-sm py-3 px-3 rounded-md  outline-none border border-gray-200 dark:border-gray-500 transition-all duration-300"
+            className="bg-transparent w-full    text-sm py-2 md:py-3 px-3 rounded-md  outline-none border border-gray-200 dark:border-gray-500 transition-all duration-300"
           />
 
           <div

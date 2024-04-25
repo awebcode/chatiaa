@@ -10,16 +10,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useMediaQuery } from "@uidotdev/usehooks";
 import dynamic from "next/dynamic";
 const SearchGroupModal = dynamic(() => import("./SearchGroupModal"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 export default function CreateGroupModal() {
+  const isSmallDevice=useMediaQuery("only screen and (max-width:768px)")
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size={"lg"} className="mt-2 w-full bg-blue-600 hover:bg-blue-700">
+        <Button size={isSmallDevice?"sm":"lg"} className="mt-1 md:mt-2 w-full bg-blue-600 hover:bg-blue-700">
           +Create Group
         </Button>
       </DialogTrigger>

@@ -40,13 +40,13 @@ const Drawer = () => {
   return (
     <>
       <div>
-        <div className="menu p-4   bg-base-200 text-base-content overflow-y-scroll">
+        <div className="menu p-2 md:p-4   bg-base-200 text-base-content overflow-y-scroll">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => handleInputChange(e)}
             placeholder="Search for group people"
-            className="shadow-lg w-full bg-transparent border border-gray-500 text  text-sm py-3 px-3 rounded-md  outline-none border-1  transition-all duration-300"
+            className="shadow-lg w-full bg-transparent border border-gray-500 text  text-sm py-2 md:py-3 px-3 rounded-md  outline-none border-1  transition-all duration-300"
           />
 
           <div id="customTarget" style={{ height: "90vh", overflowY: "scroll" }}>
