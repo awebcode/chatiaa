@@ -20,6 +20,7 @@ import { v4 } from "uuid";
 import { updateSenderMessagesUI } from "@/config/functions";
 import { FaReply } from "react-icons/fa";
 import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { BsReply, BsSendCheck } from "react-icons/bs";
 
 const EdRePreview = dynamic(() => import("./EdRepreview/EdRePreview"), { ssr: false });
 const ChatBlockStatus = dynamic(() => import("../block/ChatBlockStatus"), { ssr: false });
@@ -271,13 +272,13 @@ const Input = () => {
           <div className="p-1">
             {/* Right side icon */}
             {isReply ? (
-              <FaReply
+              <BsReply
                 className="text-blue-600 cursor-pointer"
                 size={20}
                 onClick={() => replySubmit()}
               />
             ) : isEdit ? (
-              <TbClockEdit
+              <BsSendCheck
                 className="text-blue-600 cursor-pointer"
                 size={20}
                 onClick={() => editSubmit()}

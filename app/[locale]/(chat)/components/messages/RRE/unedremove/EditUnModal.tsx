@@ -7,7 +7,10 @@ import React, { useCallback } from "react";
 import { unsent_remove_Message_function } from "./function";
 import { toast } from "react-hot-toast";
 import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-
+import { AiOutlineCopy, AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
+import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { FcDataRecovery } from "react-icons/fc";
+import { GiCrossedSabres } from "react-icons/gi";
 const EditUnModal = ({ message }: { message: IMessage }) => {
   const { socket } = useSocketContext();
   const { onEdit, cancelReply } = useEditReplyStore();
@@ -94,9 +97,9 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           onClick={() => {
             onCopy(message.content);
           }}
-          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
-          Copy
+          <AiOutlineCopy /> Copy
         </DropdownMenuItem>
       )}
 
@@ -106,8 +109,9 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
             onEdit(message as any);
             cancelReply();
           }}
-          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
+          <AiOutlineEdit />
           Edit
         </DropdownMenuItem>
       )}
@@ -116,17 +120,17 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           {message.status !== "unsent" && (
             <DropdownMenuItem
               onClick={() => removeHandler(message._id)}
-              className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+              className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
             >
-              Remove
+              <IoIosRemoveCircleOutline /> Remove
             </DropdownMenuItem>
           )}
           {message.status !== "unsent" ? (
             <DropdownMenuItem
               onClick={() => removeFromAllHandler(message._id)}
-              className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+              className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
             >
-              Remove from all
+              <AiOutlineDelete /> Remove from all
             </DropdownMenuItem>
           ) : (
             <>
@@ -142,9 +146,9 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       ) : message.status === "removed" && message.removedBy?._id === currentUser?._id ? (
         <DropdownMenuItem
           onClick={() => BackRemoveFromAllHandler(message._id)}
-          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
-          Back Message
+          <FcDataRecovery /> Back Message
         </DropdownMenuItem>
       ) : message.status === "removed" && message.removedBy?._id !== currentUser?._id ? (
         <>
@@ -156,9 +160,9 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => removeFromAllHandler(message._id)}
-            className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+            className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
           >
-            Remove from all
+            <AiOutlineDelete /> Remove from all
           </DropdownMenuItem>
         </>
       ) : (
@@ -170,17 +174,17 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           onClick={() => {
             unsentHandler(message._id);
           }}
-          className="cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
-          Unsent
+          <GiCrossedSabres /> Unsent
         </DropdownMenuItem>
       )}
       {isCurrentUserMessage && (
         <DropdownMenuItem
           onClick={() => removeFromAllHandler(message._id)}
-          className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
+          className="flex gap-x-1 cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
-          Delete
+          <AiOutlineDelete /> Delete
         </DropdownMenuItem>
       )}
     </DropdownMenuContent>
