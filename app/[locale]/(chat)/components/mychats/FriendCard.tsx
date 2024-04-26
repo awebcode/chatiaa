@@ -36,11 +36,10 @@ const SeenBy = dynamic(() => import("./status/SeenBy"));
 const SeenByGroup = dynamic(() => import("./status/SeeByGroup"));
 
 const Modal = dynamic(() => import("./Modal"));
-import Cookie from "js-cookie"
+import Cookie from "js-cookie";
 const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
- 
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -77,9 +76,9 @@ const FriendsCard: React.FC<{
 
   const handleClick = async (chatId: string) => {
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
-     Cookie.set("selectedChat", chatId);
+    Cookie.set("selectedChat", chatId);
     queryClient.invalidateQueries({ queryKey: ["messages"] });
-    if (selectedChat?.chatId === chatId) return;
+    if (selectedChat?.chatId === chatId && searchParams.get("chatId") === chatId) return;
 
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
@@ -289,16 +288,17 @@ const FriendsCard: React.FC<{
             >
               Join call
             </Button>
-          ) : (selectedChat?.chatId === chat?._id &&
+          ) : selectedChat?.chatId === chat?._id &&
+            searchParams.get("chatId") !== chat?._id &&
             (!searchParams.get("chatId") ||
-              searchParams.get("chatId") !== selectedChat?._id)) ? (
-            <div className="">
+              searchParams.get("chatId") !== selectedChat?._id) ? (
+            <>
               <BiLoaderCircle
                 className={`animate-spin h-3 w-3 md:h-4
                  
                  md:w-4 text-blue-600 rounded-full`}
               />
-            </div>
+            </>
           ) : chat?.isGroupChat ? (
             <SeenByGroup chat={chat as any} currentUser={currentUser as any} />
           ) : (

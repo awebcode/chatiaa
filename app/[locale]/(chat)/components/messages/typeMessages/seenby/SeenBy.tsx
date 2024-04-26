@@ -15,7 +15,7 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
         {message?.seenBy &&
           message?.seenBy?.map((user: any) => {
             return (
-              <TooltipProvider key={user?.userId?._id}>
+              <TooltipProvider key={user?.userId?._id || user?._id}>
                 <Tooltip>
                   <TooltipTrigger>
                     <div className=" h-3 w-3 md:h-4 md:w-4 rounded-full cursor-pointer ">

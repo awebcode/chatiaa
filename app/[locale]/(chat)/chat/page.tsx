@@ -62,7 +62,7 @@ const page = async ({
         </div>
         {/* Rightside */}
         {searchParams.isEmpty ? (
-          <div className="hidden md:block w-full">
+          <div className="hidden h-screen md:h-[92vh] md:block w-full">
             {" "}
             <EmptyChat />
           </div>

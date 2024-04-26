@@ -1,11 +1,11 @@
 "use client";
 
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-const MessageCard = dynamic(() => import("./MessageCard"), {
-  loading: () => <MessageLoader />,
-});
+// const MessageCard = dynamic(() => import("./MessageCard"), {
+//   loading: () => <MessageLoader />,
+// });
 // const NoChatProfile = dynamic(() => import("../NoChatProfile"));
 import { FaArrowDown } from "react-icons/fa";
 import useIncomingMessageStore from "@/store/useIncomingMessage";
@@ -18,11 +18,12 @@ import { allMessages } from "@/apisActions/messageActions";
 import { QueryClient, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
-// import MessageCard from "./MessageCard";
+import MessageCard from "./MessageCard";
 import type { Scrollbar as BaseScrollbar } from "smooth-scrollbar/scrollbar";
 import MessageLoader from "@/components/MessageLoader";
 import { inittialDummyMessages } from "@/config/dummyData/messages";
-export default function Messages({ chatId }: { chatId: string }) {
+import { filterDuplicateTempMessageIds } from "../logics/logics";
+function Messages({ chatId }: { chatId: string }) {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
   // const queryClient = new QueryClient();
@@ -58,7 +59,7 @@ export default function Messages({ chatId }: { chatId: string }) {
     //     return undefined;
     //   }
     // }, //queryClient.getQueryData(['messages',chatId])
-   staleTime: 0,
+    staleTime: 0,
   });
 
   const messagesPayload = useMemo(() => {
@@ -70,7 +71,7 @@ export default function Messages({ chatId }: { chatId: string }) {
       type: SET_MESSAGES,
       payload: messagesPayload,
     });
-   ///down from the top without set it then will infinite refetching without scrolling
+    ///down from the top without set it then will infinite refetching without scrolling
     const container = document.getElementById("MessagesscrollableTarget");
     if (container) {
       container.scrollTop = container.scrollTop + 100; //200
@@ -189,19 +190,27 @@ export default function Messages({ chatId }: { chatId: string }) {
           ) : (
             messages &&
             messages?.length > 0 &&
-            messages.map((message: IMessage, index: number) => {
-              return (
-                <MessageCard
-                  message={message}
-                  key={
-                    message?._id +
-                    message?.tempMessageId +
-                    Date.now() +
-                    Math.floor(Math.random() * 100)
-                  }
-                />
-              );
-            })
+            filterDuplicateTempMessageIds(messages).map(
+              (message: IMessage, index: number) => {
+                //every message card must use  unuque key and don't use random key , if you use random key and update in messages then all messages will re render... prefetch messages duplicate key  problem here although i used unique key
+                return (
+                  <MessageCard
+                    message={message}
+                    key={
+                      message?._id + message?.tempMessageId
+
+                      //+ Date.now() +
+                      // Math.floor(Math.random() * 100)}
+
+                      // //   message?._id +
+                      //   message?.tempMessageId +
+                      //   Date.now() +
+                      //   Math.floor(Math.random() * 100)
+                    }
+                  />
+                );
+              }
+            )
           )}
         </div>
 
@@ -234,3 +243,4 @@ export default function Messages({ chatId }: { chatId: string }) {
     </div>
   );
 }
+export default memo(Messages)

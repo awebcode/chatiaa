@@ -143,22 +143,22 @@ const ReactionLists = ({
         {reactionsGroup &&
           reactionsGroup?.map((emoji, i) => {
             return (
-              <div key={i}>
+              <div key={emoji?._id}>
                 <div
                   onClick={() => setActiveTab(emoji?._id)}
                   className={`p-1   rounded flex gap-1 cursor-pointer hover:animate-pulse duration-200 ${
-                    activeTab === emoji._id ? "bg-blue-300" : "bg-gray-600"
+                    activeTab === emoji?._id ? "bg-blue-300" : "bg-gray-600"
                   }`}
                 >
                   <Emoji
                     size={isSmallDevice ? 12 : 16}
                     lazyLoad
                     emojiStyle={EmojiStyle.FACEBOOK}
-                    unified={(emoji as any)._id.codePointAt(0).toString(16)}
+                    unified={(emoji as any)?._id.codePointAt(0).toString(16)}
                   />
                 </div>
                 <span className="-mt-2 mx-2 w-full text-gray-800 dark:text-gray-300 text-[10px] rounded-lg p ">
-                  {emoji.count}
+                  {emoji?.count}
                 </span>
               </div>
             );
@@ -190,10 +190,10 @@ const ReactionLists = ({
         >
           <div className="flex flex-col  gap-y-2 w-full">
             {data?.length > 0 &&
-              data?.map((reaction, i) => {
+              data?.map((reaction) => {
                 return (
                   <Card
-                    key={reaction._id + Date.now() + Math.random() * 1000}
+                    key={reaction?.tempReactionId}
                     handleRemoveReact={handleRemoveReact}
                     reaction={reaction}
                   />

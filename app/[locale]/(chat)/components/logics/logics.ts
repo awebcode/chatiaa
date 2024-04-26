@@ -1,3 +1,4 @@
+import { IMessage } from "@/context/reducers/interfaces";
 import { Tuser } from "@/store/types";
 
 export const isSameSenderMargin = (
@@ -69,3 +70,22 @@ export function findLastSeenMessageIndex(messages: any) {
   }
   return -1; // No seen messages found
 }
+
+
+// Function to filter out duplicate tempMessageId values
+export const filterDuplicateTempMessageIds = (messages:IMessage[]) => {
+  const uniqueIds = new Set(); // Use a Set to store unique tempMessageIds
+  const uniqueMessages = []; // Array to store messages with unique tempMessageIds
+
+  // Iterate through each message
+  for (const message of messages) {
+    // Check if the tempMessageId is not in the uniqueIds Set
+    if (!uniqueIds.has(message?.tempMessageId) && !uniqueIds.has(message?._id)) {
+      // If not, add it to the Set and push the message to the uniqueMessages array
+      uniqueIds.add(message?.tempMessageId || message?._id);
+      uniqueMessages.push(message);
+    }
+  }
+
+  return uniqueMessages;
+};

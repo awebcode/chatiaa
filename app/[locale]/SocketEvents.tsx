@@ -364,8 +364,17 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   // Add Reaction on Message Handler
   const handleAddReactionOnMessage = useCallback(
     (data: { reaction: any } & { type: string }) => {
-      if (data.reaction.reactBy?.toString() !== currentUserRef.current?._id) {
+      // console.log({handleAddReactionOnMessage:data})
+
+      if (
+        (data.reaction.reactBy?._id || data.reaction.reactBy) !==
+          currentUserRef.current?._id 
+      ) {
+        // ||data.type === "update";
+        //||
         //currentUser cannot get this
+        // console.log({ handleAddReactionOnMessage: data });
+
         dispatch({ type: ADD_REACTION_ON_MESSAGE, payload: data });
       }
     },
