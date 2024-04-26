@@ -83,25 +83,26 @@ const DisplayReaction = ({
           }}
           className={` relative  cursor-pointer flex gap-[2px]  rounded-lg`}
         >
-          <div
-            className={`${
-              message.reactions.some((e) => e.reactBy?._id === currentUser?._id)
-                ? "border-b-[2px] border-emerald-500 rounded-full "
-                : ""
-            }`}
-          >
-            {reactionsGroup.slice(0, 4).map((react, i) => {
-              return (
+          {reactionsGroup.slice(0, 4).map((react, i) => {
+            const hasReacted = message.reactions.some(
+              (e) => e.reactBy?._id === currentUser?._id
+            );
+            return (
+              <div
+                key={i}
+                className={`${
+                  hasReacted ? "border-b-[1px] border-emerald-500 rounded-full " : ""
+                }`}
+              >
                 <Emoji
-                  key={i}
                   size={isSmallDevice ? 15 : 18}
                   lazyLoad
                   emojiStyle={EmojiStyle.FACEBOOK}
                   unified={(react as any)?._id?.codePointAt(0).toString(16)}
                 />
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
 
           {message.totalReactions > 0 && (
             <span className="text-[10px]  ">{message.totalReactions}</span>
