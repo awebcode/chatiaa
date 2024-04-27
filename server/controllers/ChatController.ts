@@ -169,7 +169,7 @@ export const fetchChats = async (req: Request|any, res: Response, next: NextFunc
           chat?.latestMessage?._id,
           req.id
         );
-        // const messages = await allInitMessages(chat._id);
+        const messages = await allInitMessages(chat._id);
         // Construct updated chat object with awaited results
         return {
           ...chat.toObject(),
@@ -180,7 +180,7 @@ export const fetchChats = async (req: Request|any, res: Response, next: NextFunc
 
             totalseenBy: totalSeenCount || 0,
           },
-          // messages,
+          messages,
           isOnline: isAnyUserOnline,
           unseenCount: correspondingUnseenCount
             ? correspondingUnseenCount.unseenMessagesCount
@@ -212,7 +212,7 @@ export const fetchChats = async (req: Request|any, res: Response, next: NextFunc
             chat?.latestMessage?._id,
             req.id
           );
-          // const messages = await allInitMessages(chat._id);
+          const messages = await allInitMessages(chat._id);
           // Construct updated chat object with awaited results
           const updatedChat = {
             ...chat.toObject(),
@@ -222,7 +222,7 @@ export const fetchChats = async (req: Request|any, res: Response, next: NextFunc
               seenBy,
               totalseenBy: totalSeenCount || 0,
             },
-            // messages,
+            messages,
             isOnline: isAnyUserOnline,
             unseenCount: correspondingUnseenCount
               ? correspondingUnseenCount.unseenMessagesCount

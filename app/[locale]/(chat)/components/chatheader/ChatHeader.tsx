@@ -17,6 +17,7 @@ import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import Cookie from "js-cookie";
 import { RevalidatePath } from "@/apisActions/serverActions";
+import { filterDuplicateTempMessageIds } from "../logics/logics";
 // import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -36,9 +37,11 @@ const ChatHeader = () => {
   const searchParams = useSearchParams();
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
+     filterDuplicateTempMessageIds([], true, (ids) => ids.clear());
     Cookie.remove("selectedChat");
     router.replace("?isEmpty=true");
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
+    queryClient.invalidateQueries({ queryKey: ["messages"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");

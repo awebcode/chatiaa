@@ -84,15 +84,15 @@ const DisplayReaction = ({
           className={` relative  cursor-pointer flex gap-[2px]  rounded-lg`}
         >
           {reactionsGroup.slice(0, 4).map((react, i) => {
-            const hasReacted = message.reactions.some(
-              (e) => e.reactBy?._id === currentUser?._id
-            );
+            // const hasReacted = message.reactions.some(
+            //   (e) => e.reactBy?._id === currentUser?._id
+            // );
             return (
               <div
                 key={i}
-                className={`${
-                  hasReacted ? "border-b-[1px] border-emerald-500 rounded-full " : ""
-                }`}
+                // className={`${
+                //   hasReacted ? "border-b-[1px] border-emerald-500 rounded-full " : ""
+                // }`}
               >
                 <Emoji
                   size={isSmallDevice ? 15 : 18}

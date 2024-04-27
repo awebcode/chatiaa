@@ -13,7 +13,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
-import { IMessage } from "@/context/reducers/interfaces";
+import { IChat, IMessage } from "@/context/reducers/interfaces";
 import { allMessages } from "@/apisActions/messageActions";
 import { QueryClient, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderComponent from "@/components/Loader";
@@ -48,17 +48,17 @@ function Messages({ chatId }: { chatId: string }) {
     },
     initialPageParam: 0,
 
-    // initialData: (): any => {
-    //   // const messages = selectedChat?.messages?.messages;
-    //   if (inittialDummyMessages) {
-    //     return {
-    //       pageParams: [0],
-    //       pages: [{ messages:inittialDummyMessages }],
-    //     };
-    //   } else {
-    //     return undefined;
-    //   }
-    // }, //queryClient.getQueryData(['messages',chatId])
+    initialData: (): any => {
+      const messages = selectedChat?.messages?.messages;
+      if (messages) {
+        return {
+          pageParams: [0],
+          pages: [{ messages }],
+        };
+      } else {
+        return undefined;
+      }
+    }, //queryClient.getQueryData(['messages',chatId])
     staleTime: 0,
   });
 
@@ -80,16 +80,16 @@ function Messages({ chatId }: { chatId: string }) {
     dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data?.pages[0]?.total });
 
     // Uncomment the following lines if you want to update local storage chat
-    // const storedChats = JSON.parse(localStorage.getItem("chats") || "[]");
-    // const isExistChatIndex = storedChats.findIndex(
-    //   (chat) => chat?._id === selectedChat?.chatId
-    // );
-    // if (data?.pages[0]?.messages) {
-    //   if (isExistChatIndex !== -1) {
-    //     storedChats[isExistChatIndex].messages.messages = data?.pages[0]?.messages;
-    //     localStorage.setItem("chats", JSON.stringify(storedChats));
-    //   }
-    // }
+    const storedChats = JSON.parse(localStorage.getItem("chats") || "[]");
+    const isExistChatIndex = storedChats.findIndex(
+      (chat:IChat) => chat?._id === selectedChat?.chatId
+    );
+    if (data?.pages[0]?.messages) {
+      if (isExistChatIndex !== -1) {
+        storedChats[isExistChatIndex].messages.messages = data?.pages[0]?.messages;
+        localStorage.setItem("chats", JSON.stringify(storedChats));
+      }
+    }
   }, [messagesPayload, data?.pages, dispatch, selectedChat]);
   useEffect(() => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
@@ -191,22 +191,13 @@ function Messages({ chatId }: { chatId: string }) {
             messages &&
             messages?.length > 0 &&
             filterDuplicateTempMessageIds(messages).map(
-              (message: IMessage, index: number) => {
+              //filterDuplicateTempMessageIds(messages) use it when rendering server or prefetch message otherwise give err
+              (message: IMessage) => {
                 //every message card must use  unuque key and don't use random key , if you use random key and update in messages then all messages will re render... prefetch messages duplicate key  problem here although i used unique key
                 return (
                   <MessageCard
                     message={message}
-                    key={
-                      message?._id + message?.tempMessageId
-
-                      //+ Date.now() +
-                      // Math.floor(Math.random() * 100)}
-
-                      // //   message?._id +
-                      //   message?.tempMessageId +
-                      //   Date.now() +
-                      //   Math.floor(Math.random() * 100)
-                    }
+                    key={message?._id + message?.tempMessageId}
                   />
                 );
               }
@@ -243,4 +234,4 @@ function Messages({ chatId }: { chatId: string }) {
     </div>
   );
 }
-export default memo(Messages)
+export default Messages;

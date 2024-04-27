@@ -38,16 +38,16 @@ const MyChats = () => {
       return nextOffset;
     },
     initialPageParam: 0,
-    // initialData: (): any => {
-    //   if (inittialDummyChats && inittialDummyChats.length > 0) {
-    //     return {
-    //       pageParams: [0],
-    //       pages: [{ chats: inittialDummyChats }],
-    //     };
-    //   } else {
-    //     return undefined;
-    //   }
-    // }, //queryClient.getQueryData(['messages',chatId])
+    initialData: (): any => {
+      if (chats && chats.length > 0) {
+        return {
+          pageParams: [0],
+          pages: [{ chats: chats }],
+        };
+      } else {
+        return undefined;
+      }
+    }, 
     staleTime: 0,
   });
   // set chats in reducer store
@@ -65,9 +65,9 @@ const MyChats = () => {
     });
 
     // Uncomment the following lines if you want to save chats to localStorage
-    // if (data?.pages[0]?.chats) {
-    //   localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
-    // }
+    if (data?.pages[0]?.chats) {
+      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
+    }
   }, [chatsPayload, dispatch]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

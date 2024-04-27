@@ -628,7 +628,7 @@ export const messageReducer = (state: State, action: Action): State => {
               ? [...message.reactionsGroup]
               : [];
 
-            let totalReactions = message.totalReactions || 1;
+            let totalReactions = message.totalReactions || 0;
             const existingReactionIndex = updatedReactions.findIndex(
               (m) => m.tempReactionId === action.payload.reaction.tempReactionId
             );
@@ -636,9 +636,7 @@ export const messageReducer = (state: State, action: Action): State => {
             if (
               action.payload.type === "add" &&
               !updatedReactions.find(
-                (u) =>
-                  u.reactBy._id === action.payload.reaction.reactBy._id ||
-                  (!u.reactBy._id && u.reactBy === action.payload.reaction.reactBy)
+                (u) => u.reactBy._id === action.payload.reaction.reactBy._id
               )
             ) {
               console.log("add");
@@ -676,6 +674,7 @@ export const messageReducer = (state: State, action: Action): State => {
                 updatedReactions[existingReactionIndex] = action.payload.reaction; // just update when id available bcz previously sender updated ui
               } else {
                 updatedReactions = [action.payload.reaction, ...updatedReactions];
+                // updatedReactions.push(action.payload.reaction)
                 totalReactions++;
                 // console.log({ unShifted: totalReactions });
               } // Add the new reaction to the beginning of the array}
@@ -689,63 +688,26 @@ export const messageReducer = (state: State, action: Action): State => {
               action.payload.type !== "remove" &&
               (action.payload.type === "update" ||
                 updatedReactions.some(
-                  (u) =>
-                    u.reactBy._id === action.payload.reaction.reactBy._id ||
-                    (!u.reactBy._id && u.reactBy === action.payload.reaction.reactBy)
+                  (u) => u.reactBy._id === action.payload.reaction.reactBy._id
                 ))
             ) {
-//               // Remove emoji if a user hit same reactions
-//               if (
-//                 updatedReactionsGroup.some(
-//                   (e) => e._id === action.payload.reaction.emoji
-//                 ) &&
-//                 updatedReactions.some(
-//                   (react) => react.reactBy._id === action.payload.reaction.reactBy._id
-//                 )
-//               ) {
-//                 // For remove type, filter out the removed reaction and update the reactionsGroup
-//                 updatedReactions = updatedReactions.filter(
-//                   (reaction) =>
-//                     reaction?._id !== action.payload.reaction?._id ||
-//                     reaction.tempReactionId !== action.payload.reaction.tempReactionId
-//                 );
-//                 console.log("remove sect", updatedReactions)
-// //should calling api here for sent to server
-//                 // if (message.reactions.length < 3) {
-//                 // Filter out the current reaction from reactionsGroup and update the count
-//                 updatedReactionsGroup = updatedReactionsGroup
-//                   .map((emoji) => {
-//                     if (
-//                       emoji?._id === action.payload.reaction?.emoji &&
-//                       emoji.count > 1
-//                     ) {
-//                       // Decrement the count for the current emoji
-//                       totalReactions-=1
-//                       return { ...emoji, count: emoji.count - 1 };
-//                     } else if (
-//                       emoji?._id === action.payload.reaction?.emoji
-//                     ) {
-//                       // If count is already 1, remove the emoji
-//                       return null as any;
-//                     } else {
-//                       // Keep other emojis unchanged
-//                       return emoji;
-//                     }
-//                   })
-//                   .filter(Boolean); // Remove null entries
-//                 // }
-//               return {
-//                 ...message,
-//                 reactions: updatedReactions,
-//                 reactionsGroup: updatedReactionsGroup,
-//               };
-//               }
-              // @@Remove react for same emoji end@@@
-              // Create a copy of the original reactionsGroup
-              ///remove that emoji who not exists in reactions but in group  reactions
-              updatedReactionsGroup = updatedReactionsGroup.filter((emoji) =>
-                updatedReactions.some((react) => emoji._id === react.emoji)
-              );
+              // Remove emoji if a user hit same reactions
+              if (
+                updatedReactionsGroup.some(
+                  (e) => e._id === action.payload.reaction.emoji
+                ) &&
+                updatedReactions.some(
+                  (react) => react.reactBy._id === action.payload.reaction.reactBy._id
+                )
+              ) {
+                // For remove type, filter out the removed reaction and update the reactionsGroup
+                updatedReactions = updatedReactions.filter(
+                  (reaction) =>
+                    reaction?._id !== action.payload.reaction?._id ||
+                    reaction.tempReactionId !== action.payload.reaction.tempReactionId
+                );
+              }
+
               // For update type, replace the existing reaction with the updated one
               updatedReactions = updatedReactions.map((reaction) =>
                 reaction._id === action.payload.reaction._id ||
@@ -753,7 +715,10 @@ export const messageReducer = (state: State, action: Action): State => {
                   ? action.payload.reaction // Replace the existing reaction with the updated one
                   : reaction
               );
-
+              ///remove that emoji who not exists in reactions but in group  reactions
+              updatedReactionsGroup = updatedReactionsGroup.filter((emoji) =>
+                updatedReactions.some((react) => emoji._id === react.emoji)
+              );
               if (
                 !updatedReactionsGroup.some(
                   (e) => e._id === action.payload.reaction.emoji
@@ -791,25 +756,15 @@ export const messageReducer = (state: State, action: Action): State => {
                       updatedReactionsGroup[emojiIndex]._id =
                         action.payload.reaction.emoji;
 
-                      updatedReactionsGroup[emojiIndex].count =
-                        updatedReactionsGroup.filter((_) => action.payload.reaction.emoji)
-                          .length + 1;
+                      if (
+                        !updatedReactions.some(
+                          (react) =>
+                            react.reactBy._id === action.payload.reaction.reactBy._id
+                        )
+                      ) {
+                        updatedReactionsGroup[emojiIndex].count++;
+                      }
                     } else {
-                      //**start **decrement prev emoji index
-                      // updatedReactionsGroup = updatedReactionsGroup.map((reaction) => {
-                      //   if (
-                      //     reaction._id === action.payload.reaction.emoji &&
-                      //     reaction.count > 0
-                      //   ) {
-                      //     return {
-                      //       ...reaction,
-                      //       count: reaction.count - 1,
-                      //     };
-                      //   }
-                      //   return reaction;
-                      // });
-                      //**end **decrement prev emoji index
-
                       const emoji = action.payload.reaction.emoji;
 
                       // If the emoji doesn't exist, add a new entry for it
@@ -821,15 +776,15 @@ export const messageReducer = (state: State, action: Action): State => {
                           count: 1,
                         },
                       ];
-
+                      // console.log({
+                      //   updatedReactionsGroup,
+                      //   findIsExistReaction: findIsExistReaction.emoji,
+                      // });
                       //@remove duplicates
                       updatedReactionsGroup.map((reaction) =>
-                        findIsExistReaction.emoji === reaction._id
+                        findIsExistReaction.emoji === reaction._id // findIsExistReaction.emoji
                           ? // If the emoji exists, update its count
-                            {
-                              _id: emoji,
-                              count: 1,
-                            }
+                            null
                           : {
                               _id: emoji,
                               count: 1,
@@ -846,6 +801,7 @@ export const messageReducer = (state: State, action: Action): State => {
                           react.reactBy._id === action.payload.reaction.reactBy._id
                       )
                     ) {
+                      // totalReactions++
                       updatedReactionsGroup[emojiIndex].count++;
                     }
                   }

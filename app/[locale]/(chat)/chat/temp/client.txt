@@ -11,7 +11,7 @@ import LoaderComponent from "@/components/Loader";
 import { ChatSkeleton } from "../components/mychats/ChatSkeleton";
 import EmptyChat from "../components/Empty";
 import MyChats from "../components/mychats/MyChats";
-import { fetchUser } from "@/functions/serverActions";
+import { fetchUser } from "@/apisActions/serverActions";
 import { redirect } from "@/navigation";
 // import PrefetchMessages from "../components/messages/PrefetchMessages";
 // import Messages from "../components/messages/Messages";
@@ -61,23 +61,32 @@ const page = async ({
           </LeftSideClientWrapper>
         </div>
         {/* Rightside */}
-        <div
-          className={`relative h-screen  ${
-            searchParams?.chatId ? "block" : "hidden"
-          } md:block  md:h-[92vh] border w-full `}
-        >
-          {searchParams?.chatId ? (
-            <MainClientWrapper>
-              {/* <PrefetchMessages chatId={searchParams?.chatId as string} /> */}
-              {/* Client side rendering more than faster */}
-              <Messages chatId={searchParams?.chatId as string} />
-            </MainClientWrapper>
-          ) : (
-            // <Messages chatId={searchParams?.chatId as string} />
+        {searchParams.isEmpty ? (
+          <div className="hidden md:block w-full">
+            {" "}
             <EmptyChat />
-          )}
+          </div>
+        ) : (
+          <div
+            className={`relative h-screen  ${
+              searchParams?.chatId ? "block" : "hidden"
+            } md:block  md:h-[92vh] border w-full `}
+          >
+            {searchParams?.chatId ? (
+              <MainClientWrapper>
+                {/* <PrefetchMessages chatId={searchParams?.chatId as string} /> */}
+                {/* Client side rendering more than faster */}
+                <Messages chatId={searchParams?.chatId as string} />
+              </MainClientWrapper>
+            ) : (
+              // <Messages chatId={searchParams?.chatId as string} />
+              <EmptyChat />
+            )}
+            {/* <EmptyChat /> */}
+          </div>
+        )}
+        
           {/* <EmptyChat /> */}
-        </div>
       </div>
     </>
   );
