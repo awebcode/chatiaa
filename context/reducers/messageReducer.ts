@@ -34,7 +34,7 @@ import {
   DELETE_ALL_MESSAGE_IN_CHAT,
   SEEN_PUSH_USER_GROUP_MESSAGE_MY_SIDE,
 } from "./actions";
-import { Action, IMessage, State } from "./interfaces";
+import { Action, IChat, IMessage, State } from "./interfaces";
 import {
   ADD_REPLY_MESSAGE,
   ADD_EDITED_MESSAGE,
@@ -78,24 +78,31 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
     // set chats start
     case SET_CHATS:
     case SET_CHATS:
-      let updatedChats;
+      let updatedChats:IChat[]=[...state.chats]
       if (Array.isArray(action.payload.chats)) {
         // When scrolling
-        updatedChats = action.payload.chats.map((chat: any) => {
-          // Check if the latest message status is "unseen"
-          if (
-            chat.latestMessage &&
-            ["unseen"].includes(chat.latestMessage.status as string)
-          ) {
-            // Update the status to "delivered"
-            const updatedLatestMessage = { ...chat.latestMessage }; //, status: "delivered"
-            // Return the updated chat object
-            return { ...chat, latestMessage: updatedLatestMessage };
-          } else {
-            // If the status is not "unseen", return the chat object as is
-            return chat;
+        // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
+        if (Array.isArray(action.payload)) {
+
+          // Iterate over each message in action.payload
+          for (const chat of (action.payload as any)?.chats) {
+            const { _id } = chat;
+
+            // Check if the Chat already exists in updatedChats
+            const existingChatIndex = updatedChats.findIndex(
+              (existingChat) => existingChat._id === _id
+            );
+
+            // If the message is not found in updatedMessages, push it
+            if (existingChatIndex === -1) {
+              updatedChats.push(chat);
+            } else {
+              // If the message exists, update its content
+              updatedChats[existingChatIndex] = chat;
+            }
           }
-        });
+          return { ...state, chats: updatedChats };
+        }
       } else {
         // When a new chat is created
         // Update the status of the new chat if necessary

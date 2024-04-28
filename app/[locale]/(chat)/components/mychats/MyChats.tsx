@@ -152,7 +152,7 @@ const MyChats = () => {
                   chats.map((chat) => (
                     <FriendsCard
                       chat={chat}
-                      key={chat._id + Date.now().toString() + Math.random() * 100}
+                      key={chat._id}
                     />
                   ))
                 ) : (

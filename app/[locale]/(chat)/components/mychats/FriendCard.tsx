@@ -49,7 +49,7 @@ const FriendsCard: React.FC<{
   const router = useRouter();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
-  const { user: currentUser, selectedChat } = useMessageState();
+  const { user: currentUser, selectedChat,messages } = useMessageState();
   const { typingUsers } = useTypingStore();
   //pushSeenByMutation
   const pushSeenByMutation = useMutation({
@@ -83,7 +83,10 @@ const FriendsCard: React.FC<{
     queryClient.invalidateQueries({ queryKey: ["messages"] });
     // filterDuplicateTempMessageIds([], true, (ids) => ids.clear()); //clear message ids in set
     if (selectedChat?.chatId === chatId) return;
-    if (selectedChat&&selectedChat?.chatId !== chatId) {
+    if (
+      (selectedChat && selectedChat?.chatId !== chatId) ||
+      (messages.length > 0 && selectedChat?.chatId !== chatId)
+    ) {
       dispatch({ type: CLEAR_MESSAGES });
     }
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
@@ -196,7 +199,7 @@ const FriendsCard: React.FC<{
   // console.log({chat,isFriend})
   if (!chat) return;
   return (
-    <div className="p-3 rounded-md  dark:bg-gray-800  bg-gray-200 text-black hover:bg-gray-300 dark:text-gray-200  cursor-pointer   dark:hover:bg-gray-700 duration-300">
+    <div className="p-3 rounded-md  dark:bg-gray-800 hover:dark:bg-gray-700 bg-gray-200 text-black hover:bg-gray-300 dark:text-gray-200  cursor-pointer   dark:hover:bg-gray-700 duration-300">
       <div className="flex items-center gap-2 justify-between">
         <div
           // href={`/chat/${chat?._id}`}

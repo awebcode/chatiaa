@@ -24,7 +24,7 @@ const LanguageChanger = dynamic(() => import("./LanguageChanger"));
 const Navbar = () => {
   const queryClient = useQueryClient();
   const t = useTranslations();
-  const { user } = useMessageState();
+  const { user,selectedChat } = useMessageState();
   // const { data:  } = use();
   const router = useRouter();
   const pathname = usePathname();
@@ -36,12 +36,11 @@ const Navbar = () => {
     router.push("/");
   };
   // const isHidden = pathname.includes("/chat?chatId=");
-  const isHidden = searchParams.get("chatId");
   return (
     <nav
       className={`${
-        isHidden ? "hidden md:flex" : ""
-      } sticky flex items-center justify-between p-1  px-4 md:px-10  shadow-sm`}
+        !selectedChat ? "hidden md:flex" : "sticky"
+      }  flex items-center justify-between p-1  px-4 md:px-10  shadow-sm`}
     >
       {/* Left Side - Logo */}
       <div
