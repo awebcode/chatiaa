@@ -91,7 +91,7 @@ export default function AudioFile({
       <div className="">
         <Time message={message} isCurrentUserMessage={true} />
         <div
-          className={`md:m-4 flex items-center gap-5 text-white px4 pr-2 py-4 text-sm rounded-md`}
+          className={`md:m-4 flex items-center gap-5 text-black dark:text-white px4 pr-2 py-4 text-sm rounded-md`}
         >
           <div className={"cursor-pointer text-xl"}>
             {!playing ? (
