@@ -37,26 +37,18 @@ const ChatHeader = () => {
   const searchParams = useSearchParams();
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
-     filterDuplicateTempMessageIds([], true, (ids) => ids.clear());
     Cookie.remove("selectedChat");
-    router.replace("?isEmpty=true");
-    // queryClient.invalidateQueries({ queryKey: ["chats"] });
-    queryClient.invalidateQueries({ queryKey: ["messages"] });
+    // router.replace("?isEmpty=true");
+
+     router.replace("/chat");
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
+    // queryClient.invalidateQueries({ queryKey: ["messages"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
-    dispatch({ type: CLEAR_MESSAGES });
+    // dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
-    // RevalidatePath("/chat")
-    // router.refresh();
-    // router.push("/chat");
+   
   };
-  //  const roomId = searchParams.get("chatId");
-  //  const isEmpty = searchParams.get("isEmpty");
-  // useEffect(() => {
-  //   const localStorageChat = localStorage.getItem("selectedChat");
-  //   if (!selectedChat || !localStorageChat||!roomId||isEmpty) return router.replace("/chat");
-  // }, [selectedChat, router,roomId,isEmpty]);
-  //  if (!selectedChat) return router.replace("/chat");
-  // if (!selectedChat) return <LoaderComponent text="Redirecting..."/>
+  
   return (
     <div className="p-[6px]  bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
       <div className="flex items-center justify-center gap-1">

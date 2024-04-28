@@ -30,7 +30,7 @@ import {
   UPDATE_ON_CALL_COUNT,
   DELETE_ALL_MESSAGE_IN_CHAT,
 } from "@/context/reducers/actions";
-import { IChat } from "@/context/reducers/interfaces";
+import { IChat, IMessage } from "@/context/reducers/interfaces";
 import { Reaction, Tuser } from "@/store/types";
 import { Socket } from "socket.io-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -152,12 +152,59 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       useIncomingMessageStore.setState({
         isIncomingMessage: true,
       });
+       soundRef.current?.play();
       //  update latest chat for both side
       console.log({
         socketMessage: data,
-        recIdCurrId: data.receiverId === currentUserRef.current?._id,
       });
 
+      // update localstorage chat message
+      // Uncomment the following lines if you want to update local storage chat
+      const storedChats = JSON.parse(localStorage.getItem("chats") || "[]") as IChat[];
+      const storedSelectedChat = JSON.parse(
+        localStorage.getItem("selectedChat") || "{}"
+      ) as any;
+      const isExistChatIndex = storedChats.findIndex(
+        (chat: IChat) => chat?._id === data.chat?._id
+      );
+      const isExistMessageInSelectechatIndex =
+        storedSelectedChat.messages.messages.findIndex(
+          (m: any) => m?._id === data?._id || m?.tempMessageId === data?.tempMessageId
+        );
+      if (isExistChatIndex !== -1) {
+        // If the chat exists in storedChats, find the message index in its messages array
+        const existingChat: any = storedChats[isExistChatIndex];
+        //update selected chat messages
+        if (isExistMessageInSelectechatIndex !== -1) {
+          storedSelectedChat.messages.messages[isExistMessageInSelectechatIndex] = data;
+          localStorage.setItem("selectedChat", JSON.stringify(storedSelectedChat));
+        } else {
+          console.log({ storedSelectedChat });
+          storedSelectedChat.messages.messages.unshift(data);
+          localStorage.setItem("selectedChat", JSON.stringify(storedSelectedChat));
+        }
+
+        //update latest message
+        storedChats[isExistChatIndex].latestMessage = data;
+        const messageIndex = existingChat.messages.messages.findIndex(
+          (m: IMessage) => m._id === data._id || m.tempMessageId === data.tempMessagId
+        );
+
+        if (messageIndex !== -1) {
+          // If the message exists in the chat's messages, update it
+
+          existingChat.messages.messages[messageIndex] = data;
+        } else {
+          // If the message doesn't exist, add it to the beginning of the messages array
+          existingChat.messages.messages.unshift(data);
+        }
+        // Update the storedChats in localStorage
+        localStorage.setItem("chats", JSON.stringify(storedChats));
+      } else {
+        // If the chat doesn't exist, you can decide how to handle this case
+      }
+
+      // update localstorage chat message end
       if (selectedChatRef.current?.chatId === data.chat?._id) {
         useIncomingMessageStore.setState({
           isIncomingMessage: true,
@@ -368,7 +415,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
       if (
         (data.reaction.reactBy?._id || data.reaction.reactBy) !==
-          currentUserRef.current?._id 
+        currentUserRef.current?._id
       ) {
         // ||data.type === "update";
         //||

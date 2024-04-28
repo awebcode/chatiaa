@@ -10,7 +10,11 @@ import {
   updateAllMessageStatusAsSeen,
   updateMessageStatus,
 } from "@/apisActions/messageActions";
-import { getSender, getSenderFull } from "../logics/logics";
+import {
+  filterDuplicateTempMessageIds,
+  getSender,
+  getSenderFull,
+} from "../logics/logics";
 import { BsThreeDots } from "react-icons/bs";
 import dynamic from "next/dynamic";
 import { Link, useRouter } from "@/navigation";
@@ -76,12 +80,17 @@ const FriendsCard: React.FC<{
 
   const handleClick = async (chatId: string) => {
     // queryClient.invalidateQueries({ queryKey: ["chats"] });
-    Cookie.set("selectedChat", chatId);
     queryClient.invalidateQueries({ queryKey: ["messages"] });
-    if (selectedChat?.chatId === chatId && searchParams.get("chatId") === chatId) return;
-
+    // filterDuplicateTempMessageIds([], true, (ids) => ids.clear()); //clear message ids in set
+    if (selectedChat?.chatId === chatId) return;
+    if ((selectedChat&&selectedChat?.chatId !== chatId)||!selectedChat) {
+      dispatch({ type: CLEAR_MESSAGES });
+    }
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
-    dispatch({ type: CLEAR_MESSAGES });
+    //  dispatch({ type: CLEAR_MESSAGES });
+    const storedChats = JSON.parse(localStorage.getItem("chats") || "[]") as IChat[];
+
+    const isExistChatIndex = storedChats.findIndex((c: IChat) => c?._id === chat?._id);
     //select chat
     const chatData = {
       _id: chat?._id,
@@ -110,16 +119,20 @@ const FriendsCard: React.FC<{
       },
       isOnline: chat?.isOnline,
       onCallMembers: chat?.onCallMembers,
-      messages: {
-        ...chat?.messages,
-      },
+      messages:
+        isExistChatIndex !== -1
+          ? storedChats[isExistChatIndex].messages
+          : {
+              ...chat?.messages,
+            },
     };
 
     // router.replace
+    // console.log({chatData})
     // router.push(`/chat?chatId=${chat?._id}`);
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
-    router.replace(`?chatId=${chat?._id}`);
+    // router.replace(`?chatId=${chat?._id}`);
     //  setRedirectLoading({chatId:""})
     // router.replace(`/chat?chatId=${chat?._id}`);
     // router.push(`/chat/${chat?._id}`);
@@ -288,18 +301,19 @@ const FriendsCard: React.FC<{
             >
               Join call
             </Button>
-          ) : selectedChat?.chatId === chat?._id &&
-            searchParams.get("chatId") !== chat?._id &&
-            (!searchParams.get("chatId") ||
-              searchParams.get("chatId") !== selectedChat?._id) ? (
-            <>
-              <BiLoaderCircle
-                className={`animate-spin h-3 w-3 md:h-4
-                 
-                 md:w-4 text-blue-600 rounded-full`}
-              />
-            </>
-          ) : chat?.isGroupChat ? (
+          ) : // ) : ///use this section when prefetch chats and messages or ssr fetch message
+          //   selectedChat?.chatId === chat?._id &&
+          //   searchParams.get("chatId") !== chat?._id &&
+          //   (!searchParams.get("chatId") ||
+          //     searchParams.get("chatId") !== selectedChat?._id) ? (
+          //   <>
+          //     <BiLoaderCircle
+          //       className={`animate-spin h-3 w-3 md:h-4
+
+          //        md:w-4 text-blue-600 rounded-full`}
+          //     />
+          //   </>
+          chat?.isGroupChat ? (
             <SeenByGroup chat={chat as any} currentUser={currentUser as any} />
           ) : (
             <SeenBy chat={chat as any} currentUser={currentUser as any} />

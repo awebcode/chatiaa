@@ -79,14 +79,27 @@ export const filterDuplicateTempMessageIds = (
 ): IMessage[] => {
   const uniqueIds = new Set<string>(); // Use a Set to store unique tempMessageIds
   const uniqueMessages: IMessage[] = []; // Array to store messages with unique tempMessageIds
-
   // Iterate through each message
   for (const message of messages) {
     // Check if the tempMessageId is not in the uniqueIds Set
-    if (!uniqueIds.has(message?.tempMessageId || '') && !uniqueIds.has(message?._id || '')) {
+    if (
+      !uniqueIds.has(message?.tempMessageId || "") &&
+      !uniqueIds.has(message?._id || "")
+    ) {
       // If not, add it to the Set and push the message to the uniqueMessages array
-      uniqueIds.add(message?.tempMessageId || message?._id || '');
+      uniqueIds.add(message?.tempMessageId || message?._id || "");
       uniqueMessages.push(message);
+    } else if (
+      uniqueIds.has(message?.tempMessageId || "") ||
+      uniqueIds.has(message?._id || "")
+    ) {
+      const existingIndex = uniqueMessages.findIndex(
+        (e) => e._id === message._id || e.tempMessageId === message?.tempMessageId
+      );
+      if (existingIndex !== -1) {
+        uniqueMessages[existingIndex] = message;
+        // uniqueMessages.push(message);
+      }
     }
   }
 

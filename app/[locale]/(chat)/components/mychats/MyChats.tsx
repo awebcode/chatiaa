@@ -61,14 +61,17 @@ const MyChats = () => {
   useEffect(() => {
     dispatch({
       type: SET_CHATS,
-      payload: chatsPayload,
+      payload: {
+        chats: data?.pages.flatMap((page) => page.chats),
+        total: data?.pages[0]?.total,
+      },
     });
 
     // Uncomment the following lines if you want to save chats to localStorage
     if (data?.pages[0]?.chats) {
       localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
     }
-  }, [chatsPayload, dispatch]);
+  }, [data?.pages, dispatch]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };

@@ -168,7 +168,7 @@ const ReactionLists = ({
 
       <div
         id="ReactionScrollableTarget"
-        className="menu p-2 md:p-4 bg-base-200 max-h-[40vh] md:max-h-[60vh] overflow-y-auto overflow-x-hidden flex flex-col-reverse"
+        className="menu p-2 md:p-4 bg-base-200 max-h-[40vh] md:amax-h-[60vh] overflow-y-auto overflow-x-hidden flex flex-col-reverse"
       >
         <InfiniteScroll
           dataLength={data ? data?.length : 0}

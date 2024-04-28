@@ -34,7 +34,7 @@ import {
   DELETE_ALL_MESSAGE_IN_CHAT,
   SEEN_PUSH_USER_GROUP_MESSAGE_MY_SIDE,
 } from "./actions";
-import { Action, State } from "./interfaces";
+import { Action, IMessage, State } from "./interfaces";
 import {
   ADD_REPLY_MESSAGE,
   ADD_EDITED_MESSAGE,
@@ -491,8 +491,29 @@ export const messageReducer = (state: State, action: Action): State => {
       //&&
       // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
       if (Array.isArray(action.payload)) {
-        // updatedMessages = [...state.messages, ...action.payload];
-        updatedMessages = [...state.messages, ...action.payload];
+        const updatedMessages: IMessage[] = [...state.messages]; // Copy existing messages
+
+        // Iterate over each message in action.payload
+        for (const message of action.payload) {
+          const { _id, tempMessageId } = message;
+
+          // Check if the message already exists in updatedMessages
+          const existingMessageIndex = updatedMessages.findIndex((existingMessage) => {
+            return (
+              existingMessage._id === _id ||
+              existingMessage.tempMessageId === tempMessageId
+            );
+          });
+
+          // If the message is not found in updatedMessages, push it
+          if (existingMessageIndex === -1) {
+            updatedMessages.push(message);
+          } else {
+            // If the message exists, update its content
+            updatedMessages[existingMessageIndex] = message;
+          }
+        }
+        return { ...state, messages: updatedMessages };
       } else {
         const existingMessageIndex = state.messages.findIndex((m) => {
           if (m?.tempMessageId === action.payload?.tempMessageId) {

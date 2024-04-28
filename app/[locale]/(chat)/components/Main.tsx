@@ -37,14 +37,14 @@ const MainClientWrapper = ({ children }: { children: ReactNode }) => {
   }, [selectedChat?.chatId, socket]); //selectedChat
 
   const roomId = searchParams.get("chatId");
-  const isEmpty = searchParams.get("isEmpty");
-  useEffect(() => {
-    const localStorageChat = localStorage.getItem("selectedChat");
-    if (!roomId || !selectedChat || !localStorageChat || isEmpty) {
-      router.push("?isEmpty=true");
-    }
-  }, [roomId, router, selectedChat, searchParams]);
-  if (!selectedChat) return <LoaderComponent />; //<LoaderComponent />;
+  // const isEmpty = searchParams.get("isEmpty");
+  // useEffect(() => {
+  //   const localStorageChat = localStorage.getItem("selectedChat");
+  //   if (!roomId || !selectedChat || !localStorageChat || isEmpty) {
+  //     router.push("?isEmpty=true");
+  //   }
+  // }, [roomId, router, selectedChat, searchParams]);
+  if (!selectedChat ) return <LoaderComponent />; //<LoaderComponent />;
   return (
     <div className="border-l border-l-gray-200 dark:border-l-gray-700  w-full  ">
       {/* chat header */}

@@ -13,16 +13,12 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { SET_MESSAGES, SET_TOTAL_MESSAGES_COUNT } from "@/context/reducers/actions";
 import TypingIndicator from "../TypingIndicator";
-import { IChat, IMessage } from "@/context/reducers/interfaces";
+import {  IMessage } from "@/context/reducers/interfaces";
 import { allMessages } from "@/apisActions/messageActions";
-import { QueryClient, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import LoaderComponent from "@/components/Loader";
 import NoChatProfile from "../NoChatProfile";
 import MessageCard from "./MessageCard";
-import type { Scrollbar as BaseScrollbar } from "smooth-scrollbar/scrollbar";
-import MessageLoader from "@/components/MessageLoader";
-import { inittialDummyMessages } from "@/config/dummyData/messages";
-import { filterDuplicateTempMessageIds } from "../logics/logics";
 function Messages({ chatId }: { chatId: string }) {
   const { selectedChat } = useMessageState();
   const { messages, totalMessagesCount } = useMessageState();
@@ -62,14 +58,12 @@ function Messages({ chatId }: { chatId: string }) {
     staleTime: 0,
   });
 
-  const messagesPayload = useMemo(() => {
-    return data?.pages.flatMap((page) => page.messages);
-  }, [data?.pages]);
+  
 
   useEffect(() => {
     dispatch({
       type: SET_MESSAGES,
-      payload: messagesPayload,
+      payload: data?.pages.flatMap((page) => page.messages)
     });
     ///down from the top without set it then will infinite refetching without scrolling
     const container = document.getElementById("MessagesscrollableTarget");
@@ -79,18 +73,8 @@ function Messages({ chatId }: { chatId: string }) {
 
     dispatch({ type: SET_TOTAL_MESSAGES_COUNT, payload: data?.pages[0]?.total });
 
-    // Uncomment the following lines if you want to update local storage chat
-    const storedChats = JSON.parse(localStorage.getItem("chats") || "[]");
-    const isExistChatIndex = storedChats.findIndex(
-      (chat:IChat) => chat?._id === selectedChat?.chatId
-    );
-    if (data?.pages[0]?.messages) {
-      if (isExistChatIndex !== -1) {
-        storedChats[isExistChatIndex].messages.messages = data?.pages[0]?.messages;
-        localStorage.setItem("chats", JSON.stringify(storedChats));
-      }
-    }
-  }, [messagesPayload, data?.pages, dispatch, selectedChat]);
+    
+  }, [data?.pages]);
   useEffect(() => {
     const container = document.getElementById("MessagesscrollableTarget"); //containerRef.current will be null and not work
 
@@ -143,6 +127,8 @@ function Messages({ chatId }: { chatId: string }) {
       prevMessageRef.current = container.scrollHeight;
     }
   }, []);
+  
+
   //return
   if (!selectedChat) return;
   return (
@@ -190,16 +176,11 @@ function Messages({ chatId }: { chatId: string }) {
           ) : (
             messages &&
             messages?.length > 0 &&
-            filterDuplicateTempMessageIds(messages).map(
+            messages.map(
               //filterDuplicateTempMessageIds(messages) use it when rendering server or prefetch message otherwise give err
               (message: IMessage) => {
                 //every message card must use  unuque key and don't use random key , if you use random key and update in messages then all messages will re render... prefetch messages duplicate key  problem here although i used unique key
-                return (
-                  <MessageCard
-                    message={message}
-                    key={message?._id + message?.tempMessageId}
-                  />
-                );
+                return <MessageCard message={message} key={message?.tempMessageId} />;
               }
             )
           )}

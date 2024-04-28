@@ -9,7 +9,7 @@ export const allInitMessages = async (
  chatId:string
 ) => {
   try {
-    const limit =  10;
+    const limit =  12;
     const page = 1;
     // const skip = (page - 1) * limit;
 
