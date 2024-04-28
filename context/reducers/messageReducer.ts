@@ -46,8 +46,31 @@ export const MessageStateContext = createContext<State | undefined>(undefined);
 export const MessageDispatchContext = createContext<Dispatch<Action> | undefined>(
   undefined
 );
-
-export const messageReducer = (state: State, action: Action): State => {
+// Retrieve initial data from localStorage
+  const initialChats =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("chats") as string) || []
+      : [];
+  const initialSelectedChat =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("selectedChat") as string) || null
+      : null;
+const initialMessages =
+  typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("messages") as string) || null
+    : null;
+  // Set initial state with data from localStorage
+  const initialState: State = {
+    user: null,
+    selectedChat: initialSelectedChat,
+    isSelectedChat: initialSelectedChat,
+    messages: initialMessages,
+    totalMessagesCount: 0,
+    totalChats: 0,
+    chats: initialChats,
+    callInfo: null,
+  };
+export const messageReducer = (state: State = initialState, action: Action): State => {
   switch (action.type) {
     case SET_USER:
       return { ...state, user: action.payload };

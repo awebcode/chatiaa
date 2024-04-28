@@ -8,7 +8,7 @@ import EmptyChat from "../components/Empty";
 import MyChats from "../components/mychats/MyChats";
 import { useMessageState } from "@/context/MessageContext";
 import Messages from "../components/messages/Messages";
-// import MainClientWrapper from "../components/Main";
+import MainClientWrapper from "../components/Main";
 // const Messages = dynamic(() => import("../components/messages/Messages"), {
 //   ssr: false,
 //   loading: () => <LoaderComponent text="Fetching messages..." />,
@@ -22,9 +22,9 @@ const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
 //   loading: () => <LoaderComponent text="Fetching Chats..." />,
 // });
 
-const MainClientWrapper = dynamic(() => import("../components/Main"), {
-  loading: () => <LoaderComponent text="Fetching Messages..." />,
-});
+// const MainClientWrapper = dynamic(() => import("../components/Main"), {
+//   loading: () => <LoaderComponent text="Fetching Messages..." />,
+// });
 
 const ClientMessages = () => {
   const {selectedChat}=useMessageState()
