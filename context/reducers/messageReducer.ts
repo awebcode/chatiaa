@@ -864,6 +864,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
               return {
                 ...message,
+                totalReactions,
                 reactions: updatedReactions,
                 reactionsGroup: updatedReactionsGroup,
               };
