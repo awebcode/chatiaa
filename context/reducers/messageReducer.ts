@@ -42,6 +42,7 @@ import {
 } from "./actions";
 import { createContext } from "use-context-selector";
 import { Reaction } from "@/store/types";
+import { updateLocalStorageChatAndSelectedChat } from "@/config/updateLocalStorageChat";
 export const MessageStateContext = createContext<State | undefined>(undefined);
 export const MessageDispatchContext = createContext<Dispatch<Action> | undefined>(
   undefined
@@ -49,15 +50,15 @@ export const MessageDispatchContext = createContext<Dispatch<Action> | undefined
 // Retrieve initial data from localStorage
   const initialChats =
     typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("chats") as string) || []
+      ? JSON.parse(localStorage.getItem("chats") as "[]") || []
       : [];
   const initialSelectedChat =
     typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("selectedChat") as string) || null
+      ? JSON.parse(localStorage.getItem("selectedChat") as "[]") || null
       : null;
 const initialMessages =
   typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("messages") as string) || null
+    ? JSON.parse(localStorage.getItem("messages") as "[]") || null
     : null;
   // Set initial state with data from localStorage
   const initialState: State = {
@@ -690,8 +691,6 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
                 (u) => u.reactBy._id === action.payload.reaction.reactBy._id
               )
             ) {
-              console.log("add");
-
               // Find the index of the emoji in reactionsGroup
               const emojiIndex = updatedReactionsGroup.findIndex(
                 (emoji) => emoji._id === action.payload.reaction.emoji
@@ -766,10 +765,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
                   ? action.payload.reaction // Replace the existing reaction with the updated one
                   : reaction
               );
-              ///remove that emoji who not exists in reactions but in group  reactions
-              updatedReactionsGroup = updatedReactionsGroup.filter((emoji) =>
-                updatedReactions.some((react) => emoji._id === react.emoji)
-              );
+
               if (
                 !updatedReactionsGroup.some(
                   (e) => e._id === action.payload.reaction.emoji
@@ -860,6 +856,10 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
                 //
                 // }
+                ///remove that emoji who not exists in reactions but in group  reactions
+                updatedReactionsGroup = updatedReactionsGroup.filter((emoji) =>
+                  updatedReactions.some((react) => emoji._id === react.emoji)
+                );
               }
 
               return {
@@ -902,6 +902,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
               };
             }
           }
+         
           return message;
         }),
       };

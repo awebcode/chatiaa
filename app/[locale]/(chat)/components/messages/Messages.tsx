@@ -86,12 +86,7 @@ function Messages({ chatId }: { chatId: string }) {
       });
     }
   }, [isIncomingMessage]);
-  //set initial message in localstorage
-  useEffect(() => {
-    if (messages) {
-      localStorage.setItem("messages", JSON.stringify(messages));
-    }
-  }, [messages]);
+  
   
 
   useEffect(() => {

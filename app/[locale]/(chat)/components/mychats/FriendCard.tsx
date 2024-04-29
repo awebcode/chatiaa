@@ -49,7 +49,7 @@ const FriendsCard: React.FC<{
   const router = useRouter();
   const dispatch = useMessageDispatch();
   const { socket } = useSocketContext();
-  const { user: currentUser, selectedChat,messages } = useMessageState();
+  const { user: currentUser, selectedChat, messages } = useMessageState();
   const { typingUsers } = useTypingStore();
   //pushSeenByMutation
   const pushSeenByMutation = useMutation({
@@ -83,9 +83,9 @@ const FriendsCard: React.FC<{
     queryClient.invalidateQueries({ queryKey: ["messages"] });
     // filterDuplicateTempMessageIds([], true, (ids) => ids.clear()); //clear message ids in set
     if (selectedChat?.chatId === chatId) return;
+    const selectedPrevChatId=localStorage.getItem("selectedChatId")
     if (
-      (selectedChat && selectedChat?.chatId !== chatId) ||
-      (messages.length > 0 && selectedChat?.chatId !== chatId)
+      selectedPrevChatId && selectedPrevChatId !== chatId
     ) {
       dispatch({ type: CLEAR_MESSAGES });
     }
@@ -135,6 +135,7 @@ const FriendsCard: React.FC<{
     // router.push(`/chat?chatId=${chat?._id}`);
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
     localStorage.setItem("selectedChat", JSON.stringify(chatData));
+    localStorage.setItem("selectedChatId", chatId);
     // router.replace(`?chatId=${chat?._id}`);
     //  setRedirectLoading({chatId:""})
     // router.replace(`/chat?chatId=${chat?._id}`);

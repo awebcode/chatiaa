@@ -50,6 +50,7 @@ import { Howl } from "howler";
 import { showNotification } from "@/config/showNotification";
 import { useNotificationStore } from "@/store/notificationStore";
 import dynamic from "next/dynamic";
+import { updateLocalStorageChatAndSelectedChat } from "@/config/updateLocalStorageChat";
 
 // Dynamic import for IncomingCallDialog component
 const IncomingCallDialog = dynamic(() => import("./call/IncomingCall"));
@@ -159,50 +160,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       });
 
       // update localstorage chat message
-      // Uncomment the following lines if you want to update local storage chat
-      const storedChats = JSON.parse(localStorage.getItem("chats") || "[]") as IChat[];
-      const storedSelectedChat = JSON.parse(
-        localStorage.getItem("selectedChat") || "{}"
-      ) as any;
-      const isExistChatIndex = storedChats.findIndex(
-        (chat: IChat) => chat?._id === data.chat?._id
-      );
-      const isExistMessageInSelectechatIndex =
-        storedSelectedChat.messages.messages.findIndex(
-          (m: any) => m?._id === data?._id || m?.tempMessageId === data?.tempMessageId
-        );
-      if (isExistChatIndex !== -1) {
-        // If the chat exists in storedChats, find the message index in its messages array
-        const existingChat: any = storedChats[isExistChatIndex];
-        //update selected chat messages
-        if (isExistMessageInSelectechatIndex !== -1) {
-          storedSelectedChat.messages.messages[isExistMessageInSelectechatIndex] = data;
-          localStorage.setItem("selectedChat", JSON.stringify(storedSelectedChat));
-        } else {
-          console.log({ storedSelectedChat });
-          storedSelectedChat.messages.messages.unshift(data);
-          localStorage.setItem("selectedChat", JSON.stringify(storedSelectedChat));
-        }
-
-        //update latest message
-        storedChats[isExistChatIndex].latestMessage = data;
-        const messageIndex = existingChat.messages.messages.findIndex(
-          (m: IMessage) => m._id === data._id || m.tempMessageId === data.tempMessagId
-        );
-
-        if (messageIndex !== -1) {
-          // If the message exists in the chat's messages, update it
-
-          existingChat.messages.messages[messageIndex] = data;
-        } else {
-          // If the message doesn't exist, add it to the beginning of the messages array
-          existingChat.messages.messages.unshift(data);
-        }
-        // Update the storedChats in localStorage
-        localStorage.setItem("chats", JSON.stringify(storedChats));
-      } else {
-        // If the chat doesn't exist, you can decide how to handle this case
-      }
+      updateLocalStorageChatAndSelectedChat(data,data.chat?._id)
 
       // update localstorage chat message end
       if (selectedChatRef.current?.chatId === data.chat?._id) {
