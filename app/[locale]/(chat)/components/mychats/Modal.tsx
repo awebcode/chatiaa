@@ -19,6 +19,7 @@ import { useRouter } from "@/navigation";
 import { getSenderFull } from "../logics/logics";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { handleSendCall } from "@/config/handleSendCall";
+import { BLOCK_CHAT } from "@/context/reducers/actions";
 
 const Modal = ({
   chatBlockedBy,
@@ -93,6 +94,10 @@ const Modal = ({
       icon: <RiChatOffLine />,
       action: () => {
         if (confirm("Are you sure?")) {
+           dispatch({
+             type: BLOCK_CHAT,
+             payload: { user: currentUser, chatId: chat?.chatId }, //data.chat.chatBlockedBy
+           });
           blockMutation.mutateAsync(blockData);
         }
       },

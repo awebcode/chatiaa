@@ -3,12 +3,14 @@
 import Link from "next/link";
 import React from "react";
 import { Tuser } from "@/store/types";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import DeleteButton from "@/components/DeleteButton";
 import { useBlockMutation } from "../mutations/Chatmutations";
+import { BLOCK_CHAT } from "@/context/reducers/actions";
 
 const ChatStatus = ({ chatBlockedBy }: { chatBlockedBy?: Tuser[] }) => {
   const { selectedChat, user: currentUser } = useMessageState();
+  const dispatch = useMessageDispatch();
   const blockMutation = useBlockMutation();
   const blockData = {
     chatId: selectedChat?.chatId,
@@ -17,6 +19,10 @@ const ChatStatus = ({ chatBlockedBy }: { chatBlockedBy?: Tuser[] }) => {
       : "block",
   };
   const handleUnblock = () => {
+    dispatch({
+      type: BLOCK_CHAT,
+      payload: { user: currentUser, chatId: selectedChat?.chatId }, //data.chat.chatBlockedBy
+    });
     blockMutation.mutateAsync(blockData);
   };
   return (

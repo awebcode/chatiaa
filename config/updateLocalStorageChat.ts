@@ -1,6 +1,9 @@
 import { IChat, IMessage } from "@/context/reducers/interfaces";
 
-export function updateLocalStorageChatAndSelectedChat(data: IMessage, chatId: string): void {
+export function updatelocallStorageChatAndSelectedChat(
+  data: IMessage,
+  chatId: string
+): void {
   const storedChats: IChat[] = JSON.parse(localStorage.getItem("chats") || "[]");
   const storedSelectedChat: any = JSON.parse(
     localStorage.getItem("selectedChat") || "{}"

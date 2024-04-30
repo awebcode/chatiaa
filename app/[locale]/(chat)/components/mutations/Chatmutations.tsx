@@ -112,10 +112,10 @@ export const useBlockMutation = () => {
   return useMutation({
     mutationFn: (data: any) => updateChatStatusAsBlockOUnblock(data),
     onSuccess: (data) => {
-      dispatch({
-        type: BLOCK_CHAT,
-        payload: { user: user, chatId: data.chatId }, //data.chat.chatBlockedBy
-      });
+      // dispatch({
+      //   type: BLOCK_CHAT,
+      //   payload: { user: user, chatId: data.chatId }, //data.chat.chatBlockedBy
+      // });
 
       socket.emit("chatBlockedNotify", {
         receiverId: data.receiverId,

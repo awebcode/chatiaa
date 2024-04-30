@@ -50,7 +50,7 @@ import { Howl } from "howler";
 import { showNotification } from "@/config/showNotification";
 import { useNotificationStore } from "@/store/notificationStore";
 import dynamic from "next/dynamic";
-import { updateLocalStorageChatAndSelectedChat } from "@/config/updateLocalStorageChat";
+import { updatelocallStorageChatAndSelectedChat } from "@/config/updateLocalStorageChat";
 
 // Dynamic import for IncomingCallDialog component
 const IncomingCallDialog = dynamic(() => import("./call/IncomingCall"));
@@ -103,6 +103,15 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     mutationKey: ["group"],
     mutationFn: (body: { chatId: string; messageId: string }) => pushgroupSeenBy(body),
   });
+  useEffect(() => {
+    // Check if local storage is supported
+    if (typeof window !== "undefined" && window.localStorage) {
+      // Remove the desired item from local storage
+       localStorage.removeItem("chats");
+       localStorage.removeItem("selectedChat");
+    }
+  }, []); // Empty dependency array ensures that this effect runs only once when the component mounts
+
   // set initial user start
   useEffect(() => {
     dispatch({ type: SET_USER, payload: currentUser });
@@ -153,16 +162,16 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       useIncomingMessageStore.setState({
         isIncomingMessage: true,
       });
-       soundRef.current?.play();
+      soundRef.current?.play();
       //  update latest chat for both side
       console.log({
         socketMessage: data,
       });
 
-      // update localstorage chat message
-      updateLocalStorageChatAndSelectedChat(data,data.chat?._id)
+      // update localStorage chat message
+      updatelocallStorageChatAndSelectedChat(data, data.chat?._id);
 
-      // update localstorage chat message end
+      // update localStorage chat message end
       if (selectedChatRef.current?.chatId === data.chat?._id) {
         useIncomingMessageStore.setState({
           isIncomingMessage: true,

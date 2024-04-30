@@ -41,36 +41,44 @@ import {
   ADD_REACTION_ON_MESSAGE,
 } from "./actions";
 import { createContext } from "use-context-selector";
-import { Reaction } from "@/store/types";
-import { updateLocalStorageChatAndSelectedChat } from "@/config/updateLocalStorageChat";
+
 export const MessageStateContext = createContext<State | undefined>(undefined);
 export const MessageDispatchContext = createContext<Dispatch<Action> | undefined>(
   undefined
 );
 // Retrieve initial data from localStorage
-  const initialChats =
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("chats") as "[]") || []
-      : [];
-  const initialSelectedChat =
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("selectedChat") as "[]") || null
-      : null;
-const initialMessages =
+// Initialize initialChats as an array of IChat
+let initialChats: IChat[] = [];
+
+// Check if window is defined (in case of SSR) and session storage is supported
+if (typeof window !== "undefined" && window.localStorage) {
+  const storedChats = localStorage.getItem("chats");
+
+  // Check if storedChats is not null and has at least one chat item with an _id property
+  if (storedChats) {
+    const parsedChats = JSON.parse(storedChats);
+    if (Array.isArray(parsedChats) && parsedChats.length > 0 && parsedChats[0]._id) {
+      initialChats = parsedChats;
+    }
+  }
+}
+
+const initialSelectedChat =
   typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("messages") as "[]") || null
+    ? JSON.parse(localStorage.getItem("selectedChat") as "[]") || null
     : null;
-  // Set initial state with data from localStorage
-  const initialState: State = {
-    user: null,
-    selectedChat: initialSelectedChat,
-    isSelectedChat: initialSelectedChat,
-    messages: initialMessages,
-    totalMessagesCount: 0,
-    totalChats: 0,
-    chats: initialChats,
-    callInfo: null,
-  };
+
+// Set initial state with data from localStorage
+const initialState: State = {
+  user: null,
+  selectedChat: initialSelectedChat,
+  isSelectedChat: initialSelectedChat,
+  messages: [],
+  totalMessagesCount: 0,
+  totalChats: 0,
+  chats: initialChats.length > 0 ? initialChats : [],
+  callInfo: null,
+};
 export const messageReducer = (state: State = initialState, action: Action): State => {
   switch (action.type) {
     case SET_USER:
@@ -78,13 +86,11 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
     // set chats start
     case SET_CHATS:
-    case SET_CHATS:
-      let updatedChats:IChat[]=[...state.chats]
+      let updatedChats: IChat[] = [...state.chats];
       if (Array.isArray(action.payload.chats)) {
         // When scrolling
         // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
         if (Array.isArray(action.payload)) {
-
           // Iterate over each message in action.payload
           for (const chat of (action.payload as any)?.chats) {
             const { _id } = chat;
@@ -102,6 +108,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
               updatedChats[existingChatIndex] = chat;
             }
           }
+          // Filter out undefined chats from updatedChats
+          updatedChats = updatedChats.filter((chat) => chat !== undefined);
           return { ...state, chats: updatedChats };
         }
       } else {
@@ -110,6 +118,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
         updatedChats = [action.payload, ...state.chats];
       }
+      // Filter out undefined chats from updatedChats
+      updatedChats = updatedChats.filter((chat) => chat !== undefined);
       return { ...state, chats: updatedChats, totalChats: action.payload.total };
 
     //UPDATE_CHAT_STATUS
@@ -903,7 +913,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
               };
             }
           }
-         
+
           return message;
         }),
       };

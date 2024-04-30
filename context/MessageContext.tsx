@@ -6,11 +6,28 @@ import {
   MessageStateContext,
   messageReducer,
 } from "./reducers/messageReducer";
-import { State } from "./reducers/interfaces";
+import { IChat, State } from "./reducers/interfaces";
 import { useContextSelector } from "use-context-selector";
+
+// Initialize initialChats as an array of IChat
+let initialChats: IChat[] = [];
+
+// Check if window is defined (in case of SSR) and session storage is supported
+if (typeof window !== "undefined" && window.localStorage) {
+  const storedChats = localStorage.getItem("chats");
+
+  // Check if storedChats is not null and has at least one chat item with an _id property
+  if (storedChats) {
+    const parsedChats = JSON.parse(storedChats);
+    if (Array.isArray(parsedChats) && parsedChats.length > 0 && parsedChats[0]._id) {
+      initialChats = parsedChats;
+    }
+  }
+}
+
 const initialState: State = {
   selectedChat:
-    typeof window !== "undefined"
+    typeof window !== "undefined" && window.localStorage
       ? JSON.parse(localStorage.getItem("selectedChat") || "null")
       : null,
   isSelectedChat: null,
@@ -18,10 +35,7 @@ const initialState: State = {
   user: null,
   totalMessagesCount: 0,
   totalChats: 0,
-  chats:
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("chats") as any) || []
-      : [],
+  chats: initialChats.length > 0 ? initialChats : [],
   callInfo: null,
 };
 

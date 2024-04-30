@@ -83,10 +83,8 @@ const FriendsCard: React.FC<{
     queryClient.invalidateQueries({ queryKey: ["messages"] });
     // filterDuplicateTempMessageIds([], true, (ids) => ids.clear()); //clear message ids in set
     if (selectedChat?.chatId === chatId) return;
-    const selectedPrevChatId=localStorage.getItem("selectedChatId")
-    if (
-      selectedPrevChatId && selectedPrevChatId !== chatId
-    ) {
+    const selectedPrevChatId = localStorage.getItem("selectedChatId");
+    if (selectedPrevChatId && selectedPrevChatId !== chatId) {
       dispatch({ type: CLEAR_MESSAGES });
     }
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });

@@ -39,15 +39,15 @@ const MyChats = () => {
     },
     initialPageParam: 0,
     initialData: (): any => {
-      if (chats && chats.length > 0) {
+      if (chats && chats.length > 0 && chats[0]?._id) {
         return {
           pageParams: [0],
-          pages: [{ chats: chats }],
+          pages: [{ chats }],
         };
       } else {
         return undefined;
       }
-    }, 
+    },
     staleTime: 0,
   });
   // set chats in reducer store
@@ -106,6 +106,7 @@ const MyChats = () => {
 
     container?.scrollTo({ top: 0, behavior: "smooth" });
   };
+  console.log({ chats });
   // console.log({ chats: queryClient.getQueryData(["chats", searchText]) });
 
   return (
@@ -148,13 +149,8 @@ const MyChats = () => {
               >
                 {isLoading ? (
                   <SkeletonContainer />
-                ) : chats && chats.length > 0 ? (
-                  chats.map((chat) => (
-                    <FriendsCard
-                      chat={chat}
-                      key={chat._id}
-                    />
-                  ))
+                ) : chats && chats.length > 0 && chats[0]?._id ? (
+                  chats.map((chat) => <FriendsCard chat={chat} key={chat._id} />)
                 ) : (
                   <h1 className="text-sm md:text-xl m-4 text-center font-medium">
                     No Chat Found!

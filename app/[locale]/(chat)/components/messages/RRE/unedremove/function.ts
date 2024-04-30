@@ -18,7 +18,7 @@ export const unsent_remove_Message_function = async (
     receiverId?: string;
   }
 ) => {
-  if (dispatch && data?.status !== "unsent") {
+  if (dispatch && data) {
     dispatch({
       type: REMOVE_UNSENT_MESSAGE,
       payload: data,
@@ -31,10 +31,10 @@ export const unsent_remove_Message_function = async (
     try {
       const res = await updateMessageStatusAsUnsent(data as any);
       if (dispatch && socket) {
-        dispatch({
-          type: REMOVE_UNSENT_MESSAGE,
-          payload: data,
-        });
+        // dispatch({
+        //   type: REMOVE_UNSENT_MESSAGE,
+        //   payload: data,
+        // });
         socket.emit("remove_remove_All_unsentMessage", data);
       }
 

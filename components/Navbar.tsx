@@ -24,7 +24,7 @@ const LanguageChanger = dynamic(() => import("./LanguageChanger"));
 const Navbar = () => {
   const queryClient = useQueryClient();
   const t = useTranslations();
-  const { user,selectedChat } = useMessageState();
+  const { user, selectedChat } = useMessageState();
   // const { data:  } = use();
   const router = useRouter();
   const pathname = usePathname();

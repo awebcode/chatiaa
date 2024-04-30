@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useMessageState } from "@/context/MessageContext";
+import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import Image from "next/image";
 import { BsPersonLock, BsThreeDots } from "react-icons/bs";
 import {
@@ -21,12 +21,14 @@ import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
 import { CiLogout } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
+import { BLOCK_CHAT } from "@/context/reducers/actions";
 const Media = dynamic(() => import("../media/Media"), {
   loading: () => <LoaderComponent text="Fetching..." />,
 });
 
 export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolean }) {
   const { selectedChat } = useMessageState();
+  const dispatch=useMessageDispatch()
   // delete and block
   const blockMutation = useBlockMutation();
   const { user: currentUser } = useMessageState();
@@ -90,6 +92,10 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
               variant={"outline"}
               onClick={() => {
                 if (confirm("Are you sure?")) {
+                   dispatch({
+                     type: BLOCK_CHAT,
+                     payload: { user: currentUser, chatId: selectedChat?.chatId }, //data.chat.chatBlockedBy
+                   });
                   blockMutation.mutateAsync(blockData);
                 }
               }}

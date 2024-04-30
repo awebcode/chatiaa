@@ -23,16 +23,16 @@ const LeftSideClientWrapper = ({
   children: ReactNode;
   chatId?: string;
 }) => {
-  const router=useRouter()
+  const router = useRouter();
   const { onlineUsers } = useOnlineUsersStore();
   const { user: currentUser } = useMessageState();
 
   useEffect(() => {
     if (localStorage.getItem("selectedChat") && !chatId) {
       localStorage.removeItem("selectedChat");
-       router.replace("/chat");
+      router.replace("/chat");
     }
-  }, [chatId,router]);
+  }, [chatId, router]);
 
   return (
     <div className=" flex flex-col md:border-r border-emerald-500/30">

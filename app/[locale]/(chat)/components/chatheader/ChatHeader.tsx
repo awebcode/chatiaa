@@ -12,12 +12,8 @@ import { useTypingStore } from "@/store/useTyping";
 import { useSocketContext } from "@/context/SocketContextProvider";
 import { Button } from "@/components/ui/button";
 import { handleSendCall } from "@/config/handleSendCall";
-import LoaderComponent from "@/components/Loader";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import Cookie from "js-cookie";
-import { RevalidatePath } from "@/apisActions/serverActions";
-import { filterDuplicateTempMessageIds } from "../logics/logics";
 // import { useQueryClient } from "@tanstack/react-query";
 const RightUserDrawer = dynamic(() => import("./userSheet/RightUserDrawer"), {
   // loading: () => <LoaderComponent text="Fetching..." />,
@@ -37,18 +33,16 @@ const ChatHeader = () => {
   const searchParams = useSearchParams();
   const clearselectedChat = async () => {
     // window.history.pushState(null, "", "/chat");
-    Cookie.remove("selectedChat");
     // router.replace("?isEmpty=true");
 
-     router.replace("/chat");
+    router.replace("/chat");
     queryClient.invalidateQueries({ queryKey: ["chats"] });
     // queryClient.invalidateQueries({ queryKey: ["messages"] });
     dispatch({ type: SET_SELECTED_CHAT, payload: null });
     // dispatch({ type: CLEAR_MESSAGES });
     localStorage.removeItem("selectedChat");
-   
   };
-  
+
   return (
     <div className="p-[6px]  bg-gray-200  dark:bg-gray-800  flexBetween rounded z-50 transition-all duration-300">
       <div className="flex items-center justify-center gap-1">
