@@ -785,13 +785,11 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
                 )
               ) {
                 // If there's only one emoji in reactionsGroup, replace it with the new emoji
-                updatedReactionsGroup = [
-                  ...updatedReactionsGroup,
-                  {
-                    _id: action.payload.reaction.emoji,
-                    count: 1,
-                  },
-                ];
+                 updatedReactionsGroup = [
+                   ...updatedReactionsGroup,
+                   { _id: action.payload.reaction.emoji, count: 1 },
+                 ];
+                
               } else {
                 //  In this block will execute when emoji added by another user and same emoji will add
 
@@ -826,13 +824,10 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
                       // If the emoji doesn't exist, add a new entry for it
 
-                      updatedReactionsGroup = [
-                        ...updatedReactionsGroup,
-                        {
-                          _id: emoji,
-                          count: 1,
-                        },
-                      ];
+                       updatedReactionsGroup = [
+                         ...updatedReactionsGroup,
+                         { _id: action.payload.reaction.emoji, count: 1 },
+                       ];
                       // console.log({
                       //   updatedReactionsGroup,
                       //   findIsExistReaction: findIsExistReaction.emoji,
