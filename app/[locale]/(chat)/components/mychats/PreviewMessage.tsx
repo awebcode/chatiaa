@@ -95,10 +95,10 @@ export function MessagePreview({
               ? chat?.latestMessage?.type?.includes("notify" || "call-notify")
                 ? chat?.latestMessage?.content.substring(0, 25) + "..."
                 : RenderMessageWithEmojis(
-                    chat?.latestMessage?.content.substring(0, 25),
+                    chat?.latestMessage?.content?.toString()?.substring(0, 25) + "...",
                     isSmallDevice,
                     true
-                  ) + "..."
+                  )
               : chat?.latestMessage?.type?.includes("notify" || "call-notify")
               ? chat?.latestMessage?.content.substring(0, 25) + "..."
               : RenderMessageWithEmojis(

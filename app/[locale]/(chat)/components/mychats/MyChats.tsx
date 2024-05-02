@@ -37,7 +37,6 @@ const MyChats = () => {
       }
       return nextOffset;
     },
-    initialPageParam: 0,
     initialData: (): any => {
       if (chats && chats.length > 0 && chats[0]?._id) {
         return {
@@ -48,17 +47,28 @@ const MyChats = () => {
         return undefined;
       }
     },
+    initialPageParam: 0,
+
     staleTime: 0,
   });
+  
+
   // set chats in reducer store
-  const chatsPayload = useMemo(() => {
-    return {
-      chats: data?.pages.flatMap((page) => page.chats),
-      total: data?.pages[0]?.total,
-    };
-  }, [data?.pages]);
+  // const chatsPayload = useMemo(() => {
+  //   return {
+  //     chats: data?.pages.flatMap((page) => page.chats),
+  //     total: data?.pages[0]?.total,
+  //   };
+  // }, [data?.pages]);
 
   useEffect(() => {
+     sessionStorage.setItem("chats", "true");
+    // Uncomment the following lines if you want to save chats to localStorage
+    if (data?.pages[0]?.chats) {
+      sessionStorage.setItem("isInitialRender", "true");
+
+      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
+    }
     dispatch({
       type: SET_CHATS,
       payload: {
@@ -66,12 +76,7 @@ const MyChats = () => {
         total: data?.pages[0]?.total,
       },
     });
-
-    // Uncomment the following lines if you want to save chats to localStorage
-    if (data?.pages[0]?.chats) {
-      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
-    }
-  }, [data?.pages, dispatch]);
+  }, [data?.pages]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -106,8 +111,6 @@ const MyChats = () => {
 
     container?.scrollTo({ top: 0, behavior: "smooth" });
   };
-  console.log({ chats });
-  // console.log({ chats: queryClient.getQueryData(["chats", searchText]) });
 
   return (
     <>
@@ -149,7 +152,7 @@ const MyChats = () => {
               >
                 {isLoading ? (
                   <SkeletonContainer />
-                ) : chats && chats.length > 0 && chats[0]?._id ? (
+                ) : chats && chats.length > 0 ? (
                   chats.map((chat) => <FriendsCard chat={chat} key={chat._id} />)
                 ) : (
                   <h1 className="text-sm md:text-xl m-4 text-center font-medium">

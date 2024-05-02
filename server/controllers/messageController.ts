@@ -351,11 +351,17 @@ export const updateChatMessageController = async (
       return next(new CustomErrorHandler("Chat or latest message not found", 404));
     }
 
-    const updateMessage = await Message.findByIdAndUpdate(
-      chat.latestMessage._id,
-      { status },
-      { new: true }
-    );
+   const updateMessage = await Message.findOneAndUpdate(
+     {
+       $or: [
+         { _id: chat.latestMessage?._id },
+         { tempMessageId: (chat.latestMessage as any)?.tempMessageId },
+       ],
+     },
+     { status },
+     { new: true }
+   );
+
 
     const updateChat = await Chat.findByIdAndUpdate(chatId, {
       latestMessage: updateMessage?._id,
@@ -396,7 +402,12 @@ export const updateAllMessageStatusSeen = async (
       latestMessage: lastMessage?.latestMessage?._id,
     });
     const updatedMessage = await Message.find(
-      { chat: req.params.chatId },
+      {
+        $or: [
+          { chat:req.params?.chatId },
+          { tempMessageId: req.params?.tempMessageId },
+        ],
+      },
       {
         status: { $in: ["unseen", "delivered"] },
         // sender: { $ne: req.id }
@@ -445,7 +456,12 @@ export const updateChatMessageAsDeliveredController = async (
         chat.latestMessage?.sender.toString() !== req.id
       ) {
         await Message.findByIdAndUpdate(
-          chat.latestMessage._id,
+          {
+            $or: [
+              { _id: chat.latestMessage?._id },
+              { tempMessageId:  chat.latestMessage?.tempMessageId },
+            ],
+          },
           { status: "delivered" },
           { new: true }
         );
@@ -456,10 +472,17 @@ export const updateChatMessageAsDeliveredController = async (
           latestMessage: chat.latestMessage._id,
         });
 
-        await Message.updateMany(
-          { chat: chat._id, status: { $in: ["unseen", "unsent"] } },
-          { status: "delivered" }
-        );
+      await Message.updateMany(
+        {
+          $or: [
+            { _id: chat.latestMessage?._id },
+            { tempMessageId: chat.latestMessage?.tempMessageId },
+          ],
+          status: { $in: ["unseen", "unsent"] }, // criteria for update
+        },
+        { $set: { status: "delivered" } } // update operation
+      );
+
       }
     });
 
@@ -483,8 +506,13 @@ export const updateMessageStatusAsRemove = async (
   next: NextFunction
 ) => {
   try {
-    const { messageId, status, chatId } = req.body;
-    const prevMessage = await Message.findById({ _id: messageId });
+    const { messageId,tempMessageId, status, chatId } = req.body;
+    const prevMessage = await Message.findById({
+      $or: [
+        { _id: messageId },
+        { tempMessageId: tempMessageId },
+      ],
+    });
 
     if (!status || !messageId || !chatId)
       return next(new CustomErrorHandler("Message Id or status cannot be empty!", 400));
@@ -497,12 +525,14 @@ export const updateMessageStatusAsRemove = async (
     let updateMessage: any;
 
     if (status === "removed" || status === "reBack") {
-      updateMessage = await Message.updateOne(
-        { _id: messageId },
+      updateMessage = await Message.findOneAndUpdate(
+        { $or: [{ _id: messageId }, { tempMessageId: tempMessageId }] },
         { $set: { status, removedBy: status === "reBack" ? null : req.id } }
       );
     } else if (status === "removeFromAll") {
-      await Message.findByIdAndDelete(messageId);
+      await Message.findOneAndDelete({
+        $or: [{ _id: messageId }, { tempMessageId: tempMessageId }],
+      });
       return res.status(200).json({ success: true });
     }
 
@@ -523,7 +553,7 @@ export const updateMessageStatusAsUnsent = async (
   next: NextFunction
 ) => {
   try {
-    const { messageId, status, chatId } = req.body;
+    const { messageId,tempMessageId, status, chatId } = req.body;
 
     if (!status || !messageId)
       return next(new CustomErrorHandler("Message Id or status  cannot be empty!", 400));
@@ -532,7 +562,9 @@ export const updateMessageStatusAsUnsent = async (
       return next(new CustomErrorHandler("You cannot remove the latestMessage", 400));
     }
     const updateMessage = await Message.updateOne(
-      { _id: messageId },
+      {
+        $or: [{ _id: messageId }, { tempMessageId: tempMessageId }],
+      },
       { $set: { status: "unsent", unsentBy: req.id, content: "unsent" } }
     );
     res.status(200).json({ success: true, updateMessage });
@@ -661,7 +693,9 @@ export const replyMessage = async (req: Request|any, res: Response, next: NextFu
       });
     }
 
-    message = await Message.findOne(message._id)
+    message = await Message.findOne({
+      $or: [{ _id: message._id }, { tempMessageId: req.body?.tempMessageId }],
+    })
       .populate("sender chat", "name image email lastActive createdAt onlineStatus")
       .populate([
         {
@@ -712,7 +746,9 @@ export const editMessage = async (req: Request|any, res: Response, next: NextFun
       return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
     }
     const isLastMessage = await Chat.findOne({ _id: chatId, latestMessage: messageId });
-    const prevMessage: any = await Message.findById(messageId);
+    const prevMessage: any = await Message.findById({
+      $or: [{ _id: messageId }, { tempMessageId: req.body?.tempMessageId }],
+    });
     //delete Previous Image
     if (prevMessage.file?.public_Id) {
       await v2.uploader.destroy(prevMessage.file?.public_Id);
@@ -799,7 +835,9 @@ export const editMessage = async (req: Request|any, res: Response, next: NextFun
         await v2.uploader.destroy(message.file.public_Id);
       }
       editedChat = await Message.findByIdAndUpdate(
-        messageId,
+        {
+          $or: [{ _id: messageId }, { tempMessageId: req.body?.tempMessageId }],
+        },
         {
           isEdit: { editedBy: req.id },
           content,

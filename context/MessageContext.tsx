@@ -13,13 +13,13 @@ import { useContextSelector } from "use-context-selector";
 let initialChats: IChat[] = [];
 
 // Check if window is defined (in case of SSR) and session storage is supported
-if (typeof window !== "undefined" && window.localStorage) {
+if (typeof window !== "undefined") {
   const storedChats = localStorage.getItem("chats");
 
   // Check if storedChats is not null and has at least one chat item with an _id property
   if (storedChats) {
     const parsedChats = JSON.parse(storedChats);
-    if (Array.isArray(parsedChats) && parsedChats.length > 0 && parsedChats[0]._id) {
+    if (Array.isArray(parsedChats) && parsedChats.length > 0) {
       initialChats = parsedChats;
     }
   }
@@ -35,7 +35,7 @@ const initialState: State = {
   user: null,
   totalMessagesCount: 0,
   totalChats: 0,
-  chats: initialChats.length > 0 ? initialChats : [],
+  chats: [], //initialChats.length > 0 ? initialChats : 
   callInfo: null,
 };
 

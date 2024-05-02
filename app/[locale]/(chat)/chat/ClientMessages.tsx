@@ -1,6 +1,5 @@
-"use client"
-import React, { Suspense } from "react";
-
+"use client";
+import React, { Suspense, useEffect } from "react";
 
 import dynamic from "next/dynamic";
 import LoaderComponent from "@/components/Loader";
@@ -27,7 +26,9 @@ const LeftSideClientWrapper = dynamic(() => import("../components/LeftSide"), {
 // });
 
 const ClientMessages = () => {
-  const {selectedChat}=useMessageState()
+  const { selectedChat } = useMessageState();
+
+  
   return (
     <>
       <div className="flexBetween gap-1 md:gap-2 overflow-hidden">

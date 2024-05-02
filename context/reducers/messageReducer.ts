@@ -87,31 +87,28 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
     // set chats start
     case SET_CHATS:
       let updatedChats: IChat[] = [...state.chats];
+
       if (Array.isArray(action.payload.chats)) {
         // When scrolling
         // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
-        if (Array.isArray(action.payload)) {
-          // Iterate over each message in action.payload
-          for (const chat of (action.payload as any)?.chats) {
-            const { _id } = chat;
 
-            // Check if the Chat already exists in updatedChats
-            const existingChatIndex = updatedChats.findIndex(
-              (existingChat) => existingChat._id === _id
-            );
+         for (let i = 0; i < (action.payload as any)?.chats?.length; i++) {
+           const chat = (action.payload as any)?.chats[i];
+           const { _id } = chat;
 
-            // If the message is not found in updatedMessages, push it
-            if (existingChatIndex === -1) {
-              updatedChats.push(chat);
-            } else {
-              // If the message exists, update its content
-              updatedChats[existingChatIndex] = chat;
-            }
-          }
-          // Filter out undefined chats from updatedChats
-          updatedChats = updatedChats.filter((chat) => chat !== undefined);
-          return { ...state, chats: updatedChats };
-        }
+           // Check if the Chat already exists in updatedChats
+           const existingChatIndex = updatedChats.findIndex(
+             (existingChat) => existingChat._id === _id
+           );
+
+           // If the chat is not found in updatedChats, push it
+           if (existingChatIndex === -1) {
+             updatedChats.push(chat);
+           } else {
+             // If the chat exists, update its content
+             updatedChats[existingChatIndex] = chat;
+           }
+         }
       } else {
         // When a new chat is created
         // Update the status of the new chat if necessary
@@ -119,7 +116,11 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
         updatedChats = [action.payload, ...state.chats];
       }
       // Filter out undefined chats from updatedChats
-      updatedChats = updatedChats.filter((chat) => chat !== undefined);
+      // Filter out chats without defined _id property from updatedChats
+      updatedChats = updatedChats.filter((chat) => Boolean(chat
+        ._id))
+
+      console.log({ updatedChats });
       return { ...state, chats: updatedChats, totalChats: action.payload.total };
 
     //UPDATE_CHAT_STATUS
@@ -158,7 +159,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
     case UPDATE_LATEST_CHAT_MESSAGE:
       // Find the index of the chat being updated
       const updatedChatIndex = state.chats.findIndex(
-        (chat) => chat._id === action.payload.chat?._id || action.payload.chatId
+        (chat) =>
+          chat._id === action.payload.chat?._id || chat._id === action.payload.chatId
       );
 
       // If the chat is not found, return state as is
@@ -541,8 +543,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
           // Check if the message already exists in updatedMessages
           const existingMessageIndex = updatedMessages.findIndex((existingMessage) => {
             return (
-              existingMessage._id === _id ||
-              existingMessage.tempMessageId === tempMessageId
+              existingMessage?._id === _id ||
+              existingMessage?.tempMessageId === tempMessageId
             );
           });
 
@@ -785,11 +787,10 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
                 )
               ) {
                 // If there's only one emoji in reactionsGroup, replace it with the new emoji
-                 updatedReactionsGroup = [
-                   ...updatedReactionsGroup,
-                   { _id: action.payload.reaction.emoji, count: 1 },
-                 ];
-                
+                updatedReactionsGroup = [
+                  ...updatedReactionsGroup,
+                  { _id: action.payload.reaction.emoji, count: 1 },
+                ];
               } else {
                 //  In this block will execute when emoji added by another user and same emoji will add
 
@@ -824,10 +825,10 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
                       // If the emoji doesn't exist, add a new entry for it
 
-                       updatedReactionsGroup = [
-                         ...updatedReactionsGroup,
-                         { _id: action.payload.reaction.emoji, count: 1 },
-                       ];
+                      updatedReactionsGroup = [
+                        ...updatedReactionsGroup,
+                        { _id: action.payload.reaction.emoji, count: 1 },
+                      ];
                       // console.log({
                       //   updatedReactionsGroup,
                       //   findIsExistReaction: findIsExistReaction.emoji,

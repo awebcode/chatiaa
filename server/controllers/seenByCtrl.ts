@@ -7,10 +7,10 @@ import { Chat } from "../model/ChatModel";
 
 export const pushSeenBy = async (req: Request | any, res: Response, next: NextFunction) => {
   try {
-    const { messageId, chatId } = req.body;
+    const { messageId, chatId,tempMessageId } = req.body;
 
     // Check if the message exists
-    const isMessageExists = await Message.findOne({ _id: messageId });
+    const isMessageExists = await Message.findOne({ $or: [{ _id: messageId },{tempMessageId}] });
     const isChatExists = await Chat.findOne({ _id: chatId });
     if (!isMessageExists || !isChatExists) {
       return next(new CustomErrorHandler("Message or Chat does not exist", 404));

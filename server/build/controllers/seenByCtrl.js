@@ -16,9 +16,9 @@ const seenByModel_1 = require("../model/seenByModel");
 const ChatModel_1 = require("../model/ChatModel");
 const pushSeenBy = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { messageId, chatId } = req.body;
+        const { messageId, chatId, tempMessageId } = req.body;
         // Check if the message exists
-        const isMessageExists = yield MessageModel_1.Message.findOne({ _id: messageId });
+        const isMessageExists = yield MessageModel_1.Message.findOne({ $or: [{ _id: messageId }, { tempMessageId }] });
         const isChatExists = yield ChatModel_1.Chat.findOne({ _id: chatId });
         if (!isMessageExists || !isChatExists) {
             return next(new errorHandler_1.CustomErrorHandler("Message or Chat does not exist", 404));

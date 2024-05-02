@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import { useSocketContext } from "@/context/SocketContextProvider";
 
@@ -103,17 +103,31 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     mutationKey: ["group"],
     mutationFn: (body: { chatId: string; messageId: string }) => pushgroupSeenBy(body),
   });
-  useEffect(() => {
+  useLayoutEffect(() => {
     //session storage will set first render when first time page load but get value second time after set in same window or tab
     const isInitialRender = sessionStorage.getItem("isInitialRender");
-    if (!isInitialRender) {
-      sessionStorage.setItem("isInitialRender", "true");
-    }
-    // Check if local storage is supported
-    if (typeof window !== "undefined" && window.localStorage && !isInitialRender) {
-      // Remove the desired item from local storage
+
+    // Remove the desired item from local storage
+    // console.log({ isInitialRenderr: isInitialRender ==null,isInitialRender});
+    ///first time when user visit the website will remove prev set chats and selectedchats
+    if (isInitialRender == null) {
       localStorage.removeItem("chats");
       localStorage.removeItem("selectedChat");
+    }
+
+    const storedChats = localStorage.getItem("chats");
+
+    // Check if storedChats is not null and has at least one chat item with an _id property
+    if (storedChats) {
+      const parsedChats = JSON.parse(storedChats);
+      console.log({ parsedChats });
+      dispatch({
+        type: SET_CHATS,
+        payload: {
+          chats: parsedChats,
+          total: parsedChats?.length,
+        },
+      });
     }
   }, []); // Empty dependency array ensures that this effect runs only once when the component mounts
 
