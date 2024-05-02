@@ -35,3 +35,12 @@
 //     </HydrationBoundary>
 //   );
 // }
+import React from 'react'
+
+const PrefetchChats = () => {
+  return (
+    <div>PrefetchChats</div>
+  )
+}
+
+export default PrefetchChats

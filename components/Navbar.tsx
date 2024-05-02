@@ -36,10 +36,11 @@ const Navbar = () => {
     router.push("/");
   };
   // const isHidden = pathname.includes("/chat?chatId=");
+  const isHidden = pathname.includes("/chat");
   return (
     <nav
       className={`${
-        !selectedChat ? "hidden md:flex" : "sticky"
+        !selectedChat && isHidden ? "hidden md:flex" : "sticky"
       }  flex items-center justify-between p-1  px-4 md:px-10  shadow-sm`}
     >
       {/* Left Side - Logo */}
