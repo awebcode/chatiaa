@@ -103,33 +103,34 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     mutationKey: ["group"],
     mutationFn: (body: { chatId: string; messageId: string }) => pushgroupSeenBy(body),
   });
-  // useEffect(() => {
-  //   //session storage will set first render when first time page load but get value second time after set in same window or tab
-  //   const isInitialRender = sessionStorage.getItem("isInitialRender");
+  //first render only once
+  useEffect(() => {
+    //session storage will set first render when first time page load but get value second time after set in same window or tab
+    const isInitialRender = sessionStorage.getItem("isInitialRender");
 
-  //   // Remove the desired item from local storage
-  //   // console.log({ isInitialRenderr: isInitialRender ==null,isInitialRender});
-  //   ///first time when user visit the website will remove prev set chats and selectedchats
-  //   if (isInitialRender == null) {
-  //     localStorage.removeItem("chats");
-  //     localStorage.removeItem("selectedChat");
-  //   }
+    // Remove the desired item from local storage
+    // console.log({ isInitialRenderr: isInitialRender ==null,isInitialRender});
+    ///first time when user visit the website will remove prev set chats and selectedchats
+    if (isInitialRender == null) {
+      localStorage.removeItem("chats");
+      localStorage.removeItem("selectedChat");
+    }
 
-  //   const storedChats = localStorage.getItem("chats");
+    const storedChats = localStorage.getItem("chats");
 
-  //   // Check if storedChats is not null and has at least one chat item with an _id property
-  //   if (storedChats) {
-  //     const parsedChats = JSON.parse(storedChats);
-  //     console.log({ parsedChats });
-  //     dispatch({
-  //       type: SET_CHATS,
-  //       payload: {
-  //         chats: parsedChats,
-  //         total: parsedChats?.length,
-  //       },
-  //     });
-  //   }
-  // }, []); // Empty dependency array ensures that this effect runs only once when the component mounts
+    // Check if storedChats is not null and has at least one chat item with an _id property
+    if (storedChats) {
+      const parsedChats = JSON.parse(storedChats);
+      console.log({ parsedChats });
+      dispatch({
+        type: SET_CHATS,
+        payload: {
+          chats: parsedChats,
+          total: parsedChats?.length,
+        },
+      });
+    }
+  }, []); // Empty dependency array ensures that this effect runs only once when the component mounts
 
   // set initial user start
   useEffect(() => {

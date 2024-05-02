@@ -37,16 +37,16 @@ const MyChats = () => {
       }
       return nextOffset;
     },
-    // initialData: (): any => {
-    //   if (chats && chats.length > 0 && chats[0]?._id) {
-    //     return {
-    //       pageParams: [0],
-    //       pages: [{ chats }],
-    //     };
-    //   } else {
-    //     return undefined;
-    //   }
-    // },
+    initialData: (): any => {
+      if (chats && chats.length > 0 && chats[0]?._id) {
+        return {
+          pageParams: [0],
+          pages: [{ chats }],
+        };
+      } else {
+        return undefined;
+      }
+    },
     initialPageParam: 0,
 
     staleTime: 0,
@@ -64,11 +64,11 @@ const MyChats = () => {
   useEffect(() => {
      sessionStorage.setItem("chats", "true");
     // Uncomment the following lines if you want to save chats to localStorage
-    // if (data?.pages[0]?.chats) {
-    //   sessionStorage.setItem("isInitialRender", "true");
+    if (data?.pages[0]?.chats) {
+      sessionStorage.setItem("isInitialRender", "true");
 
-    //   localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
-    // }
+      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
+    }
     dispatch({
       type: SET_CHATS,
       payload: {
