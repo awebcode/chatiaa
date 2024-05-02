@@ -948,7 +948,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
             ? state.messages.filter(
                 (message) =>
                   message?._id !== action.payload.messageId ||
-                  message?.tempMessageId === action.payload.tempMessageId
+                  message?.tempMessageId !== action.payload.tempMessageId
               )
             : action.payload.status === "reBack"
             ? state?.messages?.map((message) =>

@@ -28,7 +28,6 @@ const groupSocket_1 = require("../common/groupSocket");
 const functions_1 = require("./functions");
 const generateUpdateMessage_1 = require("../common/generateUpdateMessage");
 const checkIsOnline_1 = require("../common/checkIsOnline");
-const getInitMessages_1 = require("../common/getInitMessages");
 //@access          Protected
 const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
@@ -161,9 +160,11 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             const isAnyUserOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(chat === null || chat === void 0 ? void 0 : chat.users, req.id);
             try {
                 const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_a = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _a === void 0 ? void 0 : _a._id, req.id);
-                const messages = yield (0, getInitMessages_1.allInitMessages)(chat._id);
+                // const messages = await allInitMessages(chat._id);
                 // Construct updated chat object with awaited results
-                return Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), messages, isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
+                return Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), 
+                    // messages,
+                    isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
                         ? correspondingUnseenCount.unseenMessagesCount
                         : 0 });
             }
@@ -183,9 +184,11 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             const isAnyUserOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(chat === null || chat === void 0 ? void 0 : chat.users, req.id);
             try {
                 const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_c = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _c === void 0 ? void 0 : _c._id, req.id);
-                const messages = yield (0, getInitMessages_1.allInitMessages)(chat._id);
+                // const messages = await allInitMessages(chat._id);
                 // Construct updated chat object with awaited results
-                const updatedChat = Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_d = chat.latestMessage) === null || _d === void 0 ? void 0 : _d._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), messages, isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
+                const updatedChat = Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_d = chat.latestMessage) === null || _d === void 0 ? void 0 : _d._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), 
+                    // messages,
+                    isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
                         ? correspondingUnseenCount.unseenMessagesCount
                         : 0 });
                 return updatedChat;

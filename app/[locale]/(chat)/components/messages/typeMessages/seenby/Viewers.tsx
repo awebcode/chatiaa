@@ -84,7 +84,7 @@ export default function ViewersDialog({ message }: { message: IMessage }) {
                       user?.userId ? (
                         <UserCard
                           user={user.userId}
-                          key={user?.userId?._id + Date.now()}
+                          key={user?.userId?._id + Math.random() * 1000 + Date.now()}
                         />
                       ) : null
                     )

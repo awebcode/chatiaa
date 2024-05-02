@@ -120,12 +120,12 @@ const FriendsCard: React.FC<{
       },
       isOnline: chat?.isOnline,
       onCallMembers: chat?.onCallMembers,
-      messages:
-        isExistChatIndex !== -1
-          ? storedChats[isExistChatIndex].messages
-          : {
-              ...chat?.messages,
-            },
+      // messages:
+      //   isExistChatIndex !== -1
+      //     ? storedChats[isExistChatIndex].messages
+      //     : {
+      //         ...chat?.messages,
+      //       },
     };
 
     // router.replace

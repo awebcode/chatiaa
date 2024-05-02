@@ -15,7 +15,11 @@ import { getFileType } from "./functions";
 import { MessageSeenBy } from "../model/seenByModel";
 import { emitEventToGroupUsers } from "../common/groupSocket";
 //@access          Protected
-export const allMessages = async (req: Request|any, res: Response, next: NextFunction) => {
+export const allMessages = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
@@ -220,7 +224,11 @@ export const getMessageReactions = async (
 //@description     Create New Message
 //@route           POST /api/Message/
 //@access          Protected
-export const sendMessage = async (req: Request|any, res: Response, next: NextFunction) => {
+export const sendMessage = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   const { content, chatId, type, receiverId } = req.body;
 
   if (!chatId) {
@@ -351,17 +359,16 @@ export const updateChatMessageController = async (
       return next(new CustomErrorHandler("Chat or latest message not found", 404));
     }
 
-   const updateMessage = await Message.findOneAndUpdate(
-     {
-       $or: [
-         { _id: chat.latestMessage?._id },
-         { tempMessageId: (chat.latestMessage as any)?.tempMessageId },
-       ],
-     },
-     { status },
-     { new: true }
-   );
-
+    const updateMessage = await Message.findOneAndUpdate(
+      {
+        $or: [
+          { _id: chat.latestMessage?._id },
+          { tempMessageId: (chat.latestMessage as any)?.tempMessageId },
+        ],
+      },
+      { status },
+      { new: true }
+    );
 
     const updateChat = await Chat.findByIdAndUpdate(chatId, {
       latestMessage: updateMessage?._id,
@@ -403,10 +410,7 @@ export const updateAllMessageStatusSeen = async (
     });
     const updatedMessage = await Message.find(
       {
-        $or: [
-          { chat:req.params?.chatId },
-          { tempMessageId: req.params?.tempMessageId },
-        ],
+        $or: [{ chat: req.params?.chatId }, { tempMessageId: req.params?.tempMessageId }],
       },
       {
         status: { $in: ["unseen", "delivered"] },
@@ -459,7 +463,7 @@ export const updateChatMessageAsDeliveredController = async (
           {
             $or: [
               { _id: chat.latestMessage?._id },
-              { tempMessageId:  chat.latestMessage?.tempMessageId },
+              { tempMessageId: chat.latestMessage?.tempMessageId },
             ],
           },
           { status: "delivered" },
@@ -472,17 +476,16 @@ export const updateChatMessageAsDeliveredController = async (
           latestMessage: chat.latestMessage._id,
         });
 
-      await Message.updateMany(
-        {
-          $or: [
-            { _id: chat.latestMessage?._id },
-            { tempMessageId: chat.latestMessage?.tempMessageId },
-          ],
-          status: { $in: ["unseen", "unsent"] }, // criteria for update
-        },
-        { $set: { status: "delivered" } } // update operation
-      );
-
+        await Message.updateMany(
+          {
+            $or: [
+              { _id: chat.latestMessage?._id },
+              { tempMessageId: chat.latestMessage?.tempMessageId },
+            ],
+            status: { $in: ["unseen", "unsent"] }, // criteria for update
+          },
+          { $set: { status: "delivered" } } // update operation
+        );
       }
     });
 
@@ -506,12 +509,9 @@ export const updateMessageStatusAsRemove = async (
   next: NextFunction
 ) => {
   try {
-    const { messageId,tempMessageId, status, chatId } = req.body;
+    const { messageId, tempMessageId, status, chatId } = req.body;
     const prevMessage = await Message.findOne({
-      $or: [
-        { _id: messageId },
-        { tempMessageId: tempMessageId },
-      ],
+      $or: [{ _id: messageId }, { tempMessageId: tempMessageId }],
     });
 
     if (!status || !messageId || !chatId)
@@ -530,10 +530,11 @@ export const updateMessageStatusAsRemove = async (
         { $set: { status, removedBy: status === "reBack" ? null : req.id } }
       );
     } else if (status === "removeFromAll") {
+      await MessageSeenBy.deleteMany({ messageId });
       await Message.findOneAndDelete({
         $or: [{ _id: messageId }, { tempMessageId: tempMessageId }],
       });
-      return res.status(200).json({ success: true });
+      return res.status(200).json({ success: true, message: "deleted" });
     }
 
     // Set the updatedAt field back to its previous value
@@ -553,7 +554,7 @@ export const updateMessageStatusAsUnsent = async (
   next: NextFunction
 ) => {
   try {
-    const { messageId,tempMessageId, status, chatId } = req.body;
+    const { messageId, tempMessageId, status, chatId } = req.body;
 
     if (!status || !messageId)
       return next(new CustomErrorHandler("Message Id or status  cannot be empty!", 400));
@@ -575,7 +576,11 @@ export const updateMessageStatusAsUnsent = async (
 
 //reply Message
 
-export const replyMessage = async (req: Request|any, res: Response, next: NextFunction) => {
+export const replyMessage = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { chatId, messageId, content, type, receiverId } = req.body;
     if (!chatId || !messageId) {
@@ -739,15 +744,19 @@ export const replyMessage = async (req: Request|any, res: Response, next: NextFu
 
 //edit message
 
-export const editMessage = async (req: Request|any, res: Response, next: NextFunction) => {
+export const editMessage = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { messageId, chatId, content, type, receiverId } = req.body;
     if (!messageId) {
       return next(new CustomErrorHandler("messageId  cannot be empty!", 400));
     }
     const isLastMessage = await Chat.findOne({ _id: chatId, latestMessage: messageId });
-    const prevMessage: any = await Message.findById({
-      $or: [{ _id: messageId }, { tempMessageId: req.body?.tempMessageId }],
+    const prevMessage: any = await Message.findOne({
+      _id: messageId,
     });
     //delete Previous Image
     if (prevMessage.file?.public_Id) {
@@ -835,9 +844,7 @@ export const editMessage = async (req: Request|any, res: Response, next: NextFun
         await v2.uploader.destroy(message.file.public_Id);
       }
       editedChat = await Message.findByIdAndUpdate(
-        {
-          $or: [{ _id: messageId }, { tempMessageId: req.body?.tempMessageId }],
-        },
+        messageId,
         {
           isEdit: { editedBy: req.id },
           content,

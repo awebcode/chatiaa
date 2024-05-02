@@ -356,10 +356,7 @@ const updateAllMessageStatusSeen = (req, res, next) => __awaiter(void 0, void 0,
             latestMessage: (_f = lastMessage === null || lastMessage === void 0 ? void 0 : lastMessage.latestMessage) === null || _f === void 0 ? void 0 : _f._id,
         });
         const updatedMessage = yield MessageModel_1.Message.find({
-            $or: [
-                { chat: (_g = req.params) === null || _g === void 0 ? void 0 : _g.chatId },
-                { tempMessageId: (_h = req.params) === null || _h === void 0 ? void 0 : _h.tempMessageId },
-            ],
+            $or: [{ chat: (_g = req.params) === null || _g === void 0 ? void 0 : _g.chatId }, { tempMessageId: (_h = req.params) === null || _h === void 0 ? void 0 : _h.tempMessageId }],
         }, {
             status: { $in: ["unseen", "delivered"] },
             // sender: { $ne: req.id }
@@ -435,10 +432,7 @@ const updateMessageStatusAsRemove = (req, res, next) => __awaiter(void 0, void 0
     try {
         const { messageId, tempMessageId, status, chatId } = req.body;
         const prevMessage = yield MessageModel_1.Message.findOne({
-            $or: [
-                { _id: messageId },
-                { tempMessageId: tempMessageId },
-            ],
+            $or: [{ _id: messageId }, { tempMessageId: tempMessageId }],
         });
         if (!status || !messageId || !chatId)
             return next(new errorHandler_1.CustomErrorHandler("Message Id or status cannot be empty!", 400));
@@ -451,10 +445,11 @@ const updateMessageStatusAsRemove = (req, res, next) => __awaiter(void 0, void 0
             updateMessage = yield MessageModel_1.Message.findOneAndUpdate({ $or: [{ _id: messageId }, { tempMessageId: tempMessageId }] }, { $set: { status, removedBy: status === "reBack" ? null : req.id } });
         }
         else if (status === "removeFromAll") {
+            yield seenByModel_1.MessageSeenBy.deleteMany({ messageId });
             yield MessageModel_1.Message.findOneAndDelete({
                 $or: [{ _id: messageId }, { tempMessageId: tempMessageId }],
             });
-            return res.status(200).json({ success: true });
+            return res.status(200).json({ success: true, message: "deleted" });
         }
         // Set the updatedAt field back to its previous value
         updateMessage.updatedAt = prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.updatedAt;
@@ -634,19 +629,19 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
 exports.replyMessage = replyMessage;
 //edit message
 const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _v, _w, _x, _y, _z;
+    var _v, _w, _x;
     try {
         const { messageId, chatId, content, type, receiverId } = req.body;
         if (!messageId) {
             return next(new errorHandler_1.CustomErrorHandler("messageId  cannot be empty!", 400));
         }
         const isLastMessage = yield ChatModel_1.Chat.findOne({ _id: chatId, latestMessage: messageId });
-        const prevMessage = yield MessageModel_1.Message.findById({
-            $or: [{ _id: messageId }, { tempMessageId: (_v = req.body) === null || _v === void 0 ? void 0 : _v.tempMessageId }],
+        const prevMessage = yield MessageModel_1.Message.findOne({
+            _id: messageId,
         });
         //delete Previous Image
-        if ((_w = prevMessage.file) === null || _w === void 0 ? void 0 : _w.public_Id) {
-            yield cloudinary_1.v2.uploader.destroy((_x = prevMessage.file) === null || _x === void 0 ? void 0 : _x.public_Id);
+        if ((_v = prevMessage.file) === null || _v === void 0 ? void 0 : _v.public_Id) {
+            yield cloudinary_1.v2.uploader.destroy((_w = prevMessage.file) === null || _w === void 0 ? void 0 : _w.public_Id);
         }
         let editedChat;
         if (type === "file") {
@@ -712,12 +707,10 @@ const editMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 return next(new errorHandler_1.CustomErrorHandler("messageId or content  cannot be empty!", 400));
             }
             const message = yield MessageModel_1.Message.findOne({ _id: messageId });
-            if ((_y = message === null || message === void 0 ? void 0 : message.file) === null || _y === void 0 ? void 0 : _y.public_Id) {
+            if ((_x = message === null || message === void 0 ? void 0 : message.file) === null || _x === void 0 ? void 0 : _x.public_Id) {
                 yield cloudinary_1.v2.uploader.destroy(message.file.public_Id);
             }
-            editedChat = yield MessageModel_1.Message.findByIdAndUpdate({
-                $or: [{ _id: messageId }, { tempMessageId: (_z = req.body) === null || _z === void 0 ? void 0 : _z.tempMessageId }],
-            }, {
+            editedChat = yield MessageModel_1.Message.findByIdAndUpdate(messageId, {
                 isEdit: { editedBy: req.id },
                 content,
                 type: "text",
