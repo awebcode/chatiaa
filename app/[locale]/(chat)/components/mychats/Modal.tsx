@@ -93,13 +93,11 @@ const Modal = ({
       ),
       icon: <RiChatOffLine />,
       action: () => {
-        if (confirm("Are you sure?")) {
            dispatch({
              type: BLOCK_CHAT,
-             payload: { user: currentUser, chatId: chat?.chatId }, //data.chat.chatBlockedBy
+             payload: { user: currentUser, chatId: chat?._id }, //data.chat.chatBlockedBy
            });
           blockMutation.mutateAsync(blockData);
-        }
       },
       isHidden: chat?.isGroupChat ? true : false,
     },

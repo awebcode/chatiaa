@@ -26,7 +26,7 @@ const ChatStatus = ({ chatBlockedBy }: { chatBlockedBy?: Tuser[] }) => {
     blockMutation.mutateAsync(blockData);
   };
   return (
-    <div className="m-2 p-4 bg-gray-200 dark:bg-gray-800 rounded-lg">
+    <div className="m-1 p-1 md:m-2 md:p-1 bg-gray-200 dark:bg-gray-800 rounded border-l-2 border-emerald-400">
       {chatBlockedBy?.some((user) => user._id === currentUser?._id) ? (
         <p className="text-[10px] md:text-xs flex justify-center items-center text-gray-800 dark:text-gray-300 ">
           You blocked{" "}

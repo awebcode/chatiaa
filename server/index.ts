@@ -110,6 +110,12 @@ export const getSocketConnectedUser = async (id: string | Types.ObjectId) => {
 
 // WebSocket server logic
 io.on("connection", (socket: Socket) => {
+  //join in group chat
+  socket.on("join", (data: any) => {
+    socket.join(data.chatId);
+    io.emit("join", data.chatId);
+  });
+  //single
   socket.on("setup", async (userData) => {
     socket.join(userData.userId);
     await checkOnlineUsers(userData.userId, socket.id);
@@ -150,10 +156,7 @@ io.on("connection", (socket: Socket) => {
     // io.emit("setup", users);
     console.log("Client connected");
   });
-  socket.on("join", (data: any) => {
-    socket.join(data.chatId);
-    io.emit("join", data.chatId);
-  });
+  
 
   // Handle incoming messages from clients
   socket.on("sentMessage", async (message: any) => {
@@ -170,6 +173,13 @@ io.on("connection", (socket: Socket) => {
       //  socket.emit("receiveMessage", message);
     } else {
       //all connected clients in room
+       io.to(message.chatId)
+         .to(message.receiverId)
+         .emit("receiveMessage", {
+           ...message,
+           receiverId: message.receiverId,
+           chat: { _id: message.chatId },
+         });
       io.to(message.chatId)
         .to(message.receiverId)
         .emit("receiveMessage", { ...data, receiverId: message.receiverId });

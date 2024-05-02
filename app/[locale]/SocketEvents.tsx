@@ -103,7 +103,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     mutationKey: ["group"],
     mutationFn: (body: { chatId: string; messageId: string }) => pushgroupSeenBy(body),
   });
-  useLayoutEffect(() => {
+  useEffect(() => {
     //session storage will set first render when first time page load but get value second time after set in same window or tab
     const isInitialRender = sessionStorage.getItem("isInitialRender");
 
@@ -181,7 +181,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       useIncomingMessageStore.setState({
         isIncomingMessage: true,
       });
-      soundRef.current?.play();
+      //play sound
+      if (data._id) {
+        soundRef.current?.play();
+      }
       //  update latest chat for both side
       console.log({
         socketMessage: data,
@@ -251,8 +254,11 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         ["online", "busy"].includes(currentUserRef?.current?.onlineStatus as string)
       ) {
         //play sound
-        addNotification(data);
-        soundRef.current?.play();
+        if (data._id) {
+          addNotification(data);
+          soundRef.current?.play();
+        }
+
         showNotification(data.sender.name, data.sender.image, data.content);
         useIncomingMessageStore.setState({
           isIncomingMessage: true,
@@ -348,8 +354,10 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
             //   )
             // )
             //play sound
-            addNotification(data);
-            soundRef.current?.play();
+            if (data._id) {
+              addNotification(data);
+              soundRef.current?.play();
+            }
             showNotification(data.sender.name, data.sender.image, data.content);
             useIncomingMessageStore.setState({
               isIncomingMessage: true,
@@ -383,7 +391,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       type: ADD_REPLY_MESSAGE,
       payload: { ...message, addMessageType: "replyMessage" },
     }); //ADD_REPLY_MESSAGE
-  }, []);
+  }, [])
 
   // Edit Message Handler
   const handleEditMessage = useCallback((message: any) => {

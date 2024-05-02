@@ -18,9 +18,10 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
   const isCurrentUserMessage = message?.sender?._id === currentUser?._id;
   const dispatch = useMessageDispatch();
   //removeHandler
-  const removeHandler = async (messageId: string) => {
+  const removeHandler = async (messageId: string,tempMessageId:string) => {
     const data = {
       messageId,
+      tempMessageId,
       status: "removed",
       updatedBy: currentUser,
       groupChat: selectedChat?.isGroupChat,
@@ -33,9 +34,10 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
     }
   };
   ///removeFromAllHandler
-  const removeFromAllHandler = async (messageId: string) => {
+  const removeFromAllHandler = async (messageId: string,tempMessageId:string) => {
     const data = {
       messageId,
+      tempMessageId,
       status: "removeFromAll",
       updatedBy: currentUser,
       groupChat: selectedChat?.isGroupChat,
@@ -48,9 +50,10 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
     }
   };
   //BackRemoveFromAllHandler
-  const BackRemoveFromAllHandler = async (messageId: string) => {
+  const BackRemoveFromAllHandler = async (messageId: string,tempMessageId:string) => {
     const data = {
       messageId,
+      tempMessageId,
       status: "reBack",
       updatedBy: currentUser,
       groupChat: selectedChat?.isGroupChat,
@@ -63,9 +66,10 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
     }
   };
   //unsentHandler
-  const unsentHandler = async (messageId: string) => {
+  const unsentHandler = async (messageId: string,tempMessageId:string) => {
     const data = {
       messageId,
+      tempMessageId,
       status: "unsent",
       updatedBy: currentUser,
       groupChat: selectedChat?.isGroupChat,
@@ -119,7 +123,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
         <>
           {message.status !== "unsent" && (
             <DropdownMenuItem
-              onClick={() => removeHandler(message._id)}
+              onClick={() => removeHandler(message._id,message.tempMessageId)}
               className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
             >
               <IoIosRemoveCircleOutline /> Remove
@@ -127,7 +131,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           )}
           {message.status !== "unsent" ? (
             <DropdownMenuItem
-              onClick={() => removeFromAllHandler(message._id)}
+              onClick={() => removeFromAllHandler(message._id,message.tempMessageId)}
               className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
             >
               <AiOutlineDelete /> Remove from all
@@ -135,7 +139,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
           ) : (
             <>
               {/* <DropdownMenuItem
-          onClick={() => removeFromAllHandler(message._id)}
+          onClick={() => removeFromAllHandler(message._id,message.tempMessageId)}
           className="cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
           Delete
@@ -145,7 +149,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
         </>
       ) : message.status === "removed" && message.removedBy?._id === currentUser?._id ? (
         <DropdownMenuItem
-          onClick={() => BackRemoveFromAllHandler(message._id)}
+          onClick={() => BackRemoveFromAllHandler(message._id,message.tempMessageId)}
           className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
           <FcDataRecovery /> Back Message
@@ -153,13 +157,13 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       ) : message.status === "removed" && message.removedBy?._id !== currentUser?._id ? (
         <>
           <DropdownMenuItem
-            // onClick={() => removeHandler(message._id)}
+            // onClick={() => removeHandler(message._id,message.tempMessageId)}
             className=" text-[8px] md:text-[11px] text-rose-500 cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
           >
             {message.removedBy?.name.slice(0, 12)} Removed this
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => removeFromAllHandler(message._id)}
+            onClick={() => removeFromAllHandler(message._id,message.tempMessageId)}
             className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
           >
             <AiOutlineDelete /> Remove from all
@@ -172,7 +176,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       {isCurrentUserMessage && message.status !== "unsent" && (
         <DropdownMenuItem
           onClick={() => {
-            unsentHandler(message._id);
+            unsentHandler(message._id,message.tempMessageId);
           }}
           className="flex gap-x-1 cursor-pointer text-[10px] md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
@@ -181,7 +185,7 @@ const EditUnModal = ({ message }: { message: IMessage }) => {
       )}
       {isCurrentUserMessage && (
         <DropdownMenuItem
-          onClick={() => removeFromAllHandler(message._id)}
+          onClick={() => removeFromAllHandler(message._id,message.tempMessageId)}
           className="flex gap-x-1 cursor-pointer text-[10px] text-rose-500 tracking-wider md:text-xs hover:bg-gray-300 dark:hover:bg-gray-600  p-[6px] duration-300  rounded"
         >
           <AiOutlineDelete /> Delete

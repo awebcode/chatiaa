@@ -397,7 +397,7 @@ const updateChatMessageAsDeliveredController = (req, res, next) => __awaiter(voi
             // Update the latest message's status to "delivered"
             if (((_j = chat.latestMessage) === null || _j === void 0 ? void 0 : _j.status) === "unseen" &&
                 ((_k = chat.latestMessage) === null || _k === void 0 ? void 0 : _k.sender.toString()) !== req.id) {
-                yield MessageModel_1.Message.findByIdAndUpdate({
+                yield MessageModel_1.Message.findOneAndUpdate({
                     $or: [
                         { _id: (_l = chat.latestMessage) === null || _l === void 0 ? void 0 : _l._id },
                         { tempMessageId: (_m = chat.latestMessage) === null || _m === void 0 ? void 0 : _m.tempMessageId },
@@ -434,7 +434,7 @@ const updateMessageStatusAsRemove = (req, res, next) => __awaiter(void 0, void 0
     var _q, _r;
     try {
         const { messageId, tempMessageId, status, chatId } = req.body;
-        const prevMessage = yield MessageModel_1.Message.findById({
+        const prevMessage = yield MessageModel_1.Message.findOne({
             $or: [
                 { _id: messageId },
                 { tempMessageId: tempMessageId },

@@ -455,7 +455,7 @@ export const updateChatMessageAsDeliveredController = async (
         chat.latestMessage?.status === "unseen" &&
         chat.latestMessage?.sender.toString() !== req.id
       ) {
-        await Message.findByIdAndUpdate(
+        await Message.findOneAndUpdate(
           {
             $or: [
               { _id: chat.latestMessage?._id },
@@ -507,7 +507,7 @@ export const updateMessageStatusAsRemove = async (
 ) => {
   try {
     const { messageId,tempMessageId, status, chatId } = req.body;
-    const prevMessage = await Message.findById({
+    const prevMessage = await Message.findOne({
       $or: [
         { _id: messageId },
         { tempMessageId: tempMessageId },

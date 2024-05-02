@@ -17,7 +17,11 @@ export const pushSeenBy = async (req: Request | any, res: Response, next: NextFu
     }
 
     // Check if there is an existing record for the user and chat
-    let existingSeenBy = await MessageSeenBy.findOne({ chatId, userId: req.id });
+    let existingSeenBy = await MessageSeenBy.findOne({
+      chatId,
+      userId: req.id,
+      messageId,
+    });
 
     // If there's an existing record, delete it
     if (existingSeenBy) {
@@ -25,15 +29,14 @@ export const pushSeenBy = async (req: Request | any, res: Response, next: NextFu
     }
 
     // Create a new record for the user and chat with the latest message seen
-    const newSeenMessage = new MessageSeenBy({
+    const newSeenMessage =await MessageSeenBy.create({
       chatId,
       userId: req.id,
       messageId,
     });
-    await newSeenMessage.save();
     res
       .status(200)
-      .json({ message: "Message seen successfully", seenMessage: newSeenMessage });
+      .json({ message: "Message seen!", seenMessage: newSeenMessage });
   } catch (error) {
     next(error); // Pass the error to the error handler middleware
   }

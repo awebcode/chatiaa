@@ -100,6 +100,12 @@ const getSocketConnectedUser = (id) => __awaiter(void 0, void 0, void 0, functio
 exports.getSocketConnectedUser = getSocketConnectedUser;
 // WebSocket server logic
 exports.io.on("connection", (socket) => {
+    //join in group chat
+    socket.on("join", (data) => {
+        socket.join(data.chatId);
+        exports.io.emit("join", data.chatId);
+    });
+    //single
     socket.on("setup", (userData) => __awaiter(void 0, void 0, void 0, function* () {
         socket.join(userData.userId);
         yield checkOnlineUsers(userData.userId, socket.id);
@@ -129,10 +135,6 @@ exports.io.on("connection", (socket) => {
         // io.emit("setup", users);
         console.log("Client connected");
     }));
-    socket.on("join", (data) => {
-        socket.join(data.chatId);
-        exports.io.emit("join", data.chatId);
-    });
     // Handle incoming messages from clients
     socket.on("sentMessage", (message) => __awaiter(void 0, void 0, void 0, function* () {
         // Broadcast the message to all connected clients
@@ -148,6 +150,9 @@ exports.io.on("connection", (socket) => {
         }
         else {
             //all connected clients in room
+            exports.io.to(message.chatId)
+                .to(message.receiverId)
+                .emit("receiveMessage", Object.assign(Object.assign({}, message), { receiverId: message.receiverId, chat: { _id: message.chatId } }));
             exports.io.to(message.chatId)
                 .to(message.receiverId)
                 .emit("receiveMessage", Object.assign(Object.assign({}, data), { receiverId: message.receiverId }));

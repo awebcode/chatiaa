@@ -120,7 +120,6 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
       updatedChats = updatedChats.filter((chat) => Boolean(chat
         ._id))
 
-      console.log({ updatedChats });
       return { ...state, chats: updatedChats, totalChats: action.payload.total };
 
     //UPDATE_CHAT_STATUS
@@ -129,7 +128,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
         ...state,
         // Update chats array to replace the existing message with the edited one
         chats: state.chats.map((chat) =>
-          chat._id === action.payload.chatId
+          chat._id === action.payload.chatId || chat._id === action.payload.chat?._id
             ? {
                 ...chat,
                 latestMessage: {
@@ -160,7 +159,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
       // Find the index of the chat being updated
       const updatedChatIndex = state.chats.findIndex(
         (chat) =>
-          chat._id === action.payload.chat?._id || chat._id === action.payload.chatId
+          chat._id === action.payload.chat?._id || chat._id === action.payload.chatId //|| chat._id === action.payload.chatId
       );
 
       // If the chat is not found, return state as is
@@ -169,19 +168,29 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
       }
 
       // Update the chat message and unseen count
-      const updatedChat = {
+      let updatedChat = {
         ...state.chats[updatedChatIndex],
         latestMessage: action.payload,
-        unseenCount: (state.chats[updatedChatIndex].unseenCount || 0) + 1,
+        unseenCount:
+          (state.chats[updatedChatIndex].unseenCount || 0) +
+          (action.payload?._id ? 1 : 0),
       };
 
       // Remove the chat from its current position
       const newUpdatedChats = state.chats.filter(
-        (chat) => chat._id !== action.payload.chat?._id || action.payload.chatId
+        (chat) =>
+          chat._id !== action.payload.chat?._id || chat._id === action.payload.chatI
       );
 
       // Add the updated chat at the beginning
-      if (!action.payload.isCurrentUserMessage) {
+      if (
+        !action.payload.isCurrentUserMessage &&
+        !newUpdatedChats.some(
+          (e) =>
+            e?.latestMessage?._id === updatedChat?.latestMessage?._id ||
+            e?.latestMessage?.tempMessageId === updatedChat?.latestMessage?.tempMessageId
+        )
+      ) {
         newUpdatedChats.unshift(updatedChat);
       }
 
@@ -416,14 +425,14 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
             updated = (message.seenBy || []).filter(
               (u: any) =>
                 u?._id !== action.payload.user._id &&
-                (!u._id || u?.userId?._id !== action.payload.user._id)
+                (!u._id || u?.userIupdatedSeenByd?._id !== action.payload.user._id)
             );
             totalseenBy -= 1;
           }
 
           if (message?._id === action.payload.messageId) {
             // Check if latestMessage exists and seenBy is an array
-            const updatedSeenBy = updated;
+            let updatedSeenBy = updated;
 
             // Check if the user is already in the seenBy array
             const isUserSeen = updatedSeenBy.some(
@@ -432,7 +441,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
             // If the user is not already in the seenBy array, add them
             if (!isUserSeen) {
-              updatedSeenBy.push(action.payload.user);
+              updatedSeenBy=[...updatedSeenBy,action.payload.user] 
               totalseenBy += 1;
             }
 
@@ -499,7 +508,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
           if (message?._id === action.payload.messageId) {
             // Check if latestMessage exists and seenBy is an array
-            const updatedSeenBy = updated;
+            let updatedSeenBy = updated;
 
             // Check if the user is already in the seenBy array
             const isUserSeen = updatedSeenBy.some(
@@ -508,7 +517,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
             // If the user is not already in the seenBy array, add them
             if (!isUserSeen) {
-              updatedSeenBy.push(action.payload.user);
+              updatedSeenBy=[...updatedSeenBy,action.payload.user]
+           
               totalseenBy += 1;
             }
 
@@ -673,7 +683,9 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
         ...state,
         // Update messages array to replace the existing message with the edited one
         messages: state?.messages?.map((message) =>
-          message?._id === action.payload._id ? action.payload : message
+          message?._id === action.payload._id || message?.tempMessageId === action.payload.tempMessageId
+            ? action.payload
+            : message
         ),
       };
 
@@ -922,7 +934,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
         messages:
           action.payload.status === "removed"
             ? state?.messages?.map((message) =>
-                message?._id === action.payload.messageId
+                message?._id === action.payload.messageId ||
+                message?.tempMessageId === action.payload.tempMessageId
                   ? {
                       ...message,
                       status: "removed",
@@ -933,11 +946,14 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
               )
             : action.payload.status === "removeFromAll"
             ? state.messages.filter(
-                (message) => message?._id !== action.payload.messageId
+                (message) =>
+                  message?._id !== action.payload.messageId ||
+                  message?.tempMessageId === action.payload.tempMessageId
               )
             : action.payload.status === "reBack"
             ? state?.messages?.map((message) =>
-                message?._id === action.payload.messageId
+                message?._id === action.payload.messageId ||
+                message?.tempMessageId === action.payload.tempMessageId
                   ? {
                       ...message,
                       status: "reBack",
@@ -948,7 +964,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
               )
             : action.payload.status === "unsent"
             ? state?.messages?.map((message) =>
-                message?._id === action.payload.messageId
+                message?._id === action.payload.messageId ||
+                message?.tempMessageId === action.payload.tempMessageId
                   ? {
                       ...message,
                       status: "unsent",
@@ -964,7 +981,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
     //update group UPDATE_GROUP_INFO
 
     case UPDATE_GROUP_INFO:
-      console.log({ UPDATE_GROUP_INFO: action.payload });
+    
       return {
         ...state,
         chats: state?.chats?.map((chat) =>

@@ -91,13 +91,11 @@ export default function RightUserDrawer({ isUserOnline }: { isUserOnline: boolea
               className="w-full text-sm  border-violet-600 hover:border-violet-700 duration-300"
               variant={"outline"}
               onClick={() => {
-                if (confirm("Are you sure?")) {
                    dispatch({
                      type: BLOCK_CHAT,
                      payload: { user: currentUser, chatId: selectedChat?.chatId }, //data.chat.chatBlockedBy
                    });
                   blockMutation.mutateAsync(blockData);
-                }
               }}
             >
               <BsPersonLock className="text-violet-600" />{" "}

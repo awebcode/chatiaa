@@ -24,21 +24,24 @@ const pushSeenBy = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             return next(new errorHandler_1.CustomErrorHandler("Message or Chat does not exist", 404));
         }
         // Check if there is an existing record for the user and chat
-        let existingSeenBy = yield seenByModel_1.MessageSeenBy.findOne({ chatId, userId: req.id });
+        let existingSeenBy = yield seenByModel_1.MessageSeenBy.findOne({
+            chatId,
+            userId: req.id,
+            messageId,
+        });
         // If there's an existing record, delete it
         if (existingSeenBy) {
             yield seenByModel_1.MessageSeenBy.findByIdAndDelete(existingSeenBy._id);
         }
         // Create a new record for the user and chat with the latest message seen
-        const newSeenMessage = new seenByModel_1.MessageSeenBy({
+        const newSeenMessage = yield seenByModel_1.MessageSeenBy.create({
             chatId,
             userId: req.id,
             messageId,
         });
-        yield newSeenMessage.save();
         res
             .status(200)
-            .json({ message: "Message seen successfully", seenMessage: newSeenMessage });
+            .json({ message: "Message seen!", seenMessage: newSeenMessage });
     }
     catch (error) {
         next(error); // Pass the error to the error handler middleware
