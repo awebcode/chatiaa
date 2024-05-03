@@ -104,14 +104,14 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     mutationFn: (body: { chatId: string; messageId: string }) => pushgroupSeenBy(body),
   });
   //first render only once
-  useEffect(() => {
+  useLayoutEffect(() => {
     //session storage will set first render when first time page load but get value second time after set in same window or tab
     const isInitialRender = sessionStorage.getItem("isInitialRender");
 
     // Remove the desired item from local storage
     // console.log({ isInitialRenderr: isInitialRender ==null,isInitialRender});
     ///first time when user visit the website will remove prev set chats and selectedchats
-    if (isInitialRender == null) {
+    if (isInitialRender == null || !isInitialRender) {
       localStorage.removeItem("chats");
       localStorage.removeItem("selectedChat");
     }
@@ -121,7 +121,6 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     // Check if storedChats is not null and has at least one chat item with an _id property
     if (storedChats) {
       const parsedChats = JSON.parse(storedChats);
-      console.log({ parsedChats });
       dispatch({
         type: SET_CHATS,
         payload: {

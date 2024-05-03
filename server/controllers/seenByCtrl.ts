@@ -20,7 +20,6 @@ export const pushSeenBy = async (req: Request | any, res: Response, next: NextFu
     let existingSeenBy = await MessageSeenBy.findOne({
       chatId,
       userId: req.id,
-      messageId,
     });
 
     // If there's an existing record, delete it

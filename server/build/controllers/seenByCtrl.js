@@ -27,7 +27,6 @@ const pushSeenBy = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         let existingSeenBy = yield seenByModel_1.MessageSeenBy.findOne({
             chatId,
             userId: req.id,
-            messageId,
         });
         // If there's an existing record, delete it
         if (existingSeenBy) {

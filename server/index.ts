@@ -173,13 +173,13 @@ io.on("connection", (socket: Socket) => {
       //  socket.emit("receiveMessage", message);
     } else {
       //all connected clients in room
-       io.to(message.chatId)
-         .to(message.receiverId)
-         .emit("receiveMessage", {
-           ...message,
-           receiverId: message.receiverId,
-           chat: { _id: message.chatId },
-         });
+      //  io.to(message.chatId)
+      //    .to(message.receiverId)
+      //    .emit("receiveMessage", {
+      //      ...message,
+      //      receiverId: message.receiverId,
+      //      chat: { _id: message.chatId },
+      //    });
       io.to(message.chatId)
         .to(message.receiverId)
         .emit("receiveMessage", { ...data, receiverId: message.receiverId });

@@ -150,9 +150,13 @@ exports.io.on("connection", (socket) => {
         }
         else {
             //all connected clients in room
-            exports.io.to(message.chatId)
-                .to(message.receiverId)
-                .emit("receiveMessage", Object.assign(Object.assign({}, message), { receiverId: message.receiverId, chat: { _id: message.chatId } }));
+            //  io.to(message.chatId)
+            //    .to(message.receiverId)
+            //    .emit("receiveMessage", {
+            //      ...message,
+            //      receiverId: message.receiverId,
+            //      chat: { _id: message.chatId },
+            //    });
             exports.io.to(message.chatId)
                 .to(message.receiverId)
                 .emit("receiveMessage", Object.assign(Object.assign({}, data), { receiverId: message.receiverId }));
