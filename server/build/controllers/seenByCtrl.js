@@ -18,19 +18,24 @@ const pushSeenBy = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     try {
         const { messageId, chatId, tempMessageId } = req.body;
         // Check if the message exists
-        const isMessageExists = yield MessageModel_1.Message.findOne({ $or: [{ _id: messageId }, { tempMessageId }] });
+        const isMessageExists = yield MessageModel_1.Message.findOne({
+            $or: [{ _id: messageId }, { tempMessageId }],
+        });
         const isChatExists = yield ChatModel_1.Chat.findOne({ _id: chatId });
         if (!isMessageExists || !isChatExists) {
             return next(new errorHandler_1.CustomErrorHandler("Message or Chat does not exist", 404));
         }
-        // Check if there is an existing record for the user and chat
-        let existingSeenBy = yield seenByModel_1.MessageSeenBy.findOne({
+        // Find all existing records for the user and chat
+        let existingSeenBy = yield seenByModel_1.MessageSeenBy.find({
             chatId,
             userId: req.id,
         });
-        // If there's an existing record, delete it
-        if (existingSeenBy) {
-            yield seenByModel_1.MessageSeenBy.findByIdAndDelete(existingSeenBy._id);
+        // If there are existing records, delete them
+        if (existingSeenBy.length > 0) {
+            yield seenByModel_1.MessageSeenBy.deleteMany({
+                chatId,
+                userId: req.id,
+            });
         }
         // Create a new record for the user and chat with the latest message seen
         const newSeenMessage = yield seenByModel_1.MessageSeenBy.create({
@@ -38,9 +43,7 @@ const pushSeenBy = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             userId: req.id,
             messageId,
         });
-        res
-            .status(200)
-            .json({ message: "Message seen!", seenMessage: newSeenMessage });
+        res.status(200).json({ message: "Message seen!", seenMessage: newSeenMessage });
     }
     catch (error) {
         next(error); // Pass the error to the error handler middleware

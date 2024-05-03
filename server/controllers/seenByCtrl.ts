@@ -7,35 +7,38 @@ import { Chat } from "../model/ChatModel";
 
 export const pushSeenBy = async (req: Request | any, res: Response, next: NextFunction) => {
   try {
-    const { messageId, chatId,tempMessageId } = req.body;
+    const { messageId, chatId, tempMessageId } = req.body;
 
     // Check if the message exists
-    const isMessageExists = await Message.findOne({ $or: [{ _id: messageId },{tempMessageId}] });
+    const isMessageExists = await Message.findOne({
+      $or: [{ _id: messageId }, { tempMessageId }],
+    });
     const isChatExists = await Chat.findOne({ _id: chatId });
     if (!isMessageExists || !isChatExists) {
       return next(new CustomErrorHandler("Message or Chat does not exist", 404));
     }
 
-    // Check if there is an existing record for the user and chat
-    let existingSeenBy = await MessageSeenBy.findOne({
+    // Find all existing records for the user and chat
+    let existingSeenBy = await MessageSeenBy.find({
       chatId,
       userId: req.id,
     });
 
-    // If there's an existing record, delete it
-    if (existingSeenBy) {
-      await MessageSeenBy.findByIdAndDelete(existingSeenBy._id);
+    // If there are existing records, delete them
+    if (existingSeenBy.length > 0) {
+      await MessageSeenBy.deleteMany({
+        chatId,
+        userId: req.id,
+      });
     }
 
     // Create a new record for the user and chat with the latest message seen
-    const newSeenMessage =await MessageSeenBy.create({
+    const newSeenMessage = await MessageSeenBy.create({
       chatId,
       userId: req.id,
       messageId,
     });
-    res
-      .status(200)
-      .json({ message: "Message seen!", seenMessage: newSeenMessage });
+    res.status(200).json({ message: "Message seen!", seenMessage: newSeenMessage });
   } catch (error) {
     next(error); // Pass the error to the error handler middleware
   }
