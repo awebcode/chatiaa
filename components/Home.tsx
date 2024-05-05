@@ -12,14 +12,13 @@ import AnimateSvg from "./AnimateSvg";
 import Lottie from "react-lottie";
 import * as ChatAnim from "./ChatLottie.json";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
-import { motion } from "framer-motion";
 import {
   MotionAnchor,
   MotionDiv,
   MotionH1,
   MotionH2,
   MotionParagraph,
-} from "@/config/framer";
+} from "@/lib/motion";
 import Footer from "./Footer";
 import ScrollBarWrapper from "./ScrollBarWrapper";
 interface CardData {

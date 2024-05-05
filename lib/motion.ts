@@ -1,7 +1,5 @@
 "use client"
 import { motion } from "framer-motion";
-
-// Motion-enhanced components for HTML elements
 export const MotionDiv = motion.div;
 export const MotionSpan = motion.span;
 export const MotionButton = motion.button;
@@ -20,3 +18,4 @@ export const MotionHeader = motion.header;
 export const MotionFooter = motion.footer;
 export const MotionNav = motion.nav;
 export const MotionMain = motion.main;
+
