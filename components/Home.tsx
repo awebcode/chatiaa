@@ -37,7 +37,7 @@ const Home = () => {
       description:
         "Start Conversations, Anytime, Anywhere. Begin chatting with your friends,partners and customers in real-time with ease.",
       color: "blue",
-      fullColor: "bg-blue-100",
+      fullColor: "border-blue-200",
     },
     {
       icon: <BsShieldCheck className="w-8 h-8 text-yellow-500 mb-4" />,
@@ -46,7 +46,7 @@ const Home = () => {
         "Lock Your Conversations, Unlock Your Peace of Mind. Our real-time notification toast ensures your messages are secure and private, with instant reply functionality. Stay connected with sound alerts for seamless communication, guaranteeing your privacy and peace of mind.",
       color: "yellow",
 
-      fullColor: "bg-yellow-100",
+      fullColor: "border-yellow-200",
     },
 
     {
@@ -55,7 +55,7 @@ const Home = () => {
       description:
         "Efficiency Redefined: Connect & Converse Swiftly. Efficient communication, saving you valuable time at lightning speed.",
       color: "green",
-      fullColor: "bg-green-100",
+      fullColor: "border-green-200",
     },
     {
       icon: <TbMessageCircleQuestion className="w-8 h-8 text-purple-500 mb-4" />,
@@ -64,7 +64,7 @@ const Home = () => {
       description:
         "Immerse yourself in seamless connections with our comprehensive multimedia features. Send unlimited images, PDFs, audio, video, and voice messages effortlessly. Stay connected with crystal-clear audio, video, and group calls, ensuring you hear and see clearly during every interaction.",
       color: "purple",
-      fullColor: "bg-purple-100",
+      fullColor: "border-purple-200",
     },
     {
       icon: <LuFolderSync className="w-8 h-8 text-rose-500 mb-4" />,
@@ -72,7 +72,7 @@ const Home = () => {
       description:
         "Break Limits, Share Everything. Share any type of file, unlimitedly, without constraints.",
       color: "rose",
-      fullColor: "bg-rose-100",
+      fullColor: "border-rose-200",
     },
     {
       icon: <TbUsersGroup className="w-8 h-8 text-emerald-500 mb-4" />,
@@ -80,7 +80,7 @@ const Home = () => {
       description:
         "Affordable Excellence: Connect, Converse, Conquer. Seamlessly conduct single/group/room calls and meetings with Zegocloud at an unbeatable price, backed by real-time notifications and reminders.",
       color: "emerald",
-      fullColor: "bg-emerald-100",
+      fullColor: "border-emerald-200",
     },
     {
       icon: <AiOutlineUser className="w-8 h-8 text-violet-500 mb-4" />,
@@ -88,7 +88,7 @@ const Home = () => {
       description:
         "Stay informed with real-time typing indicators, easily manage block/unblock, and track online statuses effortlessly.",
       color: "violet",
-      fullColor: "bg-violet-100",
+      fullColor: "border-violet-200",
     },
     {
       icon: <AiOutlineGroup className="w-8 h-8 text-blue-500 mb-4" />,
@@ -96,7 +96,7 @@ const Home = () => {
       description:
         "Efficiently manage groups with administrative controls. Stay organized and in control with group management features.",
       color: "blue",
-      fullColor: "bg-blue-100",
+      fullColor: "border-blue-200",
     },
     {
       icon: <RiFileTransferFill className="w-8 h-8 text-lime-500 mb-4" />,
@@ -104,7 +104,7 @@ const Home = () => {
       description:
         "View Sending Files in a Separate Tab/window.full application data fetching using (SSR) and infinite scrolling and code spiliting that&apos;s why it&apos;s very big application but super fast loading. Utilize features like Messenger or WhatsApp for a seamless experience.",
       color: "lime",
-      fullColor: "bg-lime-100",
+      fullColor: "border-lime-200",
     },
 
     {
@@ -113,7 +113,7 @@ const Home = () => {
       description:
         "Take control of your group conversations effortlessly. With our real-time update feature, remove users as admins, view user and admin lists, and seamlessly designate new admins if all current admins leave. Stay organized and in control of your group's dynamics for smooth communication.",
       color: "yellow",
-      fullColor: "bg-yellow-100",
+      fullColor: "border-yellow-200",
     },
     {
       icon: <ChatBubbleIcon className="w-8 h-8 text-violet-500 mb-4" />,
@@ -122,7 +122,7 @@ const Home = () => {
       description:
         "Experience an advanced chat interface with features like on-message emoji reactions, real-time message viewers, reply functionality, message editing, unsending, removal options, and more. Our application boasts seamless file transfer, utilizes SSR for fast data fetching, incorporates infinite scrolling, and code splitting for lightning-fast loading. Enjoy a Messenger or WhatsApp-like experience for effortless communication.",
       color: "violet",
-      fullColor: "bg-violet-100",
+      fullColor: "border-violet-200",
     },
 
     {
@@ -131,7 +131,7 @@ const Home = () => {
       description:
         "Unleash the potential of your chats with our feature-rich application. From on-message emoji reactions to real-time message viewers, reply options, and message editing, we've got you covered. With additional functionalities like file transfer in a separate tab and lightning-fast data fetching using SSR and infinite scrolling, our application promises a next-level experience reminiscent of Messenger or WhatsApp. Elevate your communication game today.",
       color: "emerald",
-      fullColor: "bg-emerald-100",
+      fullColor: "border-emerald-200",
     },
   ];
   const defaultOptions = {
@@ -246,8 +246,9 @@ const Card = ({ icon, title, description, color, delay, fullColor }: CardData) =
     transition={{ duration: 0.5, delay }}
     className={`w-full sm:w-1/2 md:w-1/2 p-1 md:p-4`}
   >
+    {/* //${fullColor} */}
     <div
-      className={`rounded p-6 shadow-md ${fullColor} text-${color}-500 duration-500 transition-all   hover:ring-2 hover:ring-yellow-500`}
+      className={`border-l-2 ${fullColor} rounded p-6 shadow-md  text-${color}-500 duration-300 transition-all   hover:border-r-2 hover:border-rose-500`}
     >
       <motion.div
         initial={{ opacity: 0 }}

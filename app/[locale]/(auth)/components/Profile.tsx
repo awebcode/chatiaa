@@ -1,7 +1,6 @@
 "use server";
 import { deleteUser, fetchUser } from "@/apisActions/serverActions";
 import { redirect } from "@/navigation";
-import { getServerSession } from "next-auth";
 import Image from "next/image";
 import moment from "moment";
 import DeleteButton from "@/components/DeleteButton";
