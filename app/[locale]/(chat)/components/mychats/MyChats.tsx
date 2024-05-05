@@ -60,7 +60,7 @@ const MyChats = () => {
   //     total: data?.pages[0]?.total,
   //   };
   // }, [data?.pages]);
-console.log({ SECRET: process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET! });
+  console.log({ SECRET: "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!" });
   useEffect(() => {
     sessionStorage.setItem("chats", "true");
     // Uncomment the following lines if you want to save chats to localStorage
@@ -68,7 +68,7 @@ console.log({ SECRET: process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET! });
       sessionStorage.setItem("isInitialRender", "true");
       encryptAndStoreData(
         data?.pages[0]?.chats,
-        process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+        "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
         "chats"
       );
     }

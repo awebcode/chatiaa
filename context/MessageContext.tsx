@@ -13,7 +13,7 @@ import { getDecryptedSelectedChat } from "@/config/EncDecrypt";
 // Initialize initialChats as an array of IChat
 
 const initialState: State = {
-  selectedChat: getDecryptedSelectedChat(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!),
+  selectedChat: getDecryptedSelectedChat("process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!"),
   isSelectedChat: null,
   messages: [],
   user: null,

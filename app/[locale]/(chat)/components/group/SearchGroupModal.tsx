@@ -94,7 +94,7 @@ export default function SearchGroupModal() {
       //store encrypted selectedchat on localstorage
       encryptAndStoreData(
         chatData,
-        process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+        "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
         "selectedChat"
       );
       // localStorage.setItem("selectedChat", JSON.stringify(chatData));
