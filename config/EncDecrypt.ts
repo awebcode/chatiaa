@@ -3,6 +3,7 @@ import { IChat } from "@/context/reducers/interfaces";
 import { Tuser } from "@/store/types";
 
 // Function to encrypt data and store it in localStorage
+// Function to encrypt data and store it in localStorage
 export const encryptAndStoreData = (
   data: any,
   key: string,
