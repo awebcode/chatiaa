@@ -29,6 +29,7 @@ import {
   USER_CALL_ACCEPTED,
   UPDATE_ON_CALL_COUNT,
   DELETE_ALL_MESSAGE_IN_CHAT,
+  SET_SELECTED_CHAT,
 } from "@/context/reducers/actions";
 import { IChat, IMessage } from "@/context/reducers/interfaces";
 import { Reaction, Tuser } from "@/store/types";
@@ -114,6 +115,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     if (isInitialRender == null || !isInitialRender) {
       localStorage.removeItem("chats");
       localStorage.removeItem("selectedChat");
+      dispatch({ type: SET_SELECTED_CHAT, payload: null });
     }
 
     const storedChats = localStorage.getItem("chats");
