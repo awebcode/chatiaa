@@ -93,14 +93,20 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
         // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
 
          for (let i = 0; i < (action.payload as any)?.chats?.length; i++) {
-           const chat = (action.payload as any)?.chats[i];
+           let chat = (action.payload as any)?.chats[i];
            const { _id } = chat;
 
            // Check if the Chat already exists in updatedChats
            const existingChatIndex = updatedChats.findIndex(
              (existingChat) => existingChat._id === _id
            );
-
+           /////when load chats and it's not my message
+           if (
+             action.payload?.currentUser?._id !== chat.latestMessage?.sender?._id &&
+             ["unsent", "unseen"].includes(chat.latestMessage?.status)
+           ) {
+             chat.latestMessage.status = "delivered";
+           }
            // If the chat is not found in updatedChats, push it
            if (existingChatIndex === -1) {
              updatedChats.push(chat);

@@ -43,17 +43,17 @@ function Messages({ chatId }: { chatId: string }) {
       return nextOffset;
     },
 
-    // initialData: (): any => {
-    //   const messages = selectedChat?.messages?.messages;
-    //   if (messages) {
-    //     return {
-    //       pageParams: [0],
-    //       pages: [{ messages }],
-    //     };
-    //   } else {
-    //     return undefined;
-    //   }
-    // }, //queryClient.getQueryData(['messages',chatId])
+    initialData: (): any => {
+      const messages = selectedChat?.messages?.messages;
+      if (messages) {
+        return {
+          pageParams: [0],
+          pages: [{ messages }],
+        };
+      } else {
+        return undefined;
+      }
+    }, //queryClient.getQueryData(['messages',chatId])
     initialPageParam: 0,
 
     staleTime: 0,
