@@ -4,7 +4,7 @@ import { useDebounce } from "@uidotdev/usehooks";
 
 import dynamic from "next/dynamic";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
-
+import CryptoJS from "crypto-js";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import SkeletonContainer from "./SkeletonContainer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import FriendsCard from "./FriendCard";
 import LoaderComponent from "@/components/Loader";
 import { IChat } from "@/context/reducers/interfaces";
 import { inittialDummyChats } from "@/config/dummyData/chats";
+import { encryptAndStoreData } from "@/config/EncDecrypt";
 
 const MyChats = () => {
   const queryClient = new QueryClient();
@@ -51,7 +52,6 @@ const MyChats = () => {
 
     staleTime: 0,
   });
-  
 
   // set chats in reducer store
   // const chatsPayload = useMemo(() => {
@@ -60,21 +60,23 @@ const MyChats = () => {
   //     total: data?.pages[0]?.total,
   //   };
   // }, [data?.pages]);
-
+console.log({ SECRET: process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET! });
   useEffect(() => {
-     sessionStorage.setItem("chats", "true");
+    sessionStorage.setItem("chats", "true");
     // Uncomment the following lines if you want to save chats to localStorage
     if (data?.pages[0]?.chats) {
       sessionStorage.setItem("isInitialRender", "true");
-
-      localStorage.setItem("chats", JSON.stringify(data?.pages[0]?.chats));
+      encryptAndStoreData(
+        data?.pages[0]?.chats,
+        process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+        "chats"
+      );
     }
     dispatch({
       type: SET_CHATS,
       payload: {
         chats: data?.pages.flatMap((page) => page.chats),
         total: data?.pages[0]?.total,
-       
       },
     });
   }, [data?.pages]);

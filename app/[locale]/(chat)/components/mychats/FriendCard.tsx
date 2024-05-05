@@ -41,6 +41,7 @@ const SeenByGroup = dynamic(() => import("./status/SeeByGroup"));
 
 const Modal = dynamic(() => import("./Modal"));
 import Cookie from "js-cookie";
+import { decryptData, encryptAndStoreData, getDecryptedChats } from "@/config/EncDecrypt";
 const FriendsCard: React.FC<{
   chat: IChat;
 }> = ({ chat }) => {
@@ -83,13 +84,16 @@ const FriendsCard: React.FC<{
     queryClient.invalidateQueries({ queryKey: ["messages"] });
     // filterDuplicateTempMessageIds([], true, (ids) => ids.clear()); //clear message ids in set
     if (selectedChat?.chatId === chatId) return;
-    const selectedPrevChatId = localStorage.getItem("selectedChatId");
+    const selectedPrevChatId = decryptData(
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+      "selectedChatId"
+    );
     if (selectedPrevChatId && selectedPrevChatId !== chatId) {
       dispatch({ type: CLEAR_MESSAGES });
     }
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     //  dispatch({ type: CLEAR_MESSAGES });
-    const storedChats = JSON.parse(localStorage.getItem("chats") || "[]") as IChat[];
+    const storedChats = getDecryptedChats(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
 
     const isExistChatIndex = storedChats.findIndex((c: IChat) => c?._id === chat?._id);
     //select chat
@@ -132,8 +136,19 @@ const FriendsCard: React.FC<{
     // console.log({chatData})
     // router.push(`/chat?chatId=${chat?._id}`);
     dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
-    localStorage.setItem("selectedChat", JSON.stringify(chatData));
-    localStorage.setItem("selectedChatId", chatId);
+    //store encrypted selectedchat on localstorage
+    encryptAndStoreData(
+      chatData,
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+      "selectedChat"
+    );
+    //stored chatId
+    encryptAndStoreData(
+      chatId,
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+      "selectedChatId"
+    );
+
     // router.replace(`?chatId=${chat?._id}`);
     //  setRedirectLoading({chatId:""})
     // router.replace(`/chat?chatId=${chat?._id}`);

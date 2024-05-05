@@ -13,7 +13,6 @@ interface UserStore {
 export const useUserStore = create<UserStore>((set) => {
   // Try to get user info from localStorage
   // const storedUser =
-  //   typeof window !== "undefined" && window.localStorage.getItem("userInfo");
   // const initialUser = storedUser ? JSON.parse(storedUser) : null;
   return {
     currentUser: null,

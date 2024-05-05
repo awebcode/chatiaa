@@ -18,6 +18,7 @@ const SliderUsers = dynamic(() => import("./SliderUsers"), {
 });
 import LoaderComponent from "@/components/Loader";
 import { useRouter } from "@/navigation";
+import { encryptAndStoreData } from "@/config/EncDecrypt";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
 
 const GroupCard = dynamic(() => import("./Card"), {
@@ -90,8 +91,14 @@ export default function SearchGroupModal() {
       socket.emit("groupCreatedNotify", { chatId: chat._id, chat });
 
       dispatch({ type: SET_SELECTED_CHAT, payload: chatData });
-      localStorage.setItem("selectedChat", JSON.stringify(chatData));
-      router.replace(`?chatId=${chat?._id}`);
+      //store encrypted selectedchat on localstorage
+      encryptAndStoreData(
+        chatData,
+        process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+        "selectedChat"
+      );
+      // localStorage.setItem("selectedChat", JSON.stringify(chatData));
+      // router.replace(`?chatId=${chat?._id}`);
       dispatch({ type: SET_CHATS, payload: chatData });
       document.getElementById("closeCreateGroupDialog")?.click();
     },

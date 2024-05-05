@@ -1,12 +1,16 @@
 import { IChat, IMessage } from "@/context/reducers/interfaces";
-
+import {
+  encryptAndStoreData,
+  getDecryptedChats,
+  getDecryptedSelectedChat,
+} from "./EncDecrypt";
 export function updatelocallStorageChatAndSelectedChat(
   data: IMessage,
   chatId: string
 ): void {
-  const storedChats: IChat[] = JSON.parse(localStorage.getItem("chats") || "[]");
-  const storedSelectedChat: any = JSON.parse(
-    localStorage.getItem("selectedChat") || "{}"
+  const storedChats = getDecryptedChats(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
+  const storedSelectedChat: any = getDecryptedSelectedChat(
+    process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!
   );
 
   const isExistChatIndex = storedChats.findIndex((chat: IChat) => chat?._id === chatId);
@@ -23,7 +27,13 @@ export function updatelocallStorageChatAndSelectedChat(
       } else {
         storedSelectedChat.messages.messages.unshift(data);
       }
-      localStorage.setItem("selectedChat", JSON.stringify(storedSelectedChat));
+      //store encrypted selectedchat on localstorage
+      encryptAndStoreData(
+        storedSelectedChat,
+        process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+        "selectedChat"
+      );
+      // localStorage.setItem("selectedChat", JSON.stringify(storedSelectedChat));
     }
     storedChats[isExistChatIndex].latestMessage = data;
     const messageIndex = existingChat?.messages?.messages.findIndex(
@@ -37,6 +47,12 @@ export function updatelocallStorageChatAndSelectedChat(
         existingChat.messages.messages.unshift(data);
       }
     }
-    localStorage.setItem("chats", JSON.stringify(storedChats));
+    //store encrypted selectedchat on localstorage
+    encryptAndStoreData(
+      storedChats,
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+      "chats"
+    );
+    // localStorage.setItem("chats", JSON.stringify(storedChats));
   }
 }

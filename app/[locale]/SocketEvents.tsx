@@ -52,6 +52,7 @@ import { showNotification } from "@/config/showNotification";
 import { useNotificationStore } from "@/store/notificationStore";
 import dynamic from "next/dynamic";
 import { updatelocallStorageChatAndSelectedChat } from "@/config/updateLocalStorageChat";
+import { encryptAndStoreData, getDecryptedChats } from "@/config/EncDecrypt";
 
 // Dynamic import for IncomingCallDialog component
 const IncomingCallDialog = dynamic(() => import("./call/IncomingCall"));
@@ -118,16 +119,15 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       dispatch({ type: SET_SELECTED_CHAT, payload: null });
     }
 
-    const storedChats = localStorage.getItem("chats");
+    const storedChats = getDecryptedChats(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
 
     // Check if storedChats is not null and has at least one chat item with an _id property
     if (storedChats) {
-      const parsedChats = JSON.parse(storedChats);
       dispatch({
         type: SET_CHATS,
         payload: {
-          chats: parsedChats,
-          total: parsedChats?.length,
+          chats: storedChats,
+          total: storedChats?.length,
         },
       });
     }
@@ -135,7 +135,11 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   // set initial user start
   useEffect(() => {
-    localStorage.setItem("currentUser",JSON.stringify(currentUser))
+    encryptAndStoreData(
+      currentUser,
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
+      "currentUser"
+    );
     dispatch({ type: SET_USER, payload: currentUser });
   }, [currentUser]);
   // set initial user end
@@ -394,7 +398,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       type: ADD_REPLY_MESSAGE,
       payload: { ...message, addMessageType: "replyMessage" },
     }); //ADD_REPLY_MESSAGE
-  }, [])
+  }, []);
 
   // Edit Message Handler
   const handleEditMessage = useCallback((message: any) => {

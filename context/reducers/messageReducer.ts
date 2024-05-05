@@ -41,46 +41,34 @@ import {
   ADD_REACTION_ON_MESSAGE,
 } from "./actions";
 import { createContext } from "use-context-selector";
-import { Tuser } from "@/store/types";
-
+import {
+  getDecryptedChats,
+  getDecryptedCurrentUser,
+  getDecryptedSelectedChat,
+} from "@/config/EncDecrypt";
 export const MessageStateContext = createContext<State | undefined>(undefined);
 export const MessageDispatchContext = createContext<Dispatch<Action> | undefined>(
   undefined
 );
 // Retrieve initial data from localStorage
 // Initialize initialChats as an array of IChat
-let initialChats: IChat[] = [];
 
-// Check if window is defined (in case of SSR) and session storage is supported
-if (typeof window !== "undefined" && window.localStorage) {
-  const storedChats = localStorage.getItem("chats");
-
-  // Check if storedChats is not null and has at least one chat item with an _id property
-  if (storedChats) {
-    const parsedChats = JSON.parse(storedChats);
-    if (Array.isArray(parsedChats) && parsedChats.length > 0 && parsedChats[0]._id) {
-      initialChats = parsedChats;
-    }
-  }
-}
-
-const initialSelectedChat: IChat =
-  typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("selectedChat") as "{}") || null
-    : null;
-const currentUser: Tuser =
-  typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("currentUser") || "{}") || null
-    : null;
+const storedChats = getDecryptedChats(
+  process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!
+);
+const storedSelectedChat = getDecryptedSelectedChat(
+  process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!
+);
+const currentUser = getDecryptedCurrentUser(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
 // Set initial state with data from localStorage
 const initialState: State = {
   user: currentUser,
-  selectedChat: initialSelectedChat,
-  isSelectedChat: initialSelectedChat,
+  selectedChat: storedSelectedChat,
+  isSelectedChat: storedSelectedChat,
   messages: [],
   totalMessagesCount: 0,
   totalChats: 0,
-  chats: initialChats.length > 0 ? initialChats : [],
+  chats: storedChats.length > 0 ? storedChats : [],
   callInfo: null,
 };
 export const messageReducer = (state: State = initialState, action: Action): State => {
