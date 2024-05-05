@@ -1,6 +1,5 @@
-"use client";
-import dynamic from "next/dynamic";
-import React, { ReactNode, useEffect, useRef } from "react";
+"use client"
+import React, { ReactNode } from "react";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import { BsShieldCheck } from "react-icons/bs";
 import { FaSave, FaVideo } from "react-icons/fa";
@@ -9,26 +8,29 @@ import { RiFileTransferFill } from "react-icons/ri";
 import { TbMessageCircleQuestion, TbUsersGroup } from "react-icons/tb";
 import { AiOutlineUser, AiOutlineGroup } from "react-icons/ai";
 import { ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
-const Footer = dynamic(() => import("./Footer"));
-import { motion } from "framer-motion";
 import AnimateSvg from "./AnimateSvg";
 import Lottie from "react-lottie";
 import * as ChatAnim from "./ChatLottie.json";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
-import { Scrollbar } from "smooth-scrollbar-react";
-import type { Scrollbar as BaseScrollbar } from "smooth-scrollbar/scrollbar";
+import { motion } from "framer-motion";
+import {
+  MotionAnchor,
+  MotionDiv,
+  MotionH1,
+  MotionH2,
+  MotionParagraph,
+} from "@/config/framer";
+import Footer from "./Footer";
+import ScrollBarWrapper from "./ScrollBarWrapper";
 interface CardData {
-    icon: ReactNode; // Type for React Icons
-    title: string;
-    description: string;
-    color: string;
-    delay: number;
-    fullColor: string;
+  icon: ReactNode; // Type for React Icons
+  title: string;
+  description: string;
+  color: string;
+  delay: number;
+  fullColor: string;
 }
 const Home = () => {
-  
-  const scrollbar = useRef<BaseScrollbar | null>(null);
-  
   // Define an array of card items with their respective icon, title, description, and icon color
   const cardItems = [
     {
@@ -143,22 +145,11 @@ const Home = () => {
     },
   };
 
-   
   return (
     <div className="overflow-y-scroll  max-h-[100vh] ">
-      <Scrollbar
-        ref={scrollbar as any}
-        plugins={{
-          overscroll: {
-            effect: "bounce",
-          } as any,
-        }}
-        alwaysShowTracks
-        thumbMinSize={2}
-        className="p-0 md:container   pb-20 mx-auto flex flex-wrap items-center justify-center h-screen"
-      >
+      <ScrollBarWrapper>
         <div className="w-full md:w-1/2 p-1 md:p-4 flex flex-col items-start py-24 sm:py-0">
-          <motion.h1
+          <MotionH1
             initial={{ opacity: 0, y: -50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -167,9 +158,9 @@ const Home = () => {
             <span className="text-wrap md:text-nowrap ">Let's Connect</span>{" "}
             <span className="text-wrap md:text-nowrap mt-4">with your friends</span>{" "}
             <span>in Real Time</span>
-          </motion.h1>
+          </MotionH1>
 
-          <motion.p
+          <MotionParagraph
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -177,9 +168,9 @@ const Home = () => {
           >
             Great application that allow you to chat and calling any place any time
             without any interruption
-          </motion.p>
+          </MotionParagraph>
 
-          <motion.a
+          <MotionAnchor
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
@@ -187,10 +178,10 @@ const Home = () => {
             className="text-white uppercase py-3 px-6 sm:py-4 sm:px-8 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 duration-150"
           >
             Get Started
-          </motion.a>
+          </MotionAnchor>
         </div>
 
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, x: -100 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -206,19 +197,19 @@ const Home = () => {
           alt="Chat Image"
           className="w-full h-auto rounded"
         /> */}
-        </motion.div>
+        </MotionDiv>
 
         <div className="w-full mt-8 p-1 md:p-4">
-          <motion.h1
+          <MotionH1
             initial={{ opacity: 0, y: -120 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
             className="text-3xl md:text-4xl text-center my-2 md:my-4 dark:text-gray-300 font-bold leading-10 tracking-tight"
           >
             Features for a better experience.
-          </motion.h1>
+          </MotionH1>
 
-          <motion.div className="flex gap-1 items-center flex-wrap justify-around">
+          <MotionDiv className="flex gap-1 items-center flex-wrap justify-around">
             {cardItems.map((item, index) => (
               <Card
                 key={index}
@@ -230,17 +221,17 @@ const Home = () => {
                 fullColor={item.fullColor}
               />
             ))}
-          </motion.div>
+          </MotionDiv>
           <AnimateSvg />
         </div>
         <Footer />
-      </Scrollbar>
+      </ScrollBarWrapper>
     </div>
   );
 };
 
 const Card = ({ icon, title, description, color, delay, fullColor }: CardData) => (
-  <motion.div
+  <MotionDiv
     initial={{ opacity: 0, y: -50 }}
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay }}
@@ -250,32 +241,32 @@ const Card = ({ icon, title, description, color, delay, fullColor }: CardData) =
     <div
       className={`border-l-2 ${fullColor} rounded p-6 shadow-md  text-${color}-500 duration-300 transition-all   hover:border-r-2 hover:border-rose-500`}
     >
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
         className="mb-4"
       >
         {icon}
-      </motion.div>
-      <motion.h2
+      </MotionDiv>
+      <MotionH2
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.4 }}
         className="text-lg font-semibold mb-2"
       >
         {title}
-      </motion.h2>
-      <motion.p
+      </MotionH2>
+      <MotionParagraph
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.5 }}
         className="text-gray-500 text-sm"
       >
         {description}
-      </motion.p>
+      </MotionParagraph>
     </div>
-  </motion.div>
+  </MotionDiv>
 );
 
 export default Home;
