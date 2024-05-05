@@ -52,7 +52,7 @@ const ChatHeader = () => {
             clearselectedChat();
           }}
         >
-          <FaArrowLeft className="h-3 md:h-4 w-3 md:w-4 text-emerald-500" />
+          <FaArrowLeft className="h-3 md:h-4 w-5 md:w-6 text-emerald-500" />
         </span>
         {selectedChat && (
           <>
