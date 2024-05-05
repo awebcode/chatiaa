@@ -93,11 +93,11 @@ const Modal = ({
       ),
       icon: <RiChatOffLine />,
       action: () => {
-           dispatch({
-             type: BLOCK_CHAT,
-             payload: { user: currentUser, chatId: chat?._id }, //data.chat.chatBlockedBy
-           });
-          blockMutation.mutateAsync(blockData);
+        dispatch({
+          type: BLOCK_CHAT,
+          payload: { user: currentUser, chatId: chat?._id }, //data.chat.chatBlockedBy
+        });
+        blockMutation.mutateAsync(blockData);
       },
       isHidden: chat?.isGroupChat ? true : false,
     },
@@ -123,7 +123,9 @@ const Modal = ({
       },
       isHidden: chat?.isGroupChat
         ? (chat?.groupAdmin || []).some((admin: any) => admin._id !== currentUser?._id)
-        : false,
+        : chat?.messages?.messages.length > 0
+        ? false
+        : true,
     },
     {
       name: <span className="text-rose-600">Leave</span>,

@@ -60,7 +60,7 @@ export interface IChat {
   isOnline: boolean;
   onlineStatus: ["online", "busy", "offline"];
   onCallMembers: number;
-  messages: { messages: IMessage,limit:number,skip:number,total:number };
+  messages: { messages: IMessage[],limit:number,skip:number,total:number };
 }
 export interface ICall {
   sender: Tuser;
