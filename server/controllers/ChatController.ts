@@ -19,7 +19,11 @@ import { allMessages } from "./messageController";
 import { allInitMessages } from "../common/getInitMessages";
 
 //@access          Protected
-export const accessChat = async (req: Request|any, res: Response, next: NextFunction) => {
+export const accessChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -76,7 +80,11 @@ export const accessChat = async (req: Request|any, res: Response, next: NextFunc
   }
 };
 
-export const fetchChats = async (req: Request|any, res: Response, next: NextFunction) => {
+export const fetchChats = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // console.log({fetchChats:req.id})
     const limit = parseInt(req.query.limit) || 10;
@@ -558,7 +566,11 @@ export const removeFromGroup = async (
 // @desc    Add user to Group / Leave
 // @route   PUT /api/chat/groupadd
 // @access  Protected
-export const addToGroup = async (req: Request|any, res: Response, next: NextFunction) => {
+export const addToGroup = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { chatId, userIds } = req.body;
     //
@@ -660,7 +672,11 @@ export const deleteSingleChat = async (
 };
 
 ///make admin
-export const makeAdmin = async (req: Request|any, res: Response, next: NextFunction) => {
+export const makeAdmin = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { chatId, userId } = req.body;
 
@@ -833,7 +849,11 @@ export const updateChatStatusAsBlockOrUnblock = async (
 };
 
 //LeaveChat
-export const leaveFromChat = async (req: Request|any, res: Response, next: NextFunction) => {
+export const leaveFromChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { chatId, userId } = req.body;
 
@@ -935,7 +955,11 @@ export const getInitialFilesInChat = async (
 
 //find files from a chat
 
-export const getFilesInChat = async (req: Request|any, res: Response, next: NextFunction) => {
+export const getFilesInChat = async (
+  req: Request | any,
+  res: Response,
+  next: NextFunction
+) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = parseInt(req.query.skip) || 0;
 
@@ -1044,9 +1068,8 @@ export const deleteAllMessagesInAChat = async (
     // Find all messages in the chat that have a file attached
     const messagesWithFiles = await Message.find({
       chat: chatId,
-      file: { $exists: true },
+      "file.public_Id": { $exists: true },
     });
-
     // Delete files from cloud storage and collect public_ids
     const publicIds = messagesWithFiles.map((message: any) => message?.file?.public_id);
     await Promise.all(publicIds.map((public_id) => v2.uploader.destroy(public_id)));

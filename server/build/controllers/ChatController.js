@@ -849,7 +849,7 @@ const deleteAllMessagesInAChat = (req, res, next) => __awaiter(void 0, void 0, v
         // Find all messages in the chat that have a file attached
         const messagesWithFiles = yield MessageModel_1.Message.find({
             chat: chatId,
-            file: { $exists: true },
+            "file.public_Id": { $exists: true },
         });
         // Delete files from cloud storage and collect public_ids
         const publicIds = messagesWithFiles.map((message) => { var _a; return (_a = message === null || message === void 0 ? void 0 : message.file) === null || _a === void 0 ? void 0 : _a.public_id; });
