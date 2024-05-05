@@ -63,7 +63,7 @@ export const allMessagesServerAction = async ({
 export const fetchUser = async () => {
   const res = await fetch(`${BaseUrl}/getUser`, {
     credentials: "include",
-    next: { tags: ["my-profile"] },
+    next: { tags: ["my-profile"], revalidate: 3600 },
     headers: {
       Cookie: `authToken=${
         cookies().get(
@@ -116,7 +116,6 @@ export async function RevalidatePath(path: string, type?: string | any) {
   revalidatePath(path, type || "page");
 }
 
-
-export async function wait (ms:number){
-  return new Promise((resolve)=>setInterval(resolve,ms))
+export async function wait(ms: number) {
+  return new Promise((resolve) => setInterval(resolve, ms));
 }

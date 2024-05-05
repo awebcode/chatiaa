@@ -41,6 +41,7 @@ import {
   ADD_REACTION_ON_MESSAGE,
 } from "./actions";
 import { createContext } from "use-context-selector";
+import { Tuser } from "@/store/types";
 
 export const MessageStateContext = createContext<State | undefined>(undefined);
 export const MessageDispatchContext = createContext<Dispatch<Action> | undefined>(
@@ -63,14 +64,17 @@ if (typeof window !== "undefined" && window.localStorage) {
   }
 }
 
-const initialSelectedChat =
+const initialSelectedChat: IChat =
   typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("selectedChat") as "[]") || null
+    ? JSON.parse(localStorage.getItem("selectedChat") as "{}") || null
     : null;
-
+const currentUser: Tuser =
+  typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("currentUser") || "{}") || null
+    : null;
 // Set initial state with data from localStorage
 const initialState: State = {
-  user: null,
+  user: currentUser,
   selectedChat: initialSelectedChat,
   isSelectedChat: initialSelectedChat,
   messages: [],
@@ -87,34 +91,35 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
     // set chats start
     case SET_CHATS:
       let updatedChats: IChat[] = [...state.chats];
-
       if (Array.isArray(action.payload.chats)) {
         // When scrolling
         // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
 
-         for (let i = 0; i < (action.payload as any)?.chats?.length; i++) {
-           let chat = (action.payload as any)?.chats[i];
-           const { _id } = chat;
+        for (let i = 0; i < (action.payload as any)?.chats?.length; i++) {
+          let chat = (action.payload as any)?.chats[i];
+          const { _id } = chat;
 
-           // Check if the Chat already exists in updatedChats
-           const existingChatIndex = updatedChats.findIndex(
-             (existingChat) => existingChat._id === _id
-           );
-           /////when load chats and it's not my message
-           if (
-             action.payload?.currentUser?._id !== chat.latestMessage?.sender?._id &&
-             ["unsent", "unseen"].includes(chat.latestMessage?.status)
-           ) {
-             chat.latestMessage.status = "delivered";
-           }
-           // If the chat is not found in updatedChats, push it
-           if (existingChatIndex === -1) {
-             updatedChats.push(chat);
-           } else {
-             // If the chat exists, update its content
-             updatedChats[existingChatIndex] = chat;
-           }
-         }
+          // Check if the Chat already exists in updatedChats
+          const existingChatIndex = updatedChats.findIndex(
+            (existingChat) => existingChat._id === _id
+          );
+          /////when load chats and it's not my message
+
+          if (
+            state.user &&
+            state.user?._id !== chat.latestMessage?.sender?._id &&
+            ["unsent", "unseen"].includes(chat.latestMessage?.status)
+          ) {
+            chat.latestMessage.status = "delivered";
+          }
+          // If the chat is not found in updatedChats, push it
+          if (existingChatIndex === -1) {
+            updatedChats.push(chat);
+          } else {
+            // If the chat exists, update its content
+            updatedChats[existingChatIndex] = chat;
+          }
+        }
       } else {
         // When a new chat is created
         // Update the status of the new chat if necessary
@@ -123,8 +128,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
       }
       // Filter out undefined chats from updatedChats
       // Filter out chats without defined _id property from updatedChats
-      updatedChats = updatedChats.filter((chat) => Boolean(chat
-        ._id))
+      updatedChats = updatedChats.filter((chat) => Boolean(chat._id));
 
       return { ...state, chats: updatedChats, totalChats: action.payload.total };
 
@@ -447,7 +451,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
             // If the user is not already in the seenBy array, add them
             if (!isUserSeen) {
-              updatedSeenBy=[...updatedSeenBy,action.payload.user] 
+              updatedSeenBy = [...updatedSeenBy, action.payload.user];
               totalseenBy += 1;
             }
 
@@ -523,8 +527,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
 
             // If the user is not already in the seenBy array, add them
             if (!isUserSeen) {
-              updatedSeenBy=[...updatedSeenBy,action.payload.user]
-           
+              updatedSeenBy = [...updatedSeenBy, action.payload.user];
+
               totalseenBy += 1;
             }
 
@@ -689,7 +693,8 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
         ...state,
         // Update messages array to replace the existing message with the edited one
         messages: state?.messages?.map((message) =>
-          message?._id === action.payload._id || message?.tempMessageId === action.payload.tempMessageId
+          message?._id === action.payload._id ||
+          message?.tempMessageId === action.payload.tempMessageId
             ? action.payload
             : message
         ),
@@ -987,7 +992,6 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
     //update group UPDATE_GROUP_INFO
 
     case UPDATE_GROUP_INFO:
-    
       return {
         ...state,
         chats: state?.chats?.map((chat) =>

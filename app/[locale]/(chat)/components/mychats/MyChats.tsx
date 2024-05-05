@@ -74,7 +74,7 @@ const MyChats = () => {
       payload: {
         chats: data?.pages.flatMap((page) => page.chats),
         total: data?.pages[0]?.total,
-        currentUser:currentUser
+       
       },
     });
   }, [data?.pages]);

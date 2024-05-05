@@ -135,6 +135,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
 
   // set initial user start
   useEffect(() => {
+    localStorage.setItem("currentUser",JSON.stringify(currentUser))
     dispatch({ type: SET_USER, payload: currentUser });
   }, [currentUser]);
   // set initial user end

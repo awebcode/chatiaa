@@ -858,6 +858,7 @@ const deleteAllMessagesInAChat = (req, res, next) => __awaiter(void 0, void 0, v
         res.json({
             success: true,
             message: "All Messages are deleted!",
+            chatId,
         });
     }
     catch (error) {
