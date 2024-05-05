@@ -37,7 +37,11 @@ export const io = new Server(server, {
 // Enable CORS for all routes
 
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://chatiaa.vercel.app"], // Allow requests from this specific origin
+  origin: [
+    "http://localhost:3000",
+    "https://chatiaa.vercel.app",
+    "https://chatiaa2.vercel.app",
+  ], // Allow requests from this specific origin
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
