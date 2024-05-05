@@ -273,10 +273,13 @@ export const useRemoveAdminFromGroup = (chatId: string, user: Tuser) => {
 export const useDeleteAllMessagesInAChatMutation = (chatId: string) => {
   const { socket } = useSocketContext();
   const dispatch = useMessageDispatch();
-  const { totalMessagesCount } = useMessageState();
+  const { selectedChat } = useMessageState();
   return useMutation({
     mutationFn: () => deleteAllMessagesInAChat(chatId),
     onSuccess: (data) => {
+      if (data?.chatId === selectedChat?.chatId) {
+        dispatch({ type: SET_SELECTED_CHAT, payload: { ...selectedChat, messages: [] } });
+      }
       toast.success("All messages deleted successfully!");
       dispatch({
         type: SET_TOTAL_MESSAGES_COUNT,

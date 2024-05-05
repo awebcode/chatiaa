@@ -1078,6 +1078,7 @@ export const deleteAllMessagesInAChat = async (
     res.json({
       success: true,
       message: "All Messages are deleted!",
+      chatId,
     });
   } catch (error) {
     next(error);
