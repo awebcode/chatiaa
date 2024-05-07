@@ -203,7 +203,10 @@ const Input = () => {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
       const trimmedValue = (e.target as any).value.trim()||messageInputRef.current?.value.trim()
-      if (trimmedValue === "") return;
+      if (trimmedValue === "") {
+        e.preventDefault();
+        return
+      }
       if (e.key === "Enter" && !isEdit && !isReply) {
         sentMessage();
       } else if (e.key === "Enter" && isEdit) {
@@ -266,7 +269,7 @@ const Input = () => {
             onKeyDown={handleKeyDown}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full  max-h-12 text-xs md:text-sm p-[2px] rounded-md dark:text-gray-400  bg-transparent  resize-none focus:outline-none"
+            className="w-full max-h-12 text-xs md:text-sm p-[2px] rounded-md dark:text-gray-400 bg-transparent resize-none focus:outline-none"
             placeholder="Type a message..."
           />
         </div>
