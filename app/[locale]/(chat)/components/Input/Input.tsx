@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, KeyboardEvent } from "react";
 import { CiMicrophoneOn } from "react-icons/ci";
 import { MdSend } from "react-icons/md"; // Send icon
 import dynamic from "next/dynamic";
@@ -201,7 +201,9 @@ const Input = () => {
   };
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent | any) => {
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      const trimmedValue = (e.target as any).value.trim()||messageInputRef.current?.value.trim()
+      if (trimmedValue === "") return;
       if (e.key === "Enter" && !isEdit && !isReply) {
         sentMessage();
       } else if (e.key === "Enter" && isEdit) {
@@ -210,8 +212,9 @@ const Input = () => {
         replySubmit();
       }
     },
-    [sentMessage]
+    [isEdit, isReply, sentMessage, editSubmit, replySubmit]
   );
+
   //clear set message
   useEffect(() => {
     if (isEdit && isEdit.content) {
