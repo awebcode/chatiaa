@@ -53,13 +53,11 @@ export const MessageDispatchContext = createContext<Dispatch<Action> | undefined
 // Retrieve initial data from localStorage
 // Initialize initialChats as an array of IChat
 
-const storedChats = getDecryptedChats("process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!");
+const storedChats = getDecryptedChats(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
 const storedSelectedChat = getDecryptedSelectedChat(
-  "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!"
+  process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!
 );
-const currentUser = getDecryptedCurrentUser(
-  "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!"
-);
+const currentUser = getDecryptedCurrentUser(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
 // Set initial state with data from localStorage
 const initialState: State = {
   user: currentUser,

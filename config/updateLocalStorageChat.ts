@@ -8,9 +8,9 @@ export function updatelocallStorageChatAndSelectedChat(
   data: IMessage,
   chatId: string
 ): void {
-  const storedChats = getDecryptedChats("process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!");
+  const storedChats = getDecryptedChats(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
   const storedSelectedChat: any = getDecryptedSelectedChat(
-    "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!"
+    process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!
   );
 
   const isExistChatIndex = storedChats.findIndex((chat: IChat) => chat?._id === chatId);
@@ -30,7 +30,7 @@ export function updatelocallStorageChatAndSelectedChat(
       //store encrypted selectedchat on localstorage
       encryptAndStoreData(
         storedSelectedChat,
-        "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
+        process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
         "selectedChat"
       );
       // localStorage.setItem("selectedChat", JSON.stringify(storedSelectedChat));
@@ -50,7 +50,7 @@ export function updatelocallStorageChatAndSelectedChat(
     //store encrypted selectedchat on localstorage
     encryptAndStoreData(
       storedChats,
-      "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
       "chats"
     );
     // localStorage.setItem("chats", JSON.stringify(storedChats));

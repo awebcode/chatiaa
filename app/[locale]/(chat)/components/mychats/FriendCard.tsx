@@ -85,7 +85,7 @@ const FriendsCard: React.FC<{
     // filterDuplicateTempMessageIds([], true, (ids) => ids.clear()); //clear message ids in set
     if (selectedChat?.chatId === chatId) return;
     const selectedPrevChatId = decryptData(
-      "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
       "selectedChatId"
     );
     if (selectedPrevChatId && selectedPrevChatId !== chatId) {
@@ -93,7 +93,7 @@ const FriendsCard: React.FC<{
     }
     // dispatch({ type: SET_SELECTED_CHAT, payload: null });
     //  dispatch({ type: CLEAR_MESSAGES });
-    const storedChats = getDecryptedChats("process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!");
+    const storedChats = getDecryptedChats(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
 
     const isExistChatIndex = storedChats.findIndex((c: IChat) => c?._id === chat?._id);
     //select chat
@@ -139,13 +139,13 @@ const FriendsCard: React.FC<{
     //store encrypted selectedchat on localstorage
     encryptAndStoreData(
       chatData,
-      "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
       "selectedChat"
     );
     //stored chatId
     encryptAndStoreData(
       chatId,
-      "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
       "selectedChatId"
     );
 

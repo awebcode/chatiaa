@@ -119,7 +119,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       dispatch({ type: SET_SELECTED_CHAT, payload: null });
     }
 
-    const storedChats = getDecryptedChats("process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!");
+    const storedChats = getDecryptedChats(process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!);
 
     // Check if storedChats is not null and has at least one chat item with an _id property
     if (storedChats) {
@@ -137,7 +137,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   useEffect(() => {
     encryptAndStoreData(
       currentUser,
-      "process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!",
+      process.env.NEXT_PUBLIC_CRYPTO_DATA_SECRET!,
       "currentUser"
     );
     dispatch({ type: SET_USER, payload: currentUser });
