@@ -202,9 +202,14 @@ const Input = () => {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      const trimmedValue = (e.target as any).value.trim()||messageInputRef.current?.value.trim()
-      if (e.key === "Enter" && trimmedValue === "") {
+        const trimmedValue =
+          (e.target as any).value.trim() || messageInputRef.current?.value.trim();
+
+      if (e.key === "Enter") {
         e.preventDefault();
+      }
+    
+      if (e.key === "Enter" && trimmedValue === "") {
         return;
       }
       if (e.key === "Enter" && !isEdit && !isReply) {

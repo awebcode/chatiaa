@@ -116,6 +116,8 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
     if (isInitialRender == null || !isInitialRender) {
       localStorage.removeItem("chats");
       localStorage.removeItem("selectedChat");
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("selectedChat");
       dispatch({ type: SET_SELECTED_CHAT, payload: null });
     }
 
