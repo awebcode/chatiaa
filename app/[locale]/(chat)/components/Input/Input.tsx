@@ -266,7 +266,7 @@ const Input = () => {
             onKeyDown={handleKeyDown}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full  h-10 text-xs md:text-sm p-[2px] rounded-md dark:text-gray-400  bg-transparent  resize-none focus:outline-none"
+            className="w-full  max-h-12 text-xs md:text-sm p-[2px] rounded-md dark:text-gray-400  bg-transparent  resize-none focus:outline-none"
             placeholder="Type a message..."
           />
         </div>
