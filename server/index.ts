@@ -6,7 +6,7 @@ import cors from "cors";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 import connectDb from "./config/connectDb";
 import cloudinaryConfig from "./config/cloudinaryConfig";
-
+//
 import { config } from "dotenv";
 import authRoute from "./routes/authRoutes";
 import chatRoute from "./routes/chatRoutes";
