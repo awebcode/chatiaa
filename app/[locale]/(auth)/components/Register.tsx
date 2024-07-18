@@ -7,11 +7,11 @@ import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
 import LoaderComponent from "@/components/Loader";
+import type { Session } from "next-auth";
 
-const Register = () => {
+const Register = ({session}: {session: Session|null}) => {
   const queryClient = useQueryClient();
   const [loading, setloading] = useState(false);
-  const { data: session } = useSession();
   const handleGoogleLogin = async () => {
     const res = await signIn("google");
     if (res?.error) {

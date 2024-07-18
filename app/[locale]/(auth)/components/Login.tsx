@@ -1,13 +1,13 @@
 "use client";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useState } from "react";
 import Image from "next/image";
 
 import { BiLoaderCircle } from "react-icons/bi";
+import type { Session } from "next-auth";
 
-const Login = () => {
-  const { data: session } = useSession();
+const Login = ({ session }: { session: Session|null }) => {
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
   const router = useRouter();
@@ -17,9 +17,9 @@ const Login = () => {
     });
 
     if (res?.error) return setError(res.error);
-      if (res?.ok) {
-        // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
-      }
+    if (res?.ok) {
+      // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+    }
   };
 
   const handleGithubLogin = async () => {
@@ -28,8 +28,7 @@ const Login = () => {
     });
     if (res?.error) return setError(res.error);
     if (res?.ok) {
-          // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
-
+      // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
     }
   };
 
@@ -45,14 +44,13 @@ const Login = () => {
         password: formData.get("password"),
         redirect: false,
       });
-    
 
       if (res?.error) {
         setloading(false);
-        return setError(res.error)
-      };
-      if (res?.ok)  {
-            // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+        return setError(res.error);
+      }
+      if (res?.ok) {
+        // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
 
         router.push("/chat");
       }
@@ -61,7 +59,7 @@ const Login = () => {
       setloading(false);
     }
   };
-  if(session?.user?.name) router.push("/chat")
+  if (session?.user?.name) router.push("/chat");
   return (
     <div className=" min-h-screen p-5">
       <div className="max-w-lg mx-auto   bg-white dark:bg-gray-800 p-8 rounded-xl shadow dark:shadow-none shadow-slate-300 dark:border dark:border-indigo-600">

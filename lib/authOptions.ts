@@ -13,17 +13,56 @@ export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
 
   providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
-    }),
+    process.env.VERCEL_ENV === "preview"
+      ? CredentialsProvider({
+          name: "Credentials",
+          credentials: {
+            email: {
+              label: "Email",
+              type: "email",
+              placeholder: "example@gmail.com",
+            },
+            password: {
+              label: "Password",
+              type: "password",
+              placeholder: "********",
+            },
+          },
+          async authorize(credentials, req) {
+            await connectDb();
+
+            // console.log('authorize', { credentials });
+            const userFound = await User.findOne({
+              email: credentials?.email,
+            }).select("+password");
+
+            if (!userFound) {
+              throw new Error("User doesn't exists! try using another user.");
+            }
+
+            const passwordMatch = await bcrypt.compare(
+              credentials!.password,
+              userFound.password
+            );
+
+            if (!passwordMatch) {
+              throw new Error("Password mismatch!");
+            }
+            // console.log('authorize', { userFound });
+            return userFound;
+          },
+        })
+      : GithubProvider({
+          clientId: process.env.GITHUB_ID as string,
+          clientSecret: process.env.GITHUB_SECRET as string,
+          authorization: {
+            params: {
+              prompt: "consent",
+              access_type: "offline",
+              response_type: "code",
+            },
+          },
+        }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
@@ -35,47 +74,9 @@ export const authOptions: AuthOptions = {
         },
       },
     }),
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: {
-          label: "Email",
-          type: "email",
-          placeholder: "example@gmail.com",
-        },
-        password: {
-          label: "Password",
-          type: "password",
-          placeholder: "********",
-        },
-      },
-      async authorize(credentials, req) {
-        await connectDb();
-
-        // console.log('authorize', { credentials });
-        const userFound = await User.findOne({
-          email: credentials?.email,
-        }).select("+password");
-
-        if (!userFound) {
-          throw new Error("User doesn't exists! try using another user.");
-        }
-
-        const passwordMatch = await bcrypt.compare(
-          credentials!.password,
-          userFound.password
-        );
-
-        if (!passwordMatch) {
-          throw new Error("Password mismatch!");
-        }
-        // console.log('authorize', { userFound });
-        return userFound;
-      },
-    }),
   ],
   callbacks: {
-    async signIn({ user, account, credentials, profile, email }) {
+    async signIn({ user, account, profile, email, credentials }) {
       if (account?.provider === "credentials") {
         await connectDb();
         const existingUser = await User.findOne({
@@ -105,18 +106,19 @@ export const authOptions: AuthOptions = {
       //same account with different provider
     },
 
-    async jwt({ token, user }: any) {
+    async jwt({ token, user, account, profile, isNewUser }) {
       //  await connectDb();
       // Persist the OAuth access_token and or the user id to the token right after signin
       if (user) {
-        token.accessToken = user.access_token;
+        token.accessToken = (user as any).access_token;
         token.id = user.id;
       }
       return Promise.resolve(token);
     },
     async session({ session, token }: any) {
-      await connectDb();
       if (token) {
+        await connectDb();
+
         session.user._id = token.id;
         session.accessToken = token.accessToken;
 
@@ -145,7 +147,7 @@ export const authOptions: AuthOptions = {
     maxAge: 1000 * 60 * 60 * 24 * 30, //expires at 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
- 
+
   pages: {
     signIn: "/login",
     error: "/error",

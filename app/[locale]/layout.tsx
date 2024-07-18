@@ -19,6 +19,8 @@ import { Toaster } from "react-hot-toast";
 // const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 import type { Viewport } from "next";
 import { cookies } from "next/headers";
+import SessionProvider from "@/providers/NextAuthProvider";
+import { getServerSession } from "next-auth";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -97,6 +99,7 @@ export default async function LocaleLayout({
 }) {
   unstable_setRequestLocale(locale);
   let languages;
+  const session=await getServerSession()
   const user = await fetchUser();
   // const data = await getServerSession(authOptions);
   try {
@@ -105,37 +108,39 @@ export default async function LocaleLayout({
     notFound();
   }
 
+
   return (
     <html lang={locale} suppressHydrationWarning>
       {/* {locale} */}
       <SocketContextProvider>
         <ReactQueryClientProvider>
-          <NextAuthProvider>
-            <body suppressHydrationWarning>
-              {" "}
-              <NextThemeProvider>
-                <NextIntlClientProvider locale={locale} messages={languages}>
+          <body suppressHydrationWarning>
+            {" "}
+            <NextThemeProvider>
+              <NextIntlClientProvider locale={locale} messages={languages}>
+                <SessionProvider session={session} refetchInterval={5 * 60}>
                   <MessageContextProvider>
                     <Navbar />
                     {(user as any)._id && <SocketEvents currentUser={user as any} />}
                     {children} {/* <IntlPolyfills /> */}
                   </MessageContextProvider>
-                  <ToastProvider />
-                  {/* React hot toast */}
+                </SessionProvider>
 
-                  <Toaster
-                    position="top-center"
-                    toastOptions={{
-                      className:
-                        cookies().get("theme")?.value === "dark"
-                          ? "hot-toast-bg-white"
-                          : "hot-toast-bg-dark",
-                    }}
-                  />
-                </NextIntlClientProvider>
-              </NextThemeProvider>
-            </body>
-          </NextAuthProvider>
+                <ToastProvider />
+                {/* React hot toast */}
+
+                <Toaster
+                  position="top-center"
+                  toastOptions={{
+                    className:
+                      cookies().get("theme")?.value === "dark"
+                        ? "hot-toast-bg-white"
+                        : "hot-toast-bg-dark",
+                  }}
+                />
+              </NextIntlClientProvider>
+            </NextThemeProvider>
+          </body>
         </ReactQueryClientProvider>
       </SocketContextProvider>
     </html>
