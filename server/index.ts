@@ -30,18 +30,18 @@ import { Worker } from "worker_threads";
 // Get the number of available CPU cores
 const numCPUs = os.cpus().length;
 
- const server = createServer(app);
- export const io = new Server(server, {
-   cors: {
-     origin: "*",
-   },
- });
- type TUser = {
-   _id: string;
-   name: string;
-   image: string;
-   lastActive: string;
- };
+const server = createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+type TUser = {
+  _id: string;
+  name: string;
+  image: string;
+  lastActive: string;
+};
 export type TsocketUsers = {
   userId: string;
   socketId: string;
@@ -75,17 +75,16 @@ export const getSocketConnectedUser = async (id: string | Types.ObjectId) => {
   }
 };
 
-
 if (cluster.isPrimary) {
   console.log(`Master ${process.pid} is running`);
-
+  const cpus = process.env.NODE_ENV === "production" ? numCPUs : 1;
   // Fork workers
-  for (let i = 0; i < numCPUs; i++) {
+  for (let i = 0; i < cpus; i++) {
     cluster.fork();
   }
 
   // Listen for dying workers and fork new ones
-  cluster.on('exit', (worker, code, signal) => {
+  cluster.on("exit", (worker, code, signal) => {
     console.log(`Worker ${worker.process.pid} died. Forking a new worker...`);
     cluster.fork();
   });
@@ -93,7 +92,6 @@ if (cluster.isPrimary) {
   app.use(express.json({ limit: "100mb" }));
   app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
-  
   // Enable CORS for all routes
 
   const corsOptions = {
@@ -113,9 +111,7 @@ if (cluster.isPrimary) {
   app.use("/api/v1", chatRoute);
 
   app.use("/api/v1", messageRoute);
-  
- 
-   
+
   // Keep track of connected sockets
   // Function to add or update a user in the online users model
   const checkOnlineUsers = async (userId: string, socketId: string) => {
@@ -136,7 +132,7 @@ if (cluster.isPrimary) {
   };
 
   // Function to get the socket connected user from the User model
-  
+
   // WebSocket server logic
   io.on("connection", (socket: Socket) => {
     //join in group chat
@@ -159,7 +155,7 @@ if (cluster.isPrimary) {
         if (onlineUsersData.error) {
           console.error("Worker Error:", onlineUsersData.error);
         } else {
-          onlineUsersData.forEach((data:any) => {
+          onlineUsersData.forEach((data: any) => {
             io.to(data.receiverId).emit("addOnlineUsers", {
               chatId: data.chatId,
               userId: data.userId,
@@ -177,7 +173,6 @@ if (cluster.isPrimary) {
       // io.emit("setup", users);
       console.log("Client connected");
     });
-  
 
     // Handle incoming messages from clients
     socket.on("sentMessage", async (message: any) => {
@@ -209,13 +204,13 @@ if (cluster.isPrimary) {
 
     //ReplyMessage
 
-    socket.on("replyMessage", async (message: any) => { });
+    socket.on("replyMessage", async (message: any) => {});
     //EditMessage
 
-    socket.on("editMessage", async (message: any) => { });
+    socket.on("editMessage", async (message: any) => {});
     //addReactionOnMessage
 
-    socket.on("addReactionOnMessage", async (message: any) => { });
+    socket.on("addReactionOnMessage", async (message: any) => {});
     //remove_remove_All_unsentMessage
 
     socket.on("remove_remove_All_unsentMessage", async (message: any) => {
@@ -265,7 +260,12 @@ if (cluster.isPrimary) {
     //groupCreatedNotify
 
     socket.on("groupCreatedNotify", async (data) => {
-      await emitEventToGroupUsers(socket, "groupCreatedNotifyReceived", data.chatId, data);
+      await emitEventToGroupUsers(
+        socket,
+        "groupCreatedNotifyReceived",
+        data.chatId,
+        data
+      );
     });
     //singleChat createdNitify
     socket.on("chatCreatedNotify", (data) => {
@@ -275,9 +275,7 @@ if (cluster.isPrimary) {
     socket.on("singleChatDeletedNotify", async (data) => {
       const receiverId = await getSocketConnectedUser(data.receiverId);
       if (receiverId) {
-        socket
-          .to(receiverId?.socketId)
-          .emit("singleChatDeletedNotifyReceived", data);
+        socket.to(receiverId?.socketId).emit("singleChatDeletedNotifyReceived", data);
       }
     });
 
@@ -458,12 +456,17 @@ if (cluster.isPrimary) {
         //  socket.emit("receiveMessage", message);
       } else {
         // Populate users field if it's not already populated
-        const receiver = await foundChat?.populate("users", "name email image lastActive");
+        const receiver = await foundChat?.populate(
+          "users",
+          "name email image lastActive"
+        );
         //all single user
         receiver?.users?.forEach(async (user) => {
           const isConnected = await getSocketConnectedUser(user?._id.toString());
           if (isConnected) {
-            io.to(isConnected?.socketId).emit("update:on-call-count_received", { ...data });
+            io.to(isConnected?.socketId).emit("update:on-call-count_received", {
+              ...data,
+            });
           }
         });
       }
@@ -494,7 +497,10 @@ if (cluster.isPrimary) {
         //  socket.emit("receiveMessage", message);
       } else {
         // Populate users field if it's not already populated
-        const receiver = await foundChat?.populate("users", "name email image lastActive");
+        const receiver = await foundChat?.populate(
+          "users",
+          "name email image lastActive"
+        );
         //all single user
         receiver?.users?.forEach(async (user) => {
           const isConnected = await getSocketConnectedUser(user?._id.toString());
