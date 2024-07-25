@@ -99,7 +99,7 @@ export default async function LocaleLayout({
 }) {
   unstable_setRequestLocale(locale);
   let languages;
-  const session=await getServerSession()
+  const session = await getServerSession();
   const user = await fetchUser();
   // const data = await getServerSession(authOptions);
   try {
@@ -108,17 +108,16 @@ export default async function LocaleLayout({
     notFound();
   }
 
-
   return (
     <html lang={locale} suppressHydrationWarning>
       {/* {locale} */}
-      <SocketContextProvider>
-        <ReactQueryClientProvider>
-          <body suppressHydrationWarning>
+      <body suppressHydrationWarning>
+        <SocketContextProvider>
+          <ReactQueryClientProvider>
             {" "}
             <NextThemeProvider>
               <NextIntlClientProvider locale={locale} messages={languages}>
-                <SessionProvider session={session} refetchInterval={5 * 60}>
+                <SessionProvider session={session}>
                   <MessageContextProvider>
                     <Navbar />
                     {(user as any)._id && <SocketEvents currentUser={user as any} />}
@@ -140,9 +139,9 @@ export default async function LocaleLayout({
                 />
               </NextIntlClientProvider>
             </NextThemeProvider>
-          </body>
-        </ReactQueryClientProvider>
-      </SocketContextProvider>
+          </ReactQueryClientProvider>
+        </SocketContextProvider>
+      </body>
     </html>
   );
 }

@@ -17,6 +17,7 @@ import { generateUpdateMessage } from "../common/generateUpdateMessage";
 import { checkIfAnyUserIsOnline } from "../common/checkIsOnline";
 import { allMessages } from "./messageController";
 import { allInitMessages } from "../common/getInitMessages";
+import { processChatsWithUnseenCount } from "../common/filterChats";
 
 //@access          Protected
 export const accessChat = async (
@@ -165,99 +166,22 @@ export const fetchChats = async (
           ) || chat.chatName.match(new RegExp(req.query.search, "i")) // Add chatName filtering condition
       );
     }
-    const filteredChatsWithUnseenCountPromises = filteredChats.map(async (chat: any) => {
-      const correspondingUnseenCount = unseenCount.find(
-        (count: any) => count._id.toString() === chat._id.toString()
-      );
-      //check if any user is online
-      const isAnyUserOnline = await checkIfAnyUserIsOnline(chat?.users, req.id);
-      try {
-        const { seenBy, isLatestMessageSeen, totalSeenCount } = await getSeenByInfo(
-          chat._id,
-          chat?.latestMessage?._id,
-          req.id
-        );
-        const messages = await allInitMessages(chat._id);
-        // Construct updated chat object with awaited results
-        return {
-          ...chat.toObject(),
-          latestMessage: {
-            ...chat.latestMessage?._doc,
-            isSeen: !!isLatestMessageSeen,
-            seenBy,
+//send response
+   const chatsToSend = filteredChats.length > 0 ? filteredChats : populatedChats;
 
-            totalseenBy: totalSeenCount || 0,
-          },
-          messages,
-          isOnline: isAnyUserOnline,
-          unseenCount: correspondingUnseenCount
-            ? correspondingUnseenCount.unseenMessagesCount
-            : 0,
-        };
-      } catch (error) {
-        // Handle errors if necessary
-        console.error("Error:", error);
-        return null; // Return null or any other default value if needed
-      }
-    });
-    // Wait for all promises to resolve using Promise.all
-    const resolvedFilteredChatsWithUnseenCount = await Promise.all(
-      filteredChatsWithUnseenCountPromises
-    );
-    // Modify populatedChats to include unseenCount for each chat
-    const populatedChatsWithUnseenCount = await Promise.all(
-      populatedChats.map(async (chat: any) => {
-        const correspondingUnseenCount = unseenCount.find(
-          (count: any) => count._id.toString() === chat._id.toString()
-        );
-        // Check if any user in the chat is online
+   const processedChats = await processChatsWithUnseenCount(
+     chatsToSend,
+     unseenCount,
+     req.id
+   );
 
-        const isAnyUserOnline = await checkIfAnyUserIsOnline(chat?.users, req.id);
+   res.status(200).send({
+     chats: processedChats||[],
+     total: totalDocs,
+     limit,
+     unseenCountArray: unseenCount,
+   });
 
-        try {
-          const { seenBy, isLatestMessageSeen, totalSeenCount } = await getSeenByInfo(
-            chat._id,
-            chat?.latestMessage?._id,
-            req.id
-          );
-          const messages = await allInitMessages(chat._id);
-          // Construct updated chat object with awaited results
-          const updatedChat = {
-            ...chat.toObject(),
-            latestMessage: {
-              ...chat.latestMessage?._doc,
-              isSeen: !!isLatestMessageSeen,
-              seenBy,
-              totalseenBy: totalSeenCount || 0,
-            },
-            messages,
-            isOnline: isAnyUserOnline,
-            unseenCount: correspondingUnseenCount
-              ? correspondingUnseenCount.unseenMessagesCount
-              : 0,
-          };
-
-          return updatedChat;
-        } catch (error) {
-          // Handle errors if necessary
-          console.error("Error:", error);
-          return null; // Return null or any other default value if needed
-        }
-      })
-    );
-    // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
-    // // Retrieve the IDs of the filtered users
-    res.status(200).send({
-      chats:
-        filteredChats.length > 0
-          ? resolvedFilteredChatsWithUnseenCount
-          : req.query.search
-          ? []
-          : populatedChatsWithUnseenCount,
-      total: totalDocs,
-      limit,
-      unseenCountArray: unseenCount,
-    });
   } catch (error: any) {
     console.log(error);
     next(error);

@@ -61,21 +61,25 @@ export const allMessagesServerAction = async ({
 
 //get user
 export const fetchUser = async () => {
-  const res = await fetch(`${BaseUrl}/getUser`, {
-    credentials: "include",
-    next: { tags: ["my-profile"], revalidate: 3600 },
-    headers: {
-      Cookie: `authToken=${
-        cookies().get(
-          process.env.NODE_ENV === "production"
-            ? "__Secure-next-auth.session-token"
-            : "next-auth.session-token"
-        )?.value
-      };`,
-    },
-  });
-  //__Secure-next-auth.session-token
-  return await res.json();
+ try {
+   const res = await fetch(`${BaseUrl}/getUser`, {
+     credentials: "include",
+     next: { tags: ["my-profile"], revalidate: 3600 },
+     headers: {
+       Cookie: `authToken=${
+         cookies().get(
+           process.env.NODE_ENV === "production"
+             ? "__Secure-next-auth.session-token"
+             : "next-auth.session-token"
+         )?.value
+       };`,
+     },
+   });
+   //__Secure-next-auth.session-token
+   return await res.json();
+ } catch (error) {
+   return { error };
+ }
 };
 //get profile
 export const getProfile = async (userId: string) => {

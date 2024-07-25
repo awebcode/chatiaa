@@ -20,7 +20,6 @@ const ChatModel_1 = require("../model/ChatModel");
 const UserModel_1 = require("../model/UserModel");
 const MessageModel_1 = require("../model/MessageModel");
 const mongoose_1 = __importDefault(require("mongoose"));
-const seenByInfo_1 = require("../common/seenByInfo");
 const random_avatar_generator_1 = require("random-avatar-generator");
 const cloudinary_1 = require("cloudinary");
 const __1 = require("..");
@@ -28,7 +27,7 @@ const groupSocket_1 = require("../common/groupSocket");
 const functions_1 = require("./functions");
 const generateUpdateMessage_1 = require("../common/generateUpdateMessage");
 const checkIsOnline_1 = require("../common/checkIsOnline");
-const getInitMessages_1 = require("../common/getInitMessages");
+const filterChats_1 = require("../common/filterChats");
 //@access          Protected
 const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
@@ -154,56 +153,11 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))) || chat.chatName.match(new RegExp(req.query.search, "i")) // Add chatName filtering condition
             );
         }
-        const filteredChatsWithUnseenCountPromises = filteredChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
-            var _a, _b;
-            const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
-            //check if any user is online
-            const isAnyUserOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(chat === null || chat === void 0 ? void 0 : chat.users, req.id);
-            try {
-                const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_a = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _a === void 0 ? void 0 : _a._id, req.id);
-                const messages = yield (0, getInitMessages_1.allInitMessages)(chat._id);
-                // Construct updated chat object with awaited results
-                return Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), messages, isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
-                        ? correspondingUnseenCount.unseenMessagesCount
-                        : 0 });
-            }
-            catch (error) {
-                // Handle errors if necessary
-                console.error("Error:", error);
-                return null; // Return null or any other default value if needed
-            }
-        }));
-        // Wait for all promises to resolve using Promise.all
-        const resolvedFilteredChatsWithUnseenCount = yield Promise.all(filteredChatsWithUnseenCountPromises);
-        // Modify populatedChats to include unseenCount for each chat
-        const populatedChatsWithUnseenCount = yield Promise.all(populatedChats.map((chat) => __awaiter(void 0, void 0, void 0, function* () {
-            var _c, _d;
-            const correspondingUnseenCount = unseenCount.find((count) => count._id.toString() === chat._id.toString());
-            // Check if any user in the chat is online
-            const isAnyUserOnline = yield (0, checkIsOnline_1.checkIfAnyUserIsOnline)(chat === null || chat === void 0 ? void 0 : chat.users, req.id);
-            try {
-                const { seenBy, isLatestMessageSeen, totalSeenCount } = yield (0, seenByInfo_1.getSeenByInfo)(chat._id, (_c = chat === null || chat === void 0 ? void 0 : chat.latestMessage) === null || _c === void 0 ? void 0 : _c._id, req.id);
-                const messages = yield (0, getInitMessages_1.allInitMessages)(chat._id);
-                // Construct updated chat object with awaited results
-                const updatedChat = Object.assign(Object.assign({}, chat.toObject()), { latestMessage: Object.assign(Object.assign({}, (_d = chat.latestMessage) === null || _d === void 0 ? void 0 : _d._doc), { isSeen: !!isLatestMessageSeen, seenBy, totalseenBy: totalSeenCount || 0 }), messages, isOnline: isAnyUserOnline, unseenCount: correspondingUnseenCount
-                        ? correspondingUnseenCount.unseenMessagesCount
-                        : 0 });
-                return updatedChat;
-            }
-            catch (error) {
-                // Handle errors if necessary
-                console.error("Error:", error);
-                return null; // Return null or any other default value if needed
-            }
-        })));
-        // console.log({x:populatedChatsWithUnseenCount[0].latestMessage})
-        // // Retrieve the IDs of the filtered users
+        //send response
+        const chatsToSend = filteredChats.length > 0 ? filteredChats : populatedChats;
+        const processedChats = yield (0, filterChats_1.processChatsWithUnseenCount)(chatsToSend, unseenCount, req.id);
         res.status(200).send({
-            chats: filteredChats.length > 0
-                ? resolvedFilteredChatsWithUnseenCount
-                : req.query.search
-                    ? []
-                    : populatedChatsWithUnseenCount,
+            chats: processedChats || [],
             total: totalDocs,
             limit,
             unseenCountArray: unseenCount,
@@ -333,7 +287,7 @@ exports.createGroupChat = createGroupChat;
 //
 // @access  Protected updateGroupPhoto and name
 const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f;
+    var _a, _b;
     try {
         const { chatId, groupName, description } = req.body;
         const foundChat = yield ChatModel_1.Chat.findById(chatId);
@@ -346,7 +300,7 @@ const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 
         }
         // Update chat image if req.file.path exists
         let imageUpdate = {};
-        if ((_e = req.file) === null || _e === void 0 ? void 0 : _e.path) {
+        if ((_a = req.file) === null || _a === void 0 ? void 0 : _a.path) {
             // Check if chat.image exists, if so, remove the previous image from cloudinary
             if (foundChat.image && foundChat.image.public_id) {
                 yield cloudinary_1.v2.uploader.destroy(foundChat.image.public_id);
@@ -373,7 +327,7 @@ const updateGroupNamePhoto = (req, res, next) => __awaiter(void 0, void 0, void 
             .populate("groupAdmin", "name email image lastActive onlineStatus onlineStatus");
         // //@@@ notify/emit-socket group members that who updated the group
         // Generate update message
-        const message = (0, generateUpdateMessage_1.generateUpdateMessage)(currentUser, description, groupName, (_f = req.file) === null || _f === void 0 ? void 0 : _f.path);
+        const message = (0, generateUpdateMessage_1.generateUpdateMessage)(currentUser, description, groupName, (_b = req.file) === null || _b === void 0 ? void 0 : _b.path);
         if (message.trim() !== "") {
             const updateGroupMessage = yield (0, functions_1.sentGroupNotifyMessage)({
                 chatId: chatId,
@@ -399,7 +353,7 @@ exports.updateGroupNamePhoto = updateGroupNamePhoto;
 // @route   PUT /api/chat/groupremove or leave user when leave user reassign new random admin
 // @access  Protected
 const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _g;
+    var _c;
     try {
         const { chatId, userId } = req.body;
         const chat = yield ChatModel_1.Chat.findById(chatId);
@@ -429,7 +383,7 @@ const removeFromGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                 }
                 else {
                     // If no random user is found, make the first user in the list the admin
-                    newGroupAdmins.push((_g = removedUser.users[0]) === null || _g === void 0 ? void 0 : _g._id);
+                    newGroupAdmins.push((_c = removedUser.users[0]) === null || _c === void 0 ? void 0 : _c._id);
                 }
             }
             // Update the groupAdmin field with the new admins
@@ -525,7 +479,7 @@ const addToGroup = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 exports.addToGroup = addToGroup;
 //delete single chat one to one chat
 const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h;
+    var _d;
     try {
         if (!req.params.chatId || !req.id) {
             return next(new errorHandler_1.CustomErrorHandler("ChatId Not found", 400));
@@ -536,7 +490,7 @@ const deleteSingleChat = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         res.json({
             success: true,
             chat: chat,
-            receiverId: (_h = chat === null || chat === void 0 ? void 0 : chat.users.find((user) => user.toString() !== req.id)) === null || _h === void 0 ? void 0 : _h._id.toString(),
+            receiverId: (_d = chat === null || chat === void 0 ? void 0 : chat.users.find((user) => user.toString() !== req.id)) === null || _d === void 0 ? void 0 : _d._id.toString(),
         });
     }
     catch (error) {
@@ -639,7 +593,7 @@ const removeFromAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 exports.removeFromAdmin = removeFromAdmin;
 //update Chat status as Blocked/Unblocked
 const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j;
+    var _e;
     try {
         const { chatId, status } = req.body;
         if (!status || !chatId)
@@ -668,7 +622,7 @@ const updateChatStatusAsBlockOrUnblock = (req, res, next) => __awaiter(void 0, v
         res.status(200).json({
             chat: updatedChat,
             chatId: updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat._id,
-            receiverId: (_j = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.users.find((user) => user.toString() !== req.id)) === null || _j === void 0 ? void 0 : _j._id.toString(),
+            receiverId: (_e = updatedChat === null || updatedChat === void 0 ? void 0 : updatedChat.users.find((user) => user.toString() !== req.id)) === null || _e === void 0 ? void 0 : _e._id.toString(),
             success: true,
         });
     }

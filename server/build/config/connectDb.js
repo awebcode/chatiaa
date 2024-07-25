@@ -19,7 +19,8 @@ const connectDb = () => __awaiter(void 0, void 0, void 0, function* () {
         console.log("Db connected!");
     }
     catch (error) {
-        console.log("Db Connection Problem!", error);
+        let err = error;
+        console.log("Db Connection Problem!", err.message);
     }
 });
 exports.default = connectDb;
