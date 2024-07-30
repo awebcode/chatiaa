@@ -6,23 +6,25 @@ import React, { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
-import LoaderComponent from "@/components/Loader";
 import type { Session } from "next-auth";
 import { RevalidatePath } from "@/apisActions/serverActions";
+import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateItem";
 
-const Register = ({session}: {session: Session|null}) => {
+const Register = ({ session }: { session: Session | null }) => {
   const queryClient = useQueryClient();
   const [loading, setloading] = useState(false);
   const handleGoogleLogin = async () => {
+    removeLocalStorageChatItem();
     const res = await signIn("google");
     if (res?.error) {
       throw new Error(res?.error);
     }
-    
+
     if (res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
   };
 
   const handleGithubLogin = async () => {
+    removeLocalStorageChatItem();
     const res = await signIn("github");
     if (res?.error) {
       throw new Error(res?.error);
@@ -37,6 +39,7 @@ const Register = ({session}: {session: Session|null}) => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setloading(true);
+    removeLocalStorageChatItem();
     const formData = new FormData(e.currentTarget);
     const registerData = {
       name: formData.get("name"),
@@ -45,7 +48,7 @@ const Register = ({session}: {session: Session|null}) => {
     };
     const { name, email, password } = registerData;
     if (!name || !email || !password) {
-    setError("Plese fill all the fields!");
+      setError("Plese fill all the fields!");
     }
     if ((registerData as any).password?.length < 6) {
       setloading(false);
@@ -56,7 +59,7 @@ const Register = ({session}: {session: Session|null}) => {
       setloading(false);
       console.log({ data });
       setError(data?.response?.data?.message);
-      return
+      return;
     }
     if (data.user) {
       const res = await signIn("credentials", {
@@ -71,14 +74,14 @@ const Register = ({session}: {session: Session|null}) => {
       }
       if (res?.ok) {
         // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
-        RevalidatePath("/")
+        RevalidatePath("/");
         router.push("/chat");
       }
     }
   };
-   useEffect(() => {
-     if (session?.user) router.push("/chat");
-   }, [router, session]);
+  useEffect(() => {
+    if (session?.user) router.push("/chat");
+  }, [router, session]);
   return (
     <div className=" min-h-screen p-5">
       <div className="max-w-lg mx-auto   bg-white dark:bg-gray-800 p-8 rounded-xl shadow dark:shadow-none shadow-slate-300 dark:border dark:border-indigo-600">

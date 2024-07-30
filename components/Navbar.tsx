@@ -15,24 +15,22 @@ import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { FiUsers } from "react-icons/fi";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
-import { fetchClientUser } from "@/apisActions/authActions";
 import { useMessageState } from "@/context/MessageContext";
+import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateItem";
 const ThemeButton = dynamic(() => import("./ThemeButton"));
 const LanguageChanger = dynamic(() => import("./LanguageChanger"));
 const Navbar = () => {
-  const queryClient = useQueryClient();
   const t = useTranslations();
   const { user, selectedChat } = useMessageState();
   // const { data:  } = use();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const logoutHandler = async () => {
     await signOut();
     localStorage.removeItem("currentUser");
+    removeLocalStorageChatItem();
+
     router.push("/");
   };
   // const isHidden = pathname.includes("/chat?chatId=");

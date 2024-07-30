@@ -7,8 +7,9 @@ import Image from "next/image";
 import { BiLoaderCircle } from "react-icons/bi";
 import type { Session } from "next-auth";
 import { RevalidatePath } from "@/apisActions/serverActions";
+import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateItem";
 
-const Login = ({ session }: { session: Session|null }) => {
+const Login = ({ session }: { session: Session | null }) => {
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
   const router = useRouter();
@@ -16,7 +17,7 @@ const Login = ({ session }: { session: Session|null }) => {
     const res = await signIn("google", {
       callbackUrl: "/chat",
     });
-
+    removeLocalStorageChatItem();
     if (res?.error) return setError(res.error);
     if (res?.ok) {
       // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
@@ -24,6 +25,8 @@ const Login = ({ session }: { session: Session|null }) => {
   };
 
   const handleGithubLogin = async () => {
+    removeLocalStorageChatItem();
+
     const res = await signIn("github", {
       callbackUrl: "/chat",
     });
@@ -34,14 +37,14 @@ const Login = ({ session }: { session: Session|null }) => {
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    e.preventDefault();
 
     try {
       setloading(true);
 
       const formData = new FormData(e.currentTarget);
-      console.log({formData:formData.get("email")});
-
+      // console.log({formData:formData.get("email")});
+      removeLocalStorageChatItem();
       const res = await signIn("credentials", {
         email: formData.get("email"),
         password: formData.get("password"),
@@ -50,23 +53,23 @@ const Login = ({ session }: { session: Session|null }) => {
       if (res?.error) {
         setloading(false);
         setError(res.error);
-        return
+        return;
       }
       if (res?.ok) {
         // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
-         RevalidatePath("/");
+        RevalidatePath("/");
         router.push("/chat");
       }
     } catch (error: any) {
-      console.log({error})
+      console.log({ error });
       setError(error);
       setloading(false);
     }
   };
   useEffect(() => {
     if (session?.user) router.push("/chat");
-  }, [router,session])
-  
+  }, [router, session]);
+
   return (
     <div className=" min-h-screen p-5">
       <div className="max-w-lg mx-auto   bg-white dark:bg-gray-800 p-8 rounded-xl shadow dark:shadow-none shadow-slate-300 dark:border dark:border-indigo-600">
