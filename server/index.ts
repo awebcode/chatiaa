@@ -56,7 +56,8 @@ app.use("/api/v1", authRoute);
 app.use("/api/v1", chatRoute);
 
 app.use("/api/v1", messageRoute);
-
+ app.use(notFoundHandler);
+ app.use(errorHandler);
 type TUser = {
   _id: string;
   name: string;
@@ -118,11 +119,11 @@ export const getSocketConnectedUser = async (id: string | Types.ObjectId) => {
 
 //@@ configuring server with cluster load balancer
 const PORT = process.env.PORT || 5000;
-let numCPUs=process.env.NODE_ENV === "production" ? cpus().length/2 : 1;
+let numCPUs = process.env.NODE_ENV === "production" ? cpus().length / 2 : 1;
+
 if (cluster.isPrimary) {
   console.log(`Master ${process.pid} is running`);
-
-  const httpServer = createServer(app);
+   const httpServer = createServer();
 
   // setup sticky sessions
   setupMaster(httpServer, {
@@ -209,7 +210,7 @@ if (cluster.isPrimary) {
       // }
 
       // io.emit("setup", users);
-      console.log("Client connected");
+      console.log("Client connected", socket.id);
     });
 
     // Handle incoming messages from clients
@@ -592,5 +593,3 @@ if (cluster.isPrimary) {
 }
 
  //> Errors handlers
- app.use(notFoundHandler);
- app.use(errorHandler);
