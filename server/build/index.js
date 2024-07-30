@@ -17,6 +17,7 @@ exports.getSocketConnectedUser = exports.io = void 0;
 const express_1 = __importDefault(require("express"));
 const http_1 = require("http");
 const cors_1 = __importDefault(require("cors"));
+const errorHandler_1 = require("./middlewares/errorHandler");
 const connectDb_1 = __importDefault(require("./config/connectDb"));
 const cloudinaryConfig_1 = __importDefault(require("./config/cloudinaryConfig"));
 const dotenv_1 = require("dotenv");
@@ -59,6 +60,8 @@ app.use((0, cookie_parser_1.default)());
 app.use("/api/v1", authRoutes_1.default);
 app.use("/api/v1", chatRoutes_1.default);
 app.use("/api/v1", messageRoutes_1.default);
+app.use(errorHandler_1.notFoundHandler);
+app.use(errorHandler_1.errorHandler);
 // Keep track of connected sockets
 // Function to add or update a user in the online users model
 const checkOnlineUsers = (userId, socketId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -106,10 +109,10 @@ const getSocketConnectedUser = (id) => __awaiter(void 0, void 0, void 0, functio
 exports.getSocketConnectedUser = getSocketConnectedUser;
 //@@ configuring server with cluster load balancer
 const PORT = process.env.PORT || 5000;
-let numCPUs = process.env.NODE_ENV === "production" ? (0, os_1.cpus)().length / 2 : 1;
+let numCPUs = process.env.NODE_ENV === "production" ? Math.max((0, os_1.cpus)().length / 2, 1) : 1;
 if (cluster_1.default.isPrimary) {
     console.log(`Master ${process.pid} is running`);
-    const httpServer = (0, http_1.createServer)(app);
+    const httpServer = (0, http_1.createServer)();
     // setup sticky sessions
     (0, sticky_1.setupMaster)(httpServer, {
         loadBalancingMethod: "least-connection",
@@ -138,7 +141,7 @@ if (cluster_1.default.isPrimary) {
 }
 else {
     //@ Setting socket io cluster adapters
-    const httpServer = (0, http_1.createServer)(app);
+    const httpServer = (0, http_1.createServer)();
     (0, initSocketIO_1.initializeSocket)(httpServer); //* initialize the Socket.IO instance
     const io = (0, initSocketIO_1.getIoInstance)();
     // use the cluster adapter
