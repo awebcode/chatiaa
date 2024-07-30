@@ -112,11 +112,11 @@ export default async function LocaleLayout({
     <html lang={locale} suppressHydrationWarning>
       {/* {locale} */}
       <body suppressHydrationWarning>
-        <SocketContextProvider>
-          <ReactQueryClientProvider>
-            {" "}
-            <NextThemeProvider>
-              <NextIntlClientProvider locale={locale} messages={languages}>
+        <ReactQueryClientProvider>
+          {" "}
+          <NextThemeProvider>
+            <NextIntlClientProvider locale={locale} messages={languages}>
+              <SocketContextProvider>
                 <SessionProvider session={session}>
                   <MessageContextProvider>
                     <Navbar />
@@ -137,10 +137,10 @@ export default async function LocaleLayout({
                         : "hot-toast-bg-dark",
                   }}
                 />
-              </NextIntlClientProvider>
-            </NextThemeProvider>
-          </ReactQueryClientProvider>
-        </SocketContextProvider>
+              </SocketContextProvider>
+            </NextIntlClientProvider>
+          </NextThemeProvider>
+        </ReactQueryClientProvider>
       </body>
     </html>
   );
