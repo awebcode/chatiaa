@@ -27,7 +27,7 @@ const groupSocket_1 = require("../common/groupSocket");
 const functions_1 = require("./functions");
 const generateUpdateMessage_1 = require("../common/generateUpdateMessage");
 const checkIsOnline_1 = require("../common/checkIsOnline");
-const filterChats_1 = require("../common/filterChats");
+const processChatsWithUnseenCount_1 = require("../common/processChatsWithUnseenCount");
 //@access          Protected
 const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
@@ -81,61 +81,39 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.accessChat = accessChat;
-//@access          Protected
+// //@fetchChats         Protected
+//@fetchChats         Protected
 const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // console.log({fetchChats:req.id})
         const limit = parseInt(req.query.limit) || 10;
-        const page = parseInt(req.query.page) || 1;
-        // const skip = (page - 1) * limit;
         const skip = parseInt(req.query.skip) || 0;
-        const keyword = req.query.search
+        const searchQuery = req.query.search || '';
+        // Construct the search keyword object
+        const keyword = searchQuery
             ? {
                 $or: [
-                    { name: { $regex: req.query.search, $options: "i" } },
-                    { email: { $regex: req.query.search, $options: "i" } },
+                    { name: { $regex: searchQuery, $options: "i" } },
+                    { email: { $regex: searchQuery, $options: "i" } },
                 ],
             }
             : {};
+        // Fetch unseen messages count for the user
         const unseenCount = yield unseenMessagesCounts(limit, skip, keyword, req.id);
-        // Count the total documents matching the keyword
+        // Count the total documents matching the keyword for pagination
         const totalDocs = yield ChatModel_1.Chat.countDocuments({
             users: { $elemMatch: { $eq: req.id } },
         });
-        //when i use keep users in chat to separate document
-        //const totalDocs = await UserChat.countDocuments({ userId: req.id });
-        // Find user-chat association documents for the current user
-        // const userChats = await UserChat.find({ userId: req.id }).select("chatId");
-        // // Extract chat IDs from user-chat association documents
-        // const chatIds = userChats.map((userChat) => userChat.chatId);
-        // // Perform the query to find chat documents based on the extracted chat IDs
-        // const chats = await Chat.find({
-        //   $or: [
-        //     { _id: { $in: chatIds } }, // Find chats where the _id matches any of the extracted chat IDs
-        //     { chatName: { $regex: req.query.search, $options: "i" } },
-        //   ],
-        // });
-        // const user=await User.findById(req.id);
-        const chats = yield ChatModel_1.Chat.find({
-            $and: [
-                { users: { $elemMatch: { $eq: req.id } } },
-                {
-                    $or: [
-                        {
-                            $and: [
-                                { chatName: { $regex: req.query.search, $options: "i" } }, // Matching chatName
-                                { isGroupChat: true }, // When isGroupChat is true
-                            ],
-                        },
-                        { isGroupChat: false }, // For non-group chats
-                    ],
-                },
+        // Find chats that the user is part of and match the search criteria
+        let chats = yield ChatModel_1.Chat.find({
+            users: { $elemMatch: { $eq: req.id } },
+            $or: [
+                { isGroupChat: true, chatName: { $regex: searchQuery, $options: "i" } },
+                { isGroupChat: false },
             ],
         })
             .populate({
             path: "users",
             select: "name email image createdAt lastActive onlineStatus",
-            options: { limit: 10 }, // Set limit to Infinity to populate all documents
         })
             .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
             .populate("latestMessage")
@@ -143,20 +121,19 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             .sort({ updatedAt: -1 })
             .limit(limit)
             .skip(skip);
-        const populatedChats = yield UserModel_1.User.populate(chats, {
+        // Populate sender details for the latest message
+        chats = yield UserModel_1.User.populate(chats, {
             path: "latestMessage.sender",
-            select: "name image email lastActive createdAt lastActive onlineStatus",
+            select: "name image email lastActive createdAt onlineStatus",
         });
-        // Filter the populatedChats array based on the keyword
-        let filteredChats = [];
-        if (req.query.search && keyword) {
-            filteredChats = populatedChats.filter((chat) => chat.users.some((user) => user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
-                user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))) || chat.chatName.match(new RegExp(req.query.search, "i")) // Add chatName filtering condition
-            );
+        // Filter the chats based on the keyword in user name or email after populating
+        let filteredChats = chats;
+        if (searchQuery) {
+            filteredChats = chats.filter((chat) => chat.users.some((user) => user.name.match(new RegExp(searchQuery, "i")) ||
+                user.email.match(new RegExp(searchQuery, "i"))) || (chat.chatName && chat.chatName.match(new RegExp(searchQuery, "i"))));
         }
-        //send response
-        const chatsToSend = filteredChats.length > 0 ? filteredChats : populatedChats;
-        const processedChats = yield (0, filterChats_1.processChatsWithUnseenCount)(chatsToSend, unseenCount, req.id);
+        // Process the chats and include unseen count and online status
+        const processedChats = yield (0, processChatsWithUnseenCount_1.processChatsWithUnseenCount)(filteredChats, unseenCount, req.id);
         res.status(200).send({
             chats: processedChats || [],
             total: totalDocs,
@@ -165,11 +142,110 @@ const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         });
     }
     catch (error) {
-        console.log(error);
+        console.error("Error fetching chats:", error);
         next(error);
     }
 });
 exports.fetchChats = fetchChats;
+// export const fetchChats = async (
+//   req: Request | any,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     // console.log({fetchChats:req.id})
+//     const limit = parseInt(req.query.limit) || 10;
+//     // const page = parseInt(req.query.page) || 1;
+//     // const skip = (page - 1) * limit;
+//     const skip = parseInt(req.query.skip) || 0;
+//     const keyword: any = req.query.search
+//       ? {
+//           $or: [
+//             { name: { $regex: req.query.search, $options: "i" } },
+//             { email: { $regex: req.query.search, $options: "i" } },
+//           ],
+//         }
+//       : {};
+//     const unseenCount: any = await unseenMessagesCounts(limit, skip, keyword, req.id);
+//     // Count the total documents matching the keyword
+//     const totalDocs = await Chat.countDocuments({
+//       users: { $elemMatch: { $eq: req.id } },
+//     });
+//     //when i use keep users in chat to separate document
+//     //const totalDocs = await UserChat.countDocuments({ userId: req.id });
+//     // Find user-chat association documents for the current user
+//     // const userChats = await UserChat.find({ userId: req.id }).select("chatId");
+//     // // Extract chat IDs from user-chat association documents
+//     // const chatIds = userChats.map((userChat) => userChat.chatId);
+//     // // Perform the query to find chat documents based on the extracted chat IDs
+//     // const chats = await Chat.find({
+//     //   $or: [
+//     //     { _id: { $in: chatIds } }, // Find chats where the _id matches any of the extracted chat IDs
+//     //     { chatName: { $regex: req.query.search, $options: "i" } },
+//     //   ],
+//     // });
+//     // const user=await User.findById(req.id);
+//     const chats = await Chat.find({
+//       $and: [
+//         { users: { $elemMatch: { $eq: req.id } } },
+//         {
+//           $or: [
+//             {
+//               $and: [
+//                 { chatName: { $regex: req.query.search, $options: "i" } }, // Matching chatName
+//                 { isGroupChat: true }, // When isGroupChat is true
+//               ],
+//             },
+//             { isGroupChat: false }, // For non-group chats
+//           ],
+//         },
+//       ],
+//     })
+//       .populate({
+//         path: "users",
+//         select: "name email image createdAt lastActive onlineStatus",
+//         options: { limit: 10 }, // Set limit to Infinity to populate all documents
+//       })
+//       .populate("groupAdmin", "email name image createdAt lastActive onlineStatus")
+//       .populate("latestMessage")
+//       .populate("chatBlockedBy", "name image email createdAt lastActive onlineStatus")
+//       .sort({ updatedAt: -1 })
+//       .limit(limit)
+//       .skip(skip);
+//     const populatedChats = await User.populate(chats, {
+//       path: "latestMessage.sender",
+//       select: "name image email lastActive createdAt lastActive onlineStatus",
+//     });
+//     // Filter the populatedChats array based on the keyword
+//     let filteredChats: any = [];
+//     if (req.query.search && keyword) {
+//       filteredChats = populatedChats.filter(
+//         (chat: any) =>
+//           chat.users.some(
+//             (user: any) =>
+//               user.name.match(new RegExp(keyword.$or[0].name.$regex, "i")) ||
+//               user.email.match(new RegExp(keyword.$or[1].email.$regex, "i"))
+//           ) || chat.chatName.match(new RegExp(req.query.search, "i")) // Add chatName filtering condition
+//       );
+//     }
+// //send response
+//    const chatsToSend = filteredChats.length > 0 ? filteredChats : populatedChats;
+//    const processedChats = await processChatsWithUnseenCount(
+//      chatsToSend,
+//      unseenCount,
+//      req.id
+//    );
+//    res.status(200).send({
+//      chats: processedChats||[],
+//      total: totalDocs,
+//      limit,
+//      unseenCountArray: unseenCount,
+//    });
+//   } catch (error: any) {
+//     console.log(error);
+//     next(error);
+//   }
+// };
 //unseenMessagesCounts for every single chat
 const unseenMessagesCounts = (limit, skip, keyword, userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {

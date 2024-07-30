@@ -18,13 +18,12 @@ import { inittialDummyChats } from "@/config/dummyData/chats";
 import { encryptAndStoreData } from "@/config/EncDecrypt";
 
 const MyChats = () => {
-  const queryClient = new QueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const searchText = useDebounce(searchTerm, 700);
-  const { user: currentUser, selectedChat, chats, totalChats } = useMessageState();
+  const { chats} = useMessageState();
   const dispatch = useMessageDispatch();
   const [showScrollToTopButton, setShowScrollToTopButton] = useState(false);
-  const { data, isLoading, isFetching, fetchNextPage, hasNextPage } = useInfiniteQuery({
+  const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ["chats", searchText],
     queryFn: getChats as any,
     getNextPageParam: (lastPage: any) => {
@@ -139,7 +138,7 @@ const MyChats = () => {
                 !isLoading &&
                 chats?.length > 10 && (
                   <div className="text-center text-2xl text-green-400 pt-10">
-                    You have viewed all chats!
+                    Here is all chats!
                   </div>
                 )
               }

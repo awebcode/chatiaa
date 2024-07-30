@@ -1,8 +1,8 @@
 import { Server, Socket } from "socket.io";
 import { Chat } from "../model/ChatModel";
-import { getSocketConnectedUser } from "..";
 import { Types } from "mongoose";
 import { User } from "../model/UserModel";
+import { getSocketConnectedUser } from "./checkIsOnline";
 
 // Function to emit an event to users within a chat
 export const emitEventToGroupUsers = async (

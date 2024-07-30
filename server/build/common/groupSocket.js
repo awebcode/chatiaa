@@ -11,13 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emitEventToOnlineUsers = exports.markMessageAsDeliverdAfteronlineFriend = exports.emitEventToGroupUsers = void 0;
 const ChatModel_1 = require("../model/ChatModel");
-const __1 = require("..");
 const UserModel_1 = require("../model/UserModel");
+const checkIsOnline_1 = require("./checkIsOnline");
 // Function to emit an event to users within a chat
 const emitEventToGroupUsers = (io, event, chatId, data) => __awaiter(void 0, void 0, void 0, function* () {
     const chatUsers = yield ChatModel_1.Chat.findById(chatId);
     chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((chatUserId) => __awaiter(void 0, void 0, void 0, function* () {
-        const receiverId = yield (0, __1.getSocketConnectedUser)(chatUserId.toString());
+        const receiverId = yield (0, checkIsOnline_1.getSocketConnectedUser)(chatUserId.toString());
         if (receiverId) {
             const { userId, socketId } = receiverId;
             const id = userId.toString();
@@ -43,7 +43,7 @@ const markMessageAsDeliverdAfteronlineFriend = (io, userId) => __awaiter(void 0,
         // Update the latest message's status to "delivered"
         if (((_a = chat.latestMessage) === null || _a === void 0 ? void 0 : _a.status) === "unseen" &&
             ((_b = chat.latestMessage) === null || _b === void 0 ? void 0 : _b.sender.toString()) !== userId) {
-            const receiverId = yield (0, __1.getSocketConnectedUser)((_c = chat.latestMessage) === null || _c === void 0 ? void 0 : _c.sender.toString());
+            const receiverId = yield (0, checkIsOnline_1.getSocketConnectedUser)((_c = chat.latestMessage) === null || _c === void 0 ? void 0 : _c.sender.toString());
             // const senderId = await getSocketConnectedUser(
             //  userId
             // );
@@ -70,7 +70,7 @@ const emitEventToOnlineUsers = (io, eventName, userId, eventData) => __awaiter(v
         chats === null || chats === void 0 ? void 0 : chats.forEach((chatUsers) => {
             chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users.forEach((chatUserId) => __awaiter(void 0, void 0, void 0, function* () {
                 var _a, _b;
-                const receiverId = yield (0, __1.getSocketConnectedUser)(chatUserId.toString());
+                const receiverId = yield (0, checkIsOnline_1.getSocketConnectedUser)(chatUserId.toString());
                 //check if any user is online
                 const userIds = (_a = chatUsers === null || chatUsers === void 0 ? void 0 : chatUsers.users) === null || _a === void 0 ? void 0 : _a.map((user) => user === null || user === void 0 ? void 0 : user.toString());
                 // Query onlineUsersModel for online status of filtered users
