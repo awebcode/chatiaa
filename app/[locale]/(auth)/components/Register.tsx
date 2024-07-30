@@ -2,7 +2,7 @@
 import { registerUser } from "@/apisActions/authActions";
 import { signIn, useSession } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
@@ -69,13 +69,15 @@ const Register = ({session}: {session: Session|null}) => {
         return setError(res.error);
       }
       if (res?.ok) {
-        queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
+        // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
 
         router.push("/chat");
       }
     }
   };
-  if (session?.user) router.push("/chat");
+   useEffect(() => {
+     if (session?.user) router.push("/chat");
+   }, [router, session]);
   return (
     <div className=" min-h-screen p-5">
       <div className="max-w-lg mx-auto   bg-white dark:bg-gray-800 p-8 rounded-xl shadow dark:shadow-none shadow-slate-300 dark:border dark:border-indigo-600">

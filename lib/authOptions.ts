@@ -13,8 +13,7 @@ export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
 
   providers: [
-    process.env.VERCEL_ENV === "preview"
-      ? CredentialsProvider({
+     CredentialsProvider({
           name: "Credentials",
           credentials: {
             email: {
@@ -44,15 +43,14 @@ export const authOptions: AuthOptions = {
               credentials!.password,
               userFound.password
             );
-
             if (!passwordMatch) {
               throw new Error("Password mismatch!");
             }
             // console.log('authorize', { userFound });
             return userFound;
           },
-        })
-      : GithubProvider({
+        }),
+       GithubProvider({
           clientId: process.env.GITHUB_ID as string,
           clientSecret: process.env.GITHUB_SECRET as string,
           authorization: {
