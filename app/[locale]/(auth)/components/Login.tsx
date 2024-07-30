@@ -6,6 +6,7 @@ import Image from "next/image";
 
 import { BiLoaderCircle } from "react-icons/bi";
 import type { Session } from "next-auth";
+import { RevalidatePath } from "@/apisActions/serverActions";
 
 const Login = ({ session }: { session: Session|null }) => {
   const [error, setError] = useState("");
@@ -46,7 +47,6 @@ const Login = ({ session }: { session: Session|null }) => {
         password: formData.get("password"),
         redirect: false,
       });
-console.log({res})
       if (res?.error) {
         setloading(false);
         setError(res.error);
@@ -54,7 +54,7 @@ console.log({res})
       }
       if (res?.ok) {
         // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
-
+         RevalidatePath("/");
         router.push("/chat");
       }
     } catch (error: any) {

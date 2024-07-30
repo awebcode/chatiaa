@@ -115,7 +115,7 @@ export const deleteUser = async () => {
 export default async function RevalidateTag(tag: string) {
   revalidateTag(tag);
 }
-//use revalidate path
+//use revalidate path on client
 export async function RevalidatePath(path: string, type?: string | any) {
   revalidatePath(path, type || "page");
 }

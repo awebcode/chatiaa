@@ -1,6 +1,6 @@
 "use client";
 import { registerUser } from "@/apisActions/authActions";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
 import React, { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
 import LoaderComponent from "@/components/Loader";
 import type { Session } from "next-auth";
+import { RevalidatePath } from "@/apisActions/serverActions";
 
 const Register = ({session}: {session: Session|null}) => {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ const Register = ({session}: {session: Session|null}) => {
     if (res?.error) {
       throw new Error(res?.error);
     }
-
+    
     if (res?.ok) queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
   };
 
@@ -44,7 +45,7 @@ const Register = ({session}: {session: Session|null}) => {
     };
     const { name, email, password } = registerData;
     if (!name || !email || !password) {
-      return setError("Plese fill all the fields!");
+    setError("Plese fill all the fields!");
     }
     if ((registerData as any).password?.length < 6) {
       setloading(false);
@@ -66,12 +67,11 @@ const Register = ({session}: {session: Session|null}) => {
       setloading(false);
       if (res?.error) {
         setloading(false);
-        console.log(res);
-        return setError(res.error);
+        setError(res.error);
       }
       if (res?.ok) {
         // queryClient.invalidateQueries({ queryKey: ["fetch-server-user"] });
-
+        RevalidatePath("/")
         router.push("/chat");
       }
     }
