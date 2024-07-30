@@ -196,7 +196,7 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
       }
       //  update latest chat for both side
       console.log({
-        socketMessage: data,
+        socketMessageDD: data,
       });
 
       // update localStorage chat message

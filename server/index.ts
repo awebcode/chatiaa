@@ -235,8 +235,8 @@ if (cluster.isPrimary) {
         //      receiverId: message.receiverId,
         //      chat: { _id: message.chatId },
         //    });
-        
-        console.log({data})
+
+        // console.log({data})
         io.to(message.chatId)
           .to(message.receiverId)
           .emit("receiveMessage", { ...data, receiverId: message.receiverId });

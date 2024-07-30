@@ -207,7 +207,7 @@ else {
                 //      receiverId: message.receiverId,
                 //      chat: { _id: message.chatId },
                 //    });
-                console.log({ data });
+                // console.log({data})
                 io.to(message.chatId)
                     .to(message.receiverId)
                     .emit("receiveMessage", Object.assign(Object.assign({}, data), { receiverId: message.receiverId }));
