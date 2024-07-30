@@ -34,7 +34,7 @@ export const io = getIoInstance();
 //db conn
 connectDb();
 app.use(express.json({ limit: "100mb" }));
-app.use(express.urlencoded({ extended: true, limit: "100mb" }));
+app.use(express.urlencoded({ extended: false, limit: "100mb" }));
 
 
 // Enable CORS for all routes
@@ -56,8 +56,8 @@ app.use("/api/v1", authRoute);
 app.use("/api/v1", chatRoute);
 
 app.use("/api/v1", messageRoute);
- app.use(notFoundHandler);
- app.use(errorHandler);
+//  app.use(notFoundHandler);
+//  app.use(errorHandler);
 type TUser = {
   _id: string;
   name: string;
@@ -123,7 +123,7 @@ let numCPUs = process.env.NODE_ENV === "production" ? cpus().length / 2 : 1;
 
 if (cluster.isPrimary) {
   console.log(`Master ${process.pid} is running`);
-   const httpServer = createServer();
+   const httpServer = createServer(app);
 
   // setup sticky sessions
   setupMaster(httpServer, {
