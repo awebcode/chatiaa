@@ -16,7 +16,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { FiUsers } from "react-icons/fi";
 import { useMessageState } from "@/context/MessageContext";
-import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateItem";
+import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateChatItem";
 const ThemeButton = dynamic(() => import("./ThemeButton"));
 const LanguageChanger = dynamic(() => import("./LanguageChanger"));
 const Navbar = () => {

@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BiLoaderCircle } from "react-icons/bi";
 import type { Session } from "next-auth";
 import { RevalidatePath } from "@/apisActions/serverActions";
-import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateItem";
+import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateChatItem";
 
 const Register = ({ session }: { session: Session | null }) => {
   const queryClient = useQueryClient();

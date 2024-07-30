@@ -7,7 +7,7 @@ import Image from "next/image";
 import { BiLoaderCircle } from "react-icons/bi";
 import type { Session } from "next-auth";
 import { RevalidatePath } from "@/apisActions/serverActions";
-import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateItem";
+import { removeLocalStorageChatItem } from "@/lib/removeLocalStorateChatItem";
 
 const Login = ({ session }: { session: Session | null }) => {
   const [error, setError] = useState("");
