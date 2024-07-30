@@ -1,10 +1,9 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect,useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 
 import dynamic from "next/dynamic";
 const InfiniteScroll = dynamic(() => import("react-infinite-scroll-component"));
-import CryptoJS from "crypto-js";
 import { useMessageDispatch, useMessageState } from "@/context/MessageContext";
 import SkeletonContainer from "./SkeletonContainer";
 import { Button } from "@/components/ui/button";
@@ -78,7 +77,7 @@ const MyChats = () => {
         total: data?.pages[0]?.total,
       },
     });
-  }, [data?.pages]);
+  }, [data?.pages,dispatch]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
