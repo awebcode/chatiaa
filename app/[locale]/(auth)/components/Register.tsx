@@ -48,13 +48,14 @@ const Register = ({session}: {session: Session|null}) => {
     }
     if ((registerData as any).password?.length < 6) {
       setloading(false);
-      return setError("Password must be at least 6 charecters");
+      setError("Password must be at least 6 charecters");
     }
     const data = await registerUser(registerData);
     if (data && !data.user) {
       setloading(false);
       console.log({ data });
-      return setError(data?.response?.data?.message);
+      setError(data?.response?.data?.message);
+      return
     }
     if (data.user) {
       const res = await signIn("credentials", {
