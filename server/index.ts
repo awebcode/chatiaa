@@ -156,7 +156,7 @@ if (cluster.isPrimary) {
   });
 } else {
   //@ Setting socket io cluster adapters
-  const httpServer = createServer();
+  const httpServer = createServer(app);
   initializeSocket(httpServer); //* initialize the Socket.IO instance
   const io = getIoInstance();
   // use the cluster adapter
