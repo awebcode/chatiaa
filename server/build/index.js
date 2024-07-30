@@ -121,12 +121,8 @@ if (cluster_1.default.isPrimary) {
     // needed for packets containing buffers (you can ignore it if you only send plaintext objects)
     // Node.js < 16.0.0
     cluster_1.default.setupPrimary({
-        serialization: "json",
+        serialization: "json", //set this for json data sent to another socket
     });
-    // Node.js > 16.0.0
-    // cluster.setupPrimary({
-    //   serialization: "advanced",
-    // });
     httpServer.listen(PORT, () => {
         console.log(`Server is listening on port ${PORT}`);
     });
