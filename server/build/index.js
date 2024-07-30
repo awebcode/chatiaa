@@ -42,14 +42,13 @@ const initSocketIO_1 = require("./common/initSocketIO");
 exports.io = (0, initSocketIO_1.getIoInstance)();
 //db conn
 (0, connectDb_1.default)();
-app.use(express_1.default.json({ limit: "100mb" }));
-app.use(express_1.default.urlencoded({ extended: false, limit: "100mb" }));
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: false }));
 // Enable CORS for all routes
 const corsOptions = {
     origin: [
         "http://localhost:3000",
         "https://chatiaa.vercel.app",
-        "https://chatiaa2.vercel.app",
     ], // Allow requests from this specific origin
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -115,14 +114,14 @@ if (cluster_1.default.isPrimary) {
     const httpServer = (0, http_1.createServer)();
     // setup sticky sessions
     (0, sticky_1.setupMaster)(httpServer, {
-        loadBalancingMethod: "least-connection",
+        loadBalancingMethod: "round-robin",
     });
     // setup connections between the workers
     (0, cluster_adapter_1.setupPrimary)();
     // needed for packets containing buffers (you can ignore it if you only send plaintext objects)
     // Node.js < 16.0.0
     cluster_1.default.setupPrimary({
-        serialization: "advanced",
+        serialization: "json",
     });
     // Node.js > 16.0.0
     // cluster.setupPrimary({
