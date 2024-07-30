@@ -404,59 +404,59 @@ export const updateUser = async (req: Request|any, res: Response, next: NextFunc
 
 // getOnlineUsersInMyChats
 export const getOnlineUsersInMyChats = async (
-  req: Request|any,
+  req: Request | any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
-    const skip = parseInt(req.query.skip) || 0;
-    const searchTerm = req.query.search;
+    const { limit = 10, skip = 0, search } = req.query;
+    const limitNumber = parseInt(limit) || 10;
+    const skipNumber = parseInt(skip) || 0;
+    const searchTerm = search?.toString() || "";
 
-    // Constructing the keyword for searching by username and email
-    const keyword = searchTerm
+    // Build search criteria for name and email if searchTerm is provided
+    const searchCriteria = searchTerm
       ? {
           $or: [
-            { name: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for name
-            { email: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for email
+            { name: { $regex: searchTerm, $options: "i" } },
+            { email: { $regex: searchTerm, $options: "i" } },
           ],
         }
       : {};
 
-    // Find chats where the current user is present and it's not a group chat
-    const userChats = await Chat.find({ users: req.id, isGroupChat: false }).sort({
-      updatedAt: -1,
-    });
+    // Find user chats where the current user is present and it's not a group chat
+    const userChats = await Chat.find({ users: req.id, isGroupChat: false })
+      .select("users")
+      .lean();
 
-    // Extract user IDs from these chats
-    const userIdsInChats = userChats.reduce((acc: string[], chat: any) => {
-      chat.users.forEach((userId: string) => {
-        if (userId !== req.id && !acc.includes(userId)) {
-          acc.push(userId);
+    // Extract unique user IDs from chats, excluding the current user's ID
+    const userIdsInChats = userChats.reduce((acc: string[], chat) => {
+      chat.users.forEach((userId) => {
+        if (userId !== req.id && !acc.includes(userId.toString())) {
+          acc.push(userId.toString());
         }
       });
       return acc;
     }, []);
 
-    // Find online users among the extracted user IDs with pagination, population, and sorting
-    const onlineUsers = await User.find({
-      _id: { $in: userIdsInChats, $ne: req.id },
+    // Find online users among the extracted user IDs with pagination
+    const onlineUsersQuery = {
+      _id: { $in: userIdsInChats },
       onlineStatus: { $in: ["online", "busy"] },
-      ...keyword,
-    })
-      .sort({ updatedAt: -1 }) // Sort by updatedAt in descending order
-      .limit(limit)
-      .skip(skip);
+      ...searchCriteria,
+    };
+
+    const onlineUsers = await User.find(onlineUsersQuery)
+      .sort({ updatedAt: -1 })
+      .limit(limitNumber)
+      .skip(skipNumber)
+      .lean();
 
     // Count total online users matching the search criteria
-    const totalOnlineUsers = await User.countDocuments({
-      _id: { $in: userIdsInChats, $ne: req.id },
-      onlineStatus: { $in: ["online", "busy"] },
-      ...keyword,
-    });
+    const totalOnlineUsers = await User.countDocuments(onlineUsersQuery);
 
     // Send the list of online users along with total count
-    res.send({ onlineUsers, totalOnlineUsers, limit, skip });
+    res.send({ onlineUsers, totalOnlineUsers, limit: limitNumber, skip: skipNumber });
   } catch (error) {
     next(error);
   }

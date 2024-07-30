@@ -178,11 +178,13 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
   //update friend chat and messages staus when i'm online
 
   useEffect(() => {
-    updateAllMessageStatusAsDelivered(currentUser?._id as any);
+    if (currentUser?._id) {
+      updateAllMessageStatusAsDelivered(currentUser?._id as any);
 
-    socket.emit("deliveredAllMessageAfterReconnect", {
-      userId: currentUser?._id,
-    });
+      socket.emit("deliveredAllMessageAfterReconnect", {
+        userId: currentUser?._id,
+      });
+    }
   }, [currentUser?._id]);
 
   const handleSocketMessage = useCallback(
@@ -195,8 +197,12 @@ const SocketEvents = ({ currentUser }: { currentUser: Tuser }) => {
         soundRef.current?.play();
       }
       //  update latest chat for both side
+      console.log(
+        data.receiverId === currentUserRef.current?._id &&
+          currentUserRef?.current?.onlineStatus === "online"
+      );
       console.log({
-        socketMessageDD: data,
+        socketMessage: data,
       });
 
       // update localStorage chat message

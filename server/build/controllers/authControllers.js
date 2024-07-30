@@ -354,40 +354,43 @@ exports.updateUser = updateUser;
 // getOnlineUsersInMyChats
 const getOnlineUsersInMyChats = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const limit = parseInt(req.query.limit) || 10; // Default limit to 10
-        const skip = parseInt(req.query.skip) || 0;
-        const searchTerm = req.query.search;
-        // Constructing the keyword for searching by username and email
-        const keyword = searchTerm
+        const { limit = 10, skip = 0, search } = req.query;
+        const limitNumber = parseInt(limit) || 10;
+        const skipNumber = parseInt(skip) || 0;
+        const searchTerm = (search === null || search === void 0 ? void 0 : search.toString()) || "";
+        // Build search criteria for name and email if searchTerm is provided
+        const searchCriteria = searchTerm
             ? {
                 $or: [
-                    { name: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for name
-                    { email: { $regex: searchTerm, $options: "i" } }, // Case-insensitive regex search for email
+                    { name: { $regex: searchTerm, $options: "i" } },
+                    { email: { $regex: searchTerm, $options: "i" } },
                 ],
             }
             : {};
-        // Find chats where the current user is present and it's not a group chat
-        const userChats = yield ChatModel_1.Chat.find({ users: req.id, isGroupChat: false }).sort({
-            updatedAt: -1,
-        });
-        // Extract user IDs from these chats
+        // Find user chats where the current user is present and it's not a group chat
+        const userChats = yield ChatModel_1.Chat.find({ users: req.id, isGroupChat: false })
+            .select("users")
+            .lean();
+        // Extract unique user IDs from chats, excluding the current user's ID
         const userIdsInChats = userChats.reduce((acc, chat) => {
             chat.users.forEach((userId) => {
-                if (userId !== req.id && !acc.includes(userId)) {
-                    acc.push(userId);
+                if (userId !== req.id && !acc.includes(userId.toString())) {
+                    acc.push(userId.toString());
                 }
             });
             return acc;
         }, []);
-        // Find online users among the extracted user IDs with pagination, population, and sorting
-        const onlineUsers = yield UserModel_1.User.find(Object.assign({ _id: { $in: userIdsInChats, $ne: req.id }, onlineStatus: { $in: ["online", "busy"] } }, keyword))
-            .sort({ updatedAt: -1 }) // Sort by updatedAt in descending order
-            .limit(limit)
-            .skip(skip);
+        // Find online users among the extracted user IDs with pagination
+        const onlineUsersQuery = Object.assign({ _id: { $in: userIdsInChats }, onlineStatus: { $in: ["online", "busy"] } }, searchCriteria);
+        const onlineUsers = yield UserModel_1.User.find(onlineUsersQuery)
+            .sort({ updatedAt: -1 })
+            .limit(limitNumber)
+            .skip(skipNumber)
+            .lean();
         // Count total online users matching the search criteria
-        const totalOnlineUsers = yield UserModel_1.User.countDocuments(Object.assign({ _id: { $in: userIdsInChats, $ne: req.id }, onlineStatus: { $in: ["online", "busy"] } }, keyword));
+        const totalOnlineUsers = yield UserModel_1.User.countDocuments(onlineUsersQuery);
         // Send the list of online users along with total count
-        res.send({ onlineUsers, totalOnlineUsers, limit, skip });
+        res.send({ onlineUsers, totalOnlineUsers, limit: limitNumber, skip: skipNumber });
     }
     catch (error) {
         next(error);

@@ -27,6 +27,7 @@ const index_1 = require("../index");
 const functions_1 = require("./functions");
 const seenByModel_1 = require("../model/seenByModel");
 const groupSocket_1 = require("../common/groupSocket");
+const checkIsOnline_1 = require("../common/checkIsOnline");
 //@access          Protected
 const allMessages = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -615,7 +616,7 @@ const replyMessage = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             yield (0, groupSocket_1.emitEventToGroupUsers)(index_1.io, "receiveMessage", chatId, emitData);
         }
         else {
-            const receiverSocketId = yield (0, index_1.getSocketConnectedUser)(receiverId);
+            const receiverSocketId = yield (0, checkIsOnline_1.getSocketConnectedUser)(receiverId);
             index_1.io.to(chat === null || chat === void 0 ? void 0 : chat._id.toString())
                 .to(receiverSocketId === null || receiverSocketId === void 0 ? void 0 : receiverSocketId.socketId)
                 .emit("receiveMessage", Object.assign(Object.assign({}, emitData), { receiverId })); ///added event as replyMessage

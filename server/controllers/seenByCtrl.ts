@@ -1,4 +1,3 @@
-import { getSeenByInfo } from "./../common/seenByInfo";
 import { Request, Response, NextFunction } from "express";
 import { Message } from "../model/MessageModel";
 import { CustomErrorHandler } from "../middlewares/errorHandler";

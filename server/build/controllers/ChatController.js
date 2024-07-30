@@ -81,6 +81,7 @@ const accessChat = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.accessChat = accessChat;
+//@access          Protected
 const fetchChats = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // console.log({fetchChats:req.id})

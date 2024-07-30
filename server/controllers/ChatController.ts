@@ -7,7 +7,6 @@ import { Chat } from "../model/ChatModel";
 import { User } from "../model/UserModel";
 import { Message } from "../model/MessageModel";
 import mongoose from "mongoose";
-import { getSeenByInfo } from "../common/seenByInfo";
 import { AvatarGenerator } from "random-avatar-generator";
 import { v2 } from "cloudinary";
 import { io } from "..";
@@ -15,8 +14,6 @@ import { emitEventToGroupUsers } from "../common/groupSocket";
 import { sentGroupNotifyMessage } from "./functions";
 import { generateUpdateMessage } from "../common/generateUpdateMessage";
 import { checkIfAnyUserIsOnline } from "../common/checkIsOnline";
-import { allMessages } from "./messageController";
-import { allInitMessages } from "../common/getInitMessages";
 import { processChatsWithUnseenCount } from "../common/filterChats";
 
 //@access          Protected
@@ -80,7 +77,7 @@ export const accessChat = async (
     }
   }
 };
-
+//@fetchChats         Protected
 export const fetchChats = async (
   req: Request | any,
   res: Response,

@@ -10,10 +10,11 @@ import { Reaction } from "../model/reactModal";
 import { v2 } from "cloudinary";
 import fs from "fs";
 import mongoose from "mongoose";
-import { getSocketConnectedUser, io } from "../index";
+import {  io } from "../index";
 import { getFileType } from "./functions";
 import { MessageSeenBy } from "../model/seenByModel";
 import { emitEventToGroupUsers } from "../common/groupSocket";
+import { getSocketConnectedUser } from "../common/checkIsOnline";
 //@access          Protected
 export const allMessages = async (
   req: Request | any,

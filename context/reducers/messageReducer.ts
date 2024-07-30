@@ -80,6 +80,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
       if (Array.isArray(action.payload.chats)) {
         // When scrolling
         // state.selectedChat?.chatId === action.payload[0]?.chat?._id;
+          // console.log({ chats: action.payload.chats });
 
         for (let i = 0; i < (action.payload as any)?.chats?.length; i++) {
           let chat = (action.payload as any)?.chats[i];
@@ -604,6 +605,7 @@ export const messageReducer = (state: State = initialState, action: Action): Sta
           } //
         }
       }
+      // Sort messages by createdAt or another suitable property
       return { ...state, messages: updatedMessages as any };
     case SET_TOTAL_MESSAGES_COUNT:
       return {

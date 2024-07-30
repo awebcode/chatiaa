@@ -178,14 +178,17 @@ function Messages({ chatId }: { chatId: string }) {
             <LoaderComponent text="Fetching messages..." />
           ) : (
             messages &&
-            messages?.length > 0 &&
-            messages.map(
-              //filterDuplicateTempMessageIds(messages) use it when rendering server or prefetch message otherwise give err
-              (message: IMessage) => {
-                //every message card must use  unuque key and don't use random key , if you use random key and update in messages then all messages will re render... prefetch messages duplicate key  problem here although i used unique key
-                return <MessageCard message={message} key={message?.tempMessageId} />;
-              }
-            )
+            messages.length > 0 &&
+            messages
+              .sort((a, b) => {
+                // Ensure createdAt is a valid number or convert it to a timestamp
+                const dateA = new Date(a?.createdAt).getTime();
+                const dateB = new Date(b?.createdAt).getTime();
+                return dateB - dateA;
+              })
+              .map((message: IMessage) => {
+                return <MessageCard message={message} key={message.tempMessageId} />;
+              })
           )}
         </div>
 
