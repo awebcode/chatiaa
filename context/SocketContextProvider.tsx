@@ -29,7 +29,9 @@ const SocketContextProvider = ({ children }: SocketContextProviderProps) => {
         process.env.NODE_ENV === "production"
           ? "https://chatiaa-server.onrender.com"
           : "http://localhost:5000",
-        socketOptions
+        {
+          ...socketOptions,transports: ["websocket"],autoConnect:true
+        }
       ),
     [socketOptions]
   );
