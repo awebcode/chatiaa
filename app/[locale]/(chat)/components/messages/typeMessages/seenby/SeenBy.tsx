@@ -16,7 +16,7 @@ const SeenBy = ({ message, currentUser }: { message: IMessage; currentUser: Tuse
           message?.seenBy?.map((user: any) => {
             return (
               <TooltipProvider
-                key={ Math.random() * 1000 + Date.now()}
+                key={ Math.random() * 1000 + Date.now()+user?.userId?._id}
               >
                 <Tooltip>
                   <TooltipTrigger>

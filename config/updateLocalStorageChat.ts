@@ -21,7 +21,7 @@ export function updatelocallStorageChatAndSelectedChat(
 
   if (isExistChatIndex !== -1) {
     const existingChat: any = storedChats[isExistChatIndex];
-    if (storedSelectedChat.messages) {
+    if (storedSelectedChat?.messages) {
       if (isExistMessageInSelectechatIndex !== -1) {
         storedSelectedChat.messages.messages[isExistMessageInSelectechatIndex] = data;
       } else {
@@ -40,7 +40,7 @@ export function updatelocallStorageChatAndSelectedChat(
       (m: IMessage) => m?._id === data._id || m?.tempMessageId === data.tempMessageId
     );
 
-    if (existingChat.messages) {
+    if (existingChat?.messages) {
       if (messageIndex !== -1) {
         existingChat.messages.messages[messageIndex] = data;
       } else {
